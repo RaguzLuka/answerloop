@@ -213,7 +213,7 @@ export default function Home() {
               },
               {
                 name: "Growth",
-                price: "€99",
+                price: "€100",
                 desc: "For growing businesses that can't miss a single lead.",
                 features: ["1 phone number", "Unlimited conversations", "WhatsApp & SMS", "Calendar integration", "Priority support"],
                 highlight: true,
