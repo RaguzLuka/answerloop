@@ -195,71 +195,51 @@ export default function Home() {
 
       {/* Pricing */}
       <section id="pricing" className="bg-gray-50 py-24">
-        <div className="mx-auto max-w-5xl px-6">
-          <p className="mb-3 text-center text-sm font-semibold uppercase tracking-widest text-gray-400">
+        <div className="mx-auto max-w-2xl px-6 text-center">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-gray-400">
             Pricing
           </p>
-          <h2 className="mb-14 text-center text-4xl font-bold">
-            Simple, transparent pricing.
+          <h2 className="mb-5 text-4xl font-bold">
+            One plan. Everything included.
           </h2>
-          <div className="grid gap-6 md:grid-cols-3">
-            {[
-              {
-                name: "Starter",
-                price: "€49",
-                desc: "Perfect for small businesses just getting started.",
-                features: ["1 phone number", "Up to 100 conversations/mo", "WhatsApp & SMS", "Email lead summaries"],
-                highlight: false,
-              },
-              {
-                name: "Growth",
-                price: "€100",
-                desc: "For growing businesses that can't miss a single lead.",
-                features: ["1 phone number", "Unlimited conversations", "WhatsApp & SMS", "Calendar integration", "Priority support"],
-                highlight: true,
-              },
-              {
-                name: "Pro",
-                price: "€199",
-                desc: "For multi-location businesses and agencies.",
-                features: ["Up to 5 phone numbers", "Unlimited conversations", "WhatsApp & SMS", "Calendar integration", "Dedicated onboarding"],
-                highlight: false,
-              },
-            ].map((plan) => (
-              <div
-                key={plan.name}
-                className={`rounded-3xl p-8 ${
-                  plan.highlight
-                    ? "bg-black text-white"
-                    : "border border-gray-200 bg-white"
-                }`}
-              >
-                <p className="mb-1 text-sm font-semibold uppercase tracking-widest opacity-60">
-                  {plan.name}
-                </p>
-                <p className="mb-2 text-4xl font-bold">{plan.price}<span className="text-lg font-normal opacity-50">/mo</span></p>
-                <p className={`mb-6 text-sm ${plan.highlight ? "text-gray-400" : "text-gray-500"}`}>
-                  {plan.desc}
-                </p>
-                <ul className="mb-8 space-y-2.5">
-                  {plan.features.map((f) => (
-                    <li key={f} className={`flex items-center gap-2 text-sm ${plan.highlight ? "text-gray-300" : "text-gray-600"}`}>
-                      <span>✓</span> {f}
-                    </li>
-                  ))}
-                </ul>
-                <a
-                  href="#contact"
-                  className={`block rounded-full py-3 text-center text-sm font-medium ${
-                    plan.highlight
-                      ? "bg-white text-black"
-                      : "bg-black text-white"
-                  }`}
-                >
-                  Get started
-                </a>
-              </div>
-            ))}
+          <p className="mb-14 text-lg text-gray-500">
+            No hidden fees, no feature gates. Every business gets the full Answerloop experience.
+          </p>
+
+          <div className="rounded-3xl bg-black p-10 text-white">
+            <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-gray-400">
+              Answerloop
+            </p>
+            <p className="mb-1 text-6xl font-bold">€200<span className="text-2xl font-normal text-gray-400">/mo</span></p>
+            <p className="mb-10 text-gray-400">per business location</p>
+
+            <div className="mb-10 grid gap-3 text-left sm:grid-cols-2">
+              {[
+                "1 dedicated phone number",
+                "Unlimited AI conversations",
+                "WhatsApp & SMS follow-ups",
+                "Automatic appointment booking",
+                "Google Calendar integration",
+                "Lead summary after every call",
+                "Multi-language support",
+                "Custom AI persona for your brand",
+                "Priority support",
+                "Setup & onboarding included",
+              ].map((f) => (
+                <div key={f} className="flex items-center gap-3 text-sm text-gray-300">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs text-white">✓</span>
+                  {f}
+                </div>
+              ))}
+            </div>
+
+            <a
+              href="#contact"
+              className="block rounded-full bg-white py-4 text-center font-medium text-black"
+            >
+              Book a free demo
+            </a>
+            <p className="mt-4 text-xs text-gray-500">No contract. Cancel anytime.</p>
           </div>
         </div>
       </section>
