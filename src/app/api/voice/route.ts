@@ -6,7 +6,7 @@ const twilioClient = twilio(
   process.env.TWILIO_AUTH_TOKEN
 );
 
-const WHATSAPP_FROM = process.env.WHATSAPP_FROM ?? "whatsapp:+14155238886"; // sandbox default
+const WHATSAPP_FROM = process.env.WHATSAPP_FROM ?? "whatsapp:+14155238886";
 
 export async function POST(request: Request) {
   const body = await request.formData();
@@ -17,21 +17,19 @@ export async function POST(request: Request) {
 
   console.log(`[CALL] Incoming call to ${clinic.name} from ${from}`);
 
-  // Send WhatsApp message to the caller immediately
+  // Send WhatsApp AFTER responding to Twilio (non-blocking)
   if (from && from !== "anonymous") {
-    try {
-      await twilioClient.messages.create({
+    twilioClient.messages
+      .create({
         from: WHATSAPP_FROM,
         to: `whatsapp:${from}`,
         body: `Hi! Sorry we missed your call. This is ${clinic.name} — how can we help you today? 😊`,
-      });
-      console.log(`[WHATSAPP] Sent follow-up to ${from}`);
-    } catch (err) {
-      console.error("[WHATSAPP] Failed to send follow-up:", err);
-    }
+      })
+      .then(() => console.log(`[WHATSAPP] Sent follow-up to ${from}`))
+      .catch((err: Error) => console.error("[WHATSAPP] Failed:", err.message));
   }
 
-  // Play a short voice message to the caller
+  // Respond to Twilio immediately
   return new Response(
     `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
