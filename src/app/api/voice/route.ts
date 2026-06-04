@@ -1,12 +1,30 @@
-import twilio from "twilio";
 import { getClinic } from "@/clinics";
 
-const twilioClient = twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
-
 const WHATSAPP_FROM = process.env.WHATSAPP_FROM ?? "whatsapp:+14155238886";
+const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID ?? "";
+const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN ?? "";
+
+async function sendWhatsApp(to: string, body: string) {
+  const url = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`;
+  const auth = Buffer.from(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`).toString("base64");
+
+  const params = new URLSearchParams();
+  params.append("From", WHATSAPP_FROM);
+  params.append("To", `whatsapp:${to}`);
+  params.append("Body", body);
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${auth}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: params.toString(),
+  });
+
+  const data = await res.json();
+  console.log("[WHATSAPP] Sent:", data.sid, "| Error:", data.error_message);
+}
 
 export async function POST(request: Request) {
   const body = await request.formData();
@@ -17,19 +35,13 @@ export async function POST(request: Request) {
 
   console.log(`[CALL] Incoming call to ${clinic.name} from ${from}`);
 
-  // Send WhatsApp AFTER responding to Twilio (non-blocking)
+  // Send WhatsApp non-blocking
   if (from && from !== "anonymous") {
-    twilioClient.messages
-      .create({
-        from: WHATSAPP_FROM,
-        to: `whatsapp:${from}`,
-        body: `Hi! Sorry we missed your call. This is ${clinic.name} — how can we help you today? 😊`,
-      })
-      .then(() => console.log(`[WHATSAPP] Sent follow-up to ${from}`))
-      .catch((err: Error) => console.error("[WHATSAPP] Failed:", err.message));
+    sendWhatsApp(from, `Hi! Sorry we missed your call. This is ${clinic.name} — how can we help you today? 😊`).catch(
+      (err) => console.error("[WHATSAPP] Failed:", err)
+    );
   }
 
-  // Respond to Twilio immediately
   return new Response(
     `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
