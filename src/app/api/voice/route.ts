@@ -1,22 +1,44 @@
-// Forwards incoming calls to your personal phone so you can hear verification codes
-const FORWARD_TO = process.env.FORWARD_TO_PHONE ?? "";
+import twilio from "twilio";
+import { getClinic } from "@/clinics";
 
-export async function POST() {
-  if (FORWARD_TO) {
-    return new Response(
-      `<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-  <Dial>${FORWARD_TO}</Dial>
-</Response>`,
-      { headers: { "Content-Type": "text/xml" } }
-    );
+const twilioClient = twilio(
+  process.env.TWILIO_ACCOUNT_SID,
+  process.env.TWILIO_AUTH_TOKEN
+);
+
+const WHATSAPP_FROM = process.env.WHATSAPP_FROM ?? "whatsapp:+14155238886"; // sandbox default
+
+export async function POST(request: Request) {
+  const body = await request.formData();
+  const from = body.get("From")?.toString() ?? "";
+  const to = body.get("To")?.toString() ?? "";
+
+  const clinic = getClinic(to);
+
+  console.log(`[CALL] Incoming call to ${clinic.name} from ${from}`);
+
+  // Send WhatsApp message to the caller immediately
+  if (from && from !== "anonymous") {
+    try {
+      await twilioClient.messages.create({
+        from: WHATSAPP_FROM,
+        to: `whatsapp:${from}`,
+        body: `Hi! Sorry we missed your call. This is ${clinic.name} — how can we help you today? 😊`,
+      });
+      console.log(`[WHATSAPP] Sent follow-up to ${from}`);
+    } catch (err) {
+      console.error("[WHATSAPP] Failed to send follow-up:", err);
+    }
   }
 
-  // If no forward number set, just say a message
+  // Play a short voice message to the caller
   return new Response(
     `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say>Hello, this is Answerloop. Please leave a message after the tone.</Say>
+  <Say voice="Polly.Joanna">
+    Hi, thanks for calling ${clinic.name}. We are currently unavailable, but we just sent you a WhatsApp message so we can help you right away. Have a great day!
+  </Say>
+  <Hangup/>
 </Response>`,
     { headers: { "Content-Type": "text/xml" } }
   );
