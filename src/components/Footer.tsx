@@ -39,7 +39,11 @@ export default function Footer() {
         </div>
         <div className="mt-12 border-t border-gray-100 pt-8 flex flex-col items-center justify-between gap-4 sm:flex-row">
           <p className="text-sm text-gray-400">© {new Date().getFullYear()} Ringloop. All rights reserved.</p>
-          <p className="text-sm text-gray-400">Built for medical institutes across Europe 🇪🇺</p>
+          <div className="flex items-center gap-5 text-sm text-gray-400">
+            <Link href="/privacy" className="hover:text-black transition-colors">Privacy Policy</Link>
+            <span>·</span>
+            <p>Built for medical institutes across Europe 🇪🇺</p>
+          </div>
         </div>
       </div>
     </footer>

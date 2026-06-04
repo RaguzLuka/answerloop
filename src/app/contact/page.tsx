@@ -1,5 +1,6 @@
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import LeadForm from "@/components/LeadForm";
 
 export const metadata = {
   title: "Contact — Ringloop",
@@ -19,6 +20,11 @@ export default function Contact() {
             <h1 className="mb-5 text-5xl font-bold">Let's talk.</h1>
             <p className="text-lg text-gray-500">Book a free demo or reach out with any questions. We typically respond within a few hours.</p>
           </div>
+        </section>
+
+        {/* Lead form */}
+        <section className="mx-auto max-w-2xl px-6 pb-4">
+          <LeadForm />
         </section>
 
         {/* Contact options */}
