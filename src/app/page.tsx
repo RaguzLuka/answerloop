@@ -5,7 +5,7 @@ export default function Home() {
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <span className="text-xl font-bold tracking-tight">Missly</span>
+          <span className="text-xl font-bold tracking-tight">Ringloop</span>
           <div className="hidden gap-8 text-sm font-medium text-gray-500 sm:flex">
             <a href="#how" className="hover:text-black transition-colors">How it works</a>
             <a href="#features" className="hover:text-black transition-colors">Features</a>
@@ -32,7 +32,7 @@ export default function Home() {
         </h1>
 
         <p className="mb-10 max-w-2xl text-lg text-gray-500 md:text-xl">
-          Missly instantly follows up every missed call with an AI that qualifies the lead,
+          Ringloop instantly follows up every missed call with an AI that qualifies the lead,
           collects their request, and books the appointment — automatically.
         </p>
 
@@ -94,11 +94,11 @@ export default function Home() {
       <section id="how" className="mx-auto max-w-5xl px-6 py-24">
         <p className="mb-3 text-center text-xs font-semibold uppercase tracking-widest text-gray-400">How it works</p>
         <h2 className="mb-4 text-center text-4xl font-bold">Three steps. Zero effort.</h2>
-        <p className="mb-14 text-center text-gray-500">Missly works silently in the background. Your staff doesn't need to do anything.</p>
+        <p className="mb-14 text-center text-gray-500">Ringloop works silently in the background. Your staff doesn't need to do anything.</p>
 
         <div className="grid gap-6 md:grid-cols-3">
           {[
-            { step: "01", title: "Missed call detected", desc: "A potential client calls your business. Nobody picks up. Missly detects it instantly via call forwarding." },
+            { step: "01", title: "Missed call detected", desc: "A potential client calls your business. Nobody picks up. Ringloop detects it instantly via call forwarding." },
             { step: "02", title: "AI follows up", desc: "Within seconds, the client gets a WhatsApp message from your clinic's AI asking how it can help." },
             { step: "03", title: "Appointment booked", desc: "The AI collects their name, treatment, preferred doctor and time — then confirms the booking automatically." },
           ].map((item) => (
@@ -123,7 +123,7 @@ export default function Home() {
               { icon: "💬", title: "WhatsApp & SMS", desc: "Follows up on the channel your clients already use." },
               { icon: "🤖", title: "AI conversation", desc: "Understands any language, any phrasing, any request." },
               { icon: "📅", title: "Auto booking", desc: "Collects all booking details and confirms the appointment." },
-              { icon: "🏥", title: "Custom AI persona", desc: "The AI introduces itself as your clinic, not as Missly." },
+              { icon: "🏥", title: "Custom AI persona", desc: "The AI introduces itself as your clinic, not as Ringloop." },
               { icon: "🌍", title: "Multi-language", desc: "Responds in Croatian, English, German — whatever the client writes." },
               { icon: "📋", title: "Lead summaries", desc: "After every booking, your team gets a clear summary." },
               { icon: "🔔", title: "Missed call trigger", desc: "No missed call goes unanswered. Ever." },
@@ -144,7 +144,7 @@ export default function Home() {
       <section id="industries" className="mx-auto max-w-5xl px-6 py-24">
         <p className="mb-3 text-center text-xs font-semibold uppercase tracking-widest text-gray-400">Industries</p>
         <h2 className="mb-4 text-center text-4xl font-bold">Built for any appointment-based business.</h2>
-        <p className="mb-14 text-center text-gray-500">If your business takes appointments, Missly works for you.</p>
+        <p className="mb-14 text-center text-gray-500">If your business takes appointments, Ringloop works for you.</p>
 
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
           {[
@@ -172,7 +172,7 @@ export default function Home() {
           <p className="mb-14 text-gray-500">No hidden fees. No feature limits. Just results.</p>
 
           <div className="rounded-3xl bg-black p-10 text-white">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-gray-400">Missly</p>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-gray-400">Ringloop</p>
             <p className="mb-1 text-6xl font-bold">€200<span className="text-2xl font-normal text-gray-400">/mo</span></p>
             <p className="mb-10 text-gray-400 text-sm">per business location</p>
 
@@ -213,7 +213,7 @@ export default function Home() {
 
         <div className="space-y-6">
           {[
-            { q: "Do I need to change my phone number?", a: "No. You keep your existing number. You just set up call forwarding — when nobody answers, the call forwards to Missly. Takes 2 minutes." },
+            { q: "Do I need to change my phone number?", a: "No. You keep your existing number. You just set up call forwarding — when nobody answers, the call forwards to Ringloop. Takes 2 minutes." },
             { q: "How does the AI know my clinic's name?", a: "We set it up for you during onboarding. The AI introduces itself as your clinic and handles conversations in your name." },
             { q: "What languages does it support?", a: "The AI responds in whatever language the client writes — Croatian, English, German, Italian, and more." },
             { q: "Does it work with my existing calendar?", a: "Google Calendar integration is included. Bookings appear automatically in your calendar." },
@@ -233,11 +233,11 @@ export default function Home() {
         <div className="mx-auto max-w-3xl px-6 text-center">
           <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-gray-500">Get started</p>
           <h2 className="mb-5 text-4xl font-bold">Ready to never lose a client again?</h2>
-          <p className="mb-10 text-lg text-gray-400">Book a free 20-minute demo and we'll show you exactly how Missly works for your business.</p>
+          <p className="mb-10 text-lg text-gray-400">Book a free 20-minute demo and we'll show you exactly how Ringloop works for your business.</p>
 
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-            <a href="mailto:hello@missly.io" className="flex items-center gap-2 rounded-full border border-white/20 px-6 py-3 font-medium text-white hover:border-white transition-colors">
-              ✉ hello@missly.io
+            <a href="mailto:hello@ringloop.net" className="flex items-center gap-2 rounded-full border border-white/20 px-6 py-3 font-medium text-white hover:border-white transition-colors">
+              ✉ hello@ringloop.net
             </a>
             <a href="https://wa.me/14788003855" className="flex items-center gap-2 rounded-full bg-white px-6 py-3 font-medium text-black hover:bg-gray-100 transition-colors">
               💬 WhatsApp us
@@ -251,10 +251,10 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-gray-100 py-8">
         <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
-          <span className="font-bold">Missly</span>
-          <p className="text-sm text-gray-400">© {new Date().getFullYear()} Missly. All rights reserved.</p>
+          <span className="font-bold">Ringloop</span>
+          <p className="text-sm text-gray-400">© {new Date().getFullYear()} Ringloop. All rights reserved.</p>
           <div className="flex gap-6 text-sm text-gray-400">
-            <a href="mailto:hello@missly.io" className="hover:text-black transition-colors">hello@missly.io</a>
+            <a href="mailto:hello@ringloop.net" className="hover:text-black transition-colors">hello@ringloop.net</a>
           </div>
         </div>
       </footer>
