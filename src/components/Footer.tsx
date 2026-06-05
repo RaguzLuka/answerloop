@@ -1,5 +1,4 @@
 import Link from "next/link";
-import LogoMark from "@/components/LogoMark";
 
 export default function Footer() {
   return (
@@ -12,10 +11,7 @@ export default function Footer() {
 
           {/* Brand */}
           <div className="col-span-1">
-            <div className="mb-4 flex items-center gap-2.5">
-              <LogoMark size={28} />
-              <p className="text-[1.1rem] font-bold text-white tracking-tight">Ring<span className="text-blue-400">Loop</span></p>
-            </div>
+            <p className="mb-4 text-[1.2rem] font-bold text-white tracking-tight">Ring<span className="text-blue-400">Loop</span></p>
             <p className="text-sm leading-relaxed text-gray-500">
               AI-powered missed call recovery for medical institutes and appointment-based businesses.
             </p>

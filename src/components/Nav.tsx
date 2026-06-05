@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import LogoMark from "@/components/LogoMark";
 
 const links = [
   { href: "/how-it-works", label: "How it works" },
@@ -19,8 +18,7 @@ export default function Nav() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5">
 
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 text-[1.1rem] font-bold tracking-tight select-none">
-          <LogoMark size={28} />
+        <Link href="/" className="text-[1.2rem] font-bold tracking-tight select-none">
           Ring<span className="text-blue-600">Loop</span>
         </Link>
 
