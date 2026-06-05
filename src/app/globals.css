@@ -2,7 +2,9 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #09090f;
+  --foreground: #0f172a;
+  --blue:        #2563EB;
+  --navy:        #050c1e;
 }
 
 @theme inline {
@@ -11,6 +13,8 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
+
+/* ── Base ──────────────────────────────────────────────────── */
 
 html {
   scroll-behavior: smooth;
@@ -22,12 +26,18 @@ body {
   font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-/* ── Animations ───────────────────────────────────────────── */
+::selection {
+  background: #bfdbfe;
+  color: #1e3a8a;
+}
+
+/* ── Animations ────────────────────────────────────────────── */
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(22px); }
   to   { opacity: 1; transform: translateY(0);    }
 }
 
@@ -37,27 +47,41 @@ body {
 }
 
 @keyframes float {
-  0%,100% { transform: translateY(0px);  }
-  50%      { transform: translateY(-10px); }
+  0%, 100% { transform: translateY(0px);   }
+  50%       { transform: translateY(-10px); }
 }
 
-@keyframes pulse-ring {
-  0%   { transform: scale(1);   opacity: 1;   }
-  100% { transform: scale(2.2); opacity: 0;   }
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1;   }
 }
 
-.animate-fade-up   { animation: fadeUp 0.65s cubic-bezier(.16,1,.3,1) both; }
-.animate-fade-in   { animation: fadeIn 0.8s ease-out both; }
-.animate-float     { animation: float 5s ease-in-out infinite; }
+.animate-fade-up { animation: fadeUp 0.7s cubic-bezier(.16,1,.3,1) both; }
+.animate-fade-in { animation: fadeIn 0.9s ease-out both; }
+.animate-float   { animation: float 5.5s ease-in-out infinite; }
 
 .delay-100 { animation-delay: 0.10s; }
-.delay-200 { animation-delay: 0.20s; }
-.delay-300 { animation-delay: 0.30s; }
-.delay-400 { animation-delay: 0.45s; }
-.delay-500 { animation-delay: 0.60s; }
+.delay-200 { animation-delay: 0.22s; }
+.delay-300 { animation-delay: 0.34s; }
+.delay-400 { animation-delay: 0.48s; }
+.delay-500 { animation-delay: 0.62s; }
 
-/* ── Dot-grid pattern (used in dark hero/cta sections) ─────── */
+/* ── Dot-grid texture (dark sections) ──────────────────────── */
 .dot-grid {
-  background-image: radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px);
-  background-size: 28px 28px;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+
+/* ── Section fade dividers ─────────────────────────────────── */
+/* Use these divs at the TOP of a light section that follows a dark one */
+.divide-dark-to-light {
+  height: 80px;
+  background: linear-gradient(to bottom, var(--navy), white);
+  pointer-events: none;
+}
+
+.divide-light-to-dark {
+  height: 80px;
+  background: linear-gradient(to bottom, white, var(--navy));
+  pointer-events: none;
 }
