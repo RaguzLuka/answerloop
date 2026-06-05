@@ -33,6 +33,9 @@ export const metadata: Metadata = {
     description: "Your clinic misses calls. RingLoop books them. An AI receptionist that follows up every missed call via WhatsApp, 24/7.",
   },
   robots: { index: true, follow: true },
+  verification: {
+    google: "6Crkty_au9n6QFAPhxX4IkcGfAZriGCksXweub5AkGQ",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
