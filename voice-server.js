@@ -81,17 +81,24 @@ wss.on("connection", (twilioWs, req) => {
   openaiWs.on("open", () => {
     console.log("[OPENAI] Connected to Realtime API");
 
-    // Configure session
+    // Configure session (GA Realtime API schema)
     openaiWs.send(JSON.stringify({
       type: "session.update",
       session: {
-        turn_detection: { type: "server_vad", silence_duration_ms: 800, threshold: 0.5 },
-        input_audio_format: "g711_ulaw",
-        output_audio_format: "g711_ulaw",
-        voice: "shimmer",
+        type: "realtime",
+        model: "gpt-realtime",
+        output_modalities: ["audio"],
+        audio: {
+          input: {
+            format: { type: "audio/pcmu" },
+            turn_detection: { type: "server_vad", silence_duration_ms: 800, threshold: 0.5 },
+          },
+          output: {
+            format: { type: "audio/pcmu" },
+            voice: "shimmer",
+          },
+        },
         instructions: buildSystemPrompt(clinicName, treatments, callerPhone),
-        modalities: ["text", "audio"],
-        temperature: 0.7,
       },
     }));
 
@@ -161,6 +168,7 @@ wss.on("connection", (twilioWs, req) => {
         openaiWs.send(JSON.stringify({
           type: "session.update",
           session: {
+            type: "realtime",
             instructions: buildSystemPrompt(clinicName, treatments, callerPhone),
           },
         }));
