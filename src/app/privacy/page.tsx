@@ -11,10 +11,11 @@ export default function Privacy() {
     <>
       <Nav />
       <main className="pt-16">
-        <section className="bg-gradient-to-b from-blue-50 to-white px-6 py-20 text-center">
-          <div className="mx-auto max-w-3xl">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-blue-500">Legal</p>
-            <h1 className="mb-5 text-5xl font-bold">Privacy Policy</h1>
+        <section className="relative overflow-hidden px-6 py-24 text-center">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-5%,_#dbeafe,_transparent)]" />
+          <div className="relative mx-auto max-w-3xl">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-blue-600">Legal</p>
+            <h1 className="mb-5 text-5xl font-bold tracking-tight">Privacy Policy</h1>
             <p className="text-gray-500">Last updated: 4 June 2025</p>
           </div>
         </section>

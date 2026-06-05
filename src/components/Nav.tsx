@@ -2,23 +2,51 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+const links = [
+  { href: "/how-it-works", label: "How it works" },
+  { href: "/#features",    label: "Features" },
+  { href: "/#industries",  label: "Industries" },
+  { href: "/pricing",      label: "Pricing" },
+  { href: "/contact",      label: "Contact" },
+];
+
 export default function Nav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link href="/" className="text-xl font-bold tracking-tight">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100/80">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5">
+
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2 text-[1.15rem] font-bold tracking-tight">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-white text-xs font-black">R</span>
           Ring<span className="text-blue-600">loop</span>
         </Link>
-        <div className="hidden gap-8 text-sm font-medium text-gray-500 sm:flex">
-          <Link href="/how-it-works" className={`hover:text-black transition-colors ${pathname === "/how-it-works" ? "text-black" : ""}`}>How it works</Link>
-          <Link href="/#features" className="hover:text-black transition-colors">Features</Link>
-          <Link href="/#industries" className="hover:text-black transition-colors">Industries</Link>
-          <Link href="/pricing" className={`hover:text-black transition-colors ${pathname === "/pricing" ? "text-black" : ""}`}>Pricing</Link>
-          <Link href="/contact" className={`hover:text-black transition-colors ${pathname === "/contact" ? "text-black" : ""}`}>Contact</Link>
+
+        {/* Links */}
+        <div className="hidden gap-7 text-sm font-medium text-gray-500 sm:flex">
+          {links.map(({ href, label }) => {
+            const active = pathname === href;
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`relative py-1 transition-colors hover:text-gray-900 ${active ? "text-gray-900" : ""}`}
+              >
+                {label}
+                {active && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-blue-600" />
+                )}
+              </Link>
+            );
+          })}
         </div>
-        <Link href="/contact" className="rounded-full bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors">
+
+        {/* CTA */}
+        <Link
+          href="/contact"
+          className="rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-sm shadow-blue-200 hover:bg-blue-500 transition-all duration-200 hover:shadow-md hover:shadow-blue-200"
+        >
           Book a demo
         </Link>
       </div>
