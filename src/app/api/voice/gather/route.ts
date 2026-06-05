@@ -51,12 +51,23 @@ function escapeXml(text: string) {
     .replaceAll("'", "&apos;");
 }
 
-export async function POST(request: Request) {
-  const body = await request.formData();
-  const to = body.get("To")?.toString() ?? "";
-  const from = body.get("From")?.toString() ?? "";
-  const callSid = body.get("CallSid")?.toString() ?? "unknown";
-  const speechResult = body.get("SpeechResult")?.toString() ?? "";
+async function handleGather(request: Request) {
+  const contentType = request.headers.get("content-type") ?? "";
+  let to = "", from = "", callSid = "unknown", speechResult = "";
+
+  if (contentType.includes("application/x-www-form-urlencoded") || contentType.includes("multipart/form-data")) {
+    const body = await request.formData();
+    to = body.get("To")?.toString() ?? "";
+    from = body.get("From")?.toString() ?? "";
+    callSid = body.get("CallSid")?.toString() ?? "unknown";
+    speechResult = body.get("SpeechResult")?.toString() ?? "";
+  } else {
+    const url = new URL(request.url);
+    to = url.searchParams.get("To") ?? "";
+    from = url.searchParams.get("From") ?? "";
+    callSid = url.searchParams.get("CallSid") ?? "unknown";
+    speechResult = url.searchParams.get("SpeechResult") ?? "";
+  }
 
   const clinic = getClinic(to);
 
@@ -147,6 +158,14 @@ export async function POST(request: Request) {
 </Response>`,
     { headers: { "Content-Type": "text/xml" } }
   );
+}
+
+export async function POST(request: Request) {
+  return handleGather(request);
+}
+
+export async function GET(request: Request) {
+  return handleGather(request);
 }
 
 function parseBookingLine(line: string, fallbackPhone: string) {

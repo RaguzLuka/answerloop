@@ -4,11 +4,21 @@ const BASE_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
   ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
   : "http://localhost:3000";
 
-export async function POST(request: Request) {
-  const body = await request.formData();
-  const to = body.get("To")?.toString() ?? "";
-  const from = body.get("From")?.toString() ?? "";
-  const callSid = body.get("CallSid")?.toString() ?? "";
+async function handleCall(request: Request) {
+  const contentType = request.headers.get("content-type") ?? "";
+  let to = "", from = "", callSid = "";
+
+  if (contentType.includes("application/x-www-form-urlencoded") || contentType.includes("multipart/form-data")) {
+    const body = await request.formData();
+    to = body.get("To")?.toString() ?? "";
+    from = body.get("From")?.toString() ?? "";
+    callSid = body.get("CallSid")?.toString() ?? "";
+  } else {
+    const url = new URL(request.url);
+    to = url.searchParams.get("To") ?? "";
+    from = url.searchParams.get("From") ?? "";
+    callSid = url.searchParams.get("CallSid") ?? "";
+  }
 
   const clinic = getClinic(to);
 
@@ -28,4 +38,12 @@ export async function POST(request: Request) {
 </Response>`,
     { headers: { "Content-Type": "text/xml" } }
   );
+}
+
+export async function POST(request: Request) {
+  return handleCall(request);
+}
+
+export async function GET(request: Request) {
+  return handleCall(request);
 }
