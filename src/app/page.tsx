@@ -322,6 +322,52 @@ export default function Home() {
           </div>
         </section>
 
+        {/* ── FAQ ──────────────────────────────────────────── */}
+        <section className="mx-auto max-w-3xl px-6 py-32">
+          <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">FAQ</p>
+          <h2 className="mb-14 text-center text-4xl font-bold tracking-tight">Common questions</h2>
+          <div className="divide-y divide-slate-100">
+            {[
+              {
+                q: "Do I need a new phone number?",
+                a: "No. You keep your existing clinic number and set up call forwarding — takes about 2 minutes. RingLoop works silently in the background whenever a call goes unanswered.",
+              },
+              {
+                q: "How long does setup take?",
+                a: "Most clinics are live within 24 hours. We handle the AI configuration, WhatsApp number setup, and onboarding. You just flip the call forwarding switch.",
+              },
+              {
+                q: "What if the patient doesn't have WhatsApp?",
+                a: "WhatsApp has over 2 billion users and is the primary messaging app in Croatia and across Europe. In the rare case a patient doesn't have it, they simply won't receive the follow-up — your clinic is no worse off than before.",
+              },
+              {
+                q: "Is it GDPR compliant?",
+                a: "Yes. RingLoop processes data under legitimate interest and contract performance (Art. 6 GDPR). All third-party processors — Twilio, Anthropic, Vercel — operate under Standard Contractual Clauses. See our Privacy Policy for full details.",
+              },
+              {
+                q: "What languages does the AI speak?",
+                a: "Any language your patients write in. Croatian, English, German, Italian, Slovenian — the AI responds in whatever language the patient uses, automatically.",
+              },
+              {
+                q: "Can I cancel anytime?",
+                a: "Yes. No contract, no minimum term. Cancel before the next billing date and you won't be charged. We're confident you'll stay because the results speak for themselves.",
+              },
+            ].map(({ q, a }) => (
+              <details key={q} className="group py-6 cursor-pointer">
+                <summary className="flex items-center justify-between gap-4 text-base font-semibold text-slate-900 list-none [&::-webkit-details-marker]:hidden select-none">
+                  {q}
+                  <span className="shrink-0 flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-transform duration-300 group-open:rotate-45">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path d="M6 1V11M1 6H11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                    </svg>
+                  </span>
+                </summary>
+                <p className="mt-3 text-sm text-slate-500 leading-relaxed pr-8">{a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
         {/* Divider */}
         <div className="divide-light-to-dark" />
 

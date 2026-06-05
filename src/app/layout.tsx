@@ -2,34 +2,47 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import CookieBanner from "@/components/CookieBanner";
+import WhatsAppButton from "@/components/WhatsAppButton";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
+const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "RingLoop — Never lose a client to a missed call again",
-  description: "RingLoop instantly follows up every missed call with an AI that qualifies the lead, collects their request, and books the appointment automatically.",
+  metadataBase: new URL("https://ringloop.net"),
+  title: {
+    default: "RingLoop — AI missed call recovery for medical clinics",
+    template: "%s — RingLoop",
+  },
+  description:
+    "RingLoop follows up every missed call with an AI that chats on WhatsApp, qualifies the patient, and books the appointment automatically. €200/month, no contract.",
+  keywords: ["missed call recovery", "AI receptionist", "medical clinic", "WhatsApp booking", "appointment booking", "dental clinic AI"],
+  openGraph: {
+    title: "RingLoop — AI missed call recovery for medical clinics",
+    description:
+      "Your clinic misses calls. RingLoop books them. An AI receptionist that follows up every missed call via WhatsApp, 24/7.",
+    url: "https://ringloop.net",
+    siteName: "RingLoop",
+    type: "website",
+    locale: "en_EU",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "RingLoop — AI missed call recovery for medical clinics",
+    description:
+      "Your clinic misses calls. RingLoop books them. An AI receptionist that follows up every missed call via WhatsApp, 24/7.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         {children}
+        <WhatsAppButton />
         <CookieBanner />
       </body>
     </html>
