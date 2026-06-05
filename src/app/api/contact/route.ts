@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   }
 
   // Log the lead server-side (visible in Vercel function logs)
-  console.log("[Ringloop Lead]", { name, clinic, email, phone, message, ts: new Date().toISOString() });
+  console.log("[RingLoop Lead]", { name, clinic, email, phone, message, ts: new Date().toISOString() });
 
   // Optional: send email via Resend (add RESEND_API_KEY to env vars to enable)
   const resendKey = process.env.RESEND_API_KEY;
@@ -21,11 +21,11 @@ export async function POST(req: Request) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Ringloop Leads <noreply@ringloop.net>",
+        from: "RingLoop Leads <noreply@ringloop.net>",
         to: "hello@ringloop.net",
         subject: `New lead: ${name} — ${clinic}`,
         html: `
-          <h2>New Ringloop lead</h2>
+          <h2>New RingLoop lead</h2>
           <p><strong>Name:</strong> ${name}</p>
           <p><strong>Clinic:</strong> ${clinic}</p>
           <p><strong>Email:</strong> ${email}</p>

@@ -3,8 +3,8 @@ import Footer from "@/components/Footer";
 import LeadForm from "@/components/LeadForm";
 
 export const metadata = {
-  title: "Contact — Ringloop",
-  description: "Book a free demo or get in touch with the Ringloop team.",
+  title: "Contact — RingLoop",
+  description: "Book a free demo or get in touch with the RingLoop team.",
 };
 
 export default function Contact() {
@@ -38,7 +38,7 @@ export default function Contact() {
               <div className="relative">
                 <p className="mb-2 text-2xl font-bold tracking-tight">Book a free demo</p>
                 <p className="mb-8 text-blue-100 text-sm leading-relaxed">
-                  See Ringloop working live with your clinic&apos;s details. 20 minutes, no commitment required.
+                  See RingLoop working live with your clinic&apos;s details. 20 minutes, no commitment required.
                 </p>
                 <div className="space-y-3">
                   {[
@@ -67,7 +67,7 @@ export default function Contact() {
                 <h3 className="mb-4 font-bold text-lg tracking-tight">What happens in a demo?</h3>
                 <ul className="space-y-3">
                   {[
-                    "We show you Ringloop working live",
+                    "We show you RingLoop working live",
                     "We configure it with your clinic's name",
                     "You see a real WhatsApp conversation",
                     "We answer all your questions",

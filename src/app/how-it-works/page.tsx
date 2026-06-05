@@ -3,8 +3,8 @@ import Footer from "@/components/Footer";
 import Link from "next/link";
 
 export const metadata = {
-  title: "How It Works — Ringloop",
-  description: "Learn exactly how Ringloop follows up missed calls and books appointments automatically.",
+  title: "How It Works — RingLoop",
+  description: "Learn exactly how RingLoop follows up missed calls and books appointments automatically.",
 };
 
 export default function HowItWorks() {
@@ -29,20 +29,20 @@ export default function HowItWorks() {
             {
               step: "01",
               title: "Patient calls your clinic",
-              desc: "A patient calls your clinic's existing phone number. Your staff is busy or unavailable — nobody picks up. Without Ringloop, this patient would hang up and call a competitor.",
-              detail: "Ringloop works with your existing number. You set up call forwarding in your phone settings — when a call goes unanswered after a few rings, it forwards to Ringloop. No number change. No technical work.",
+              desc: "A patient calls your clinic's existing phone number. Your staff is busy or unavailable — nobody picks up. Without RingLoop, this patient would hang up and call a competitor.",
+              detail: "RingLoop works with your existing number. You set up call forwarding in your phone settings — when a call goes unanswered after a few rings, it forwards to RingLoop. No number change. No technical work.",
               preview: (
                 <div className="rounded-2xl bg-white p-5 shadow-sm border border-gray-100 text-sm space-y-2">
                   <p className="text-gray-700">📞 Incoming call to <strong>Zagreb Dental Clinic</strong></p>
-                  <p className="text-red-500 font-medium">✕ No answer — forwarded to Ringloop</p>
+                  <p className="text-red-500 font-medium">✕ No answer — forwarded to RingLoop</p>
                 </div>
               ),
             },
             {
               step: "02",
-              title: "Ringloop detects the missed call",
-              desc: "The moment the call comes in, Ringloop identifies the patient's phone number and which clinic the call was for.",
-              detail: "Each clinic has a dedicated Ringloop number. The system knows which clinic to represent and uses that clinic's name, treatments, and AI persona in all communications.",
+              title: "RingLoop detects the missed call",
+              desc: "The moment the call comes in, RingLoop identifies the patient's phone number and which clinic the call was for.",
+              detail: "Each clinic has a dedicated RingLoop number. The system knows which clinic to represent and uses that clinic's name, treatments, and AI persona in all communications.",
               preview: (
                 <div className="rounded-2xl bg-white p-5 shadow-sm border border-gray-100 text-sm space-y-1.5">
                   <p className="text-gray-500">Caller: <span className="font-semibold text-gray-900">+385 99 436 3110</span></p>
@@ -55,7 +55,7 @@ export default function HowItWorks() {
               step: "03",
               title: "AI sends a WhatsApp message in 30 seconds",
               desc: "The patient receives a friendly WhatsApp message from your clinic's AI within 30 seconds of the missed call.",
-              detail: "The message is sent from a dedicated WhatsApp Business number registered under your clinic's name. The patient sees your clinic name — not Ringloop.",
+              detail: "The message is sent from a dedicated WhatsApp Business number registered under your clinic's name. The patient sees your clinic name — not RingLoop.",
               preview: (
                 <div className="space-y-2">
                   <div className="rounded-2xl bg-white p-4 text-sm shadow-sm border border-gray-100 text-gray-800 max-w-[85%]">
@@ -138,7 +138,7 @@ export default function HowItWorks() {
                 { step: "1", title: "Sign up",           desc: "Book a demo and we set up your account." },
                 { step: "2", title: "We configure AI",   desc: "We set up your clinic name, treatments, and AI persona." },
                 { step: "3", title: "You forward calls", desc: "Set up call forwarding on your phone. Takes 2 minutes." },
-                { step: "4", title: "You're live",       desc: "Ringloop starts catching missed calls immediately." },
+                { step: "4", title: "You're live",       desc: "RingLoop starts catching missed calls immediately." },
               ].map((s) => (
                 <div key={s.step} className="rounded-2xl border border-gray-100 bg-white p-6 text-center shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                   <div className="mx-auto mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white font-bold shadow-sm shadow-blue-200">{s.step}</div>
@@ -156,7 +156,7 @@ export default function HowItWorks() {
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_60%_at_50%_100%,_rgba(37,99,235,0.3),_transparent)] pointer-events-none" />
           <div className="relative mx-auto max-w-2xl px-6">
             <h2 className="mb-5 text-4xl font-bold tracking-tight">Ready to see it in action?</h2>
-            <p className="mb-8 text-gray-400">Book a free demo and we&apos;ll show you Ringloop working for your clinic.</p>
+            <p className="mb-8 text-gray-400">Book a free demo and we&apos;ll show you RingLoop working for your clinic.</p>
             <Link
               href="/contact"
               className="group inline-flex items-center gap-2 rounded-full bg-blue-600 px-8 py-4 font-semibold text-white shadow-lg shadow-blue-900/40 hover:bg-blue-500 transition-all duration-200"

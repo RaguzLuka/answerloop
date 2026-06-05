@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ringloop — Never lose a client to a missed call again",
-  description: "Ringloop instantly follows up every missed call with an AI that qualifies the lead, collects their request, and books the appointment automatically.",
+  title: "RingLoop — Never lose a client to a missed call again",
+  description: "RingLoop instantly follows up every missed call with an AI that qualifies the lead, collects their request, and books the appointment automatically.",
 };
 
 export default function RootLayout({

@@ -2,8 +2,8 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 
 export const metadata = {
-  title: "Privacy Policy — Ringloop",
-  description: "How Ringloop collects, uses, and protects your personal data.",
+  title: "Privacy Policy — RingLoop",
+  description: "How RingLoop collects, uses, and protects your personal data.",
 };
 
 export default function Privacy() {
@@ -24,7 +24,7 @@ export default function Privacy() {
           <div className="prose prose-gray max-w-none space-y-10">
 
             <Block title="1. Who we are">
-              <p>Ringloop (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;) is a software service that provides AI-powered missed call recovery for medical institutes and appointment-based businesses. Our website is <a href="https://ringloop.net" className="text-blue-600 hover:underline">ringloop.net</a>.</p>
+              <p>RingLoop (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;) is a software service that provides AI-powered missed call recovery for medical institutes and appointment-based businesses. Our website is <a href="https://ringloop.net" className="text-blue-600 hover:underline">ringloop.net</a>.</p>
               <p>For questions about this policy, contact us at <a href="mailto:hello@ringloop.net" className="text-blue-600 hover:underline">hello@ringloop.net</a>.</p>
             </Block>
 
@@ -32,14 +32,14 @@ export default function Privacy() {
               <p>We collect personal data in two contexts:</p>
               <ul className="list-disc pl-6 space-y-2 text-gray-600">
                 <li><strong>Website visitors:</strong> When you fill in the contact or demo request form we collect your name, clinic name, email address, and phone number (if provided).</li>
-                <li><strong>End-patients of our clinic clients:</strong> When a patient calls a clinic that uses Ringloop, our system may process their phone number and the content of their WhatsApp conversation (name, appointment request, preferred times). This data is processed on behalf of the clinic operator, who is the data controller for their patients.</li>
+                <li><strong>End-patients of our clinic clients:</strong> When a patient calls a clinic that uses RingLoop, our system may process their phone number and the content of their WhatsApp conversation (name, appointment request, preferred times). This data is processed on behalf of the clinic operator, who is the data controller for their patients.</li>
                 <li><strong>Analytics:</strong> We collect standard server logs and, where you consent, anonymised usage analytics via cookies.</li>
               </ul>
             </Block>
 
             <Block title="3. Legal basis for processing (GDPR)">
               <ul className="list-disc pl-6 space-y-2 text-gray-600">
-                <li><strong>Contract performance (Art. 6(1)(b)):</strong> Processing necessary to provide the Ringloop service to clinic clients.</li>
+                <li><strong>Contract performance (Art. 6(1)(b)):</strong> Processing necessary to provide the RingLoop service to clinic clients.</li>
                 <li><strong>Legitimate interests (Art. 6(1)(f)):</strong> Processing enquiry data to respond to demo requests.</li>
                 <li><strong>Consent (Art. 6(1)(a)):</strong> Non-essential cookies and analytics, collected only when you accept via the cookie banner.</li>
               </ul>

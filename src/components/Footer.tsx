@@ -1,4 +1,5 @@
 import Link from "next/link";
+import LogoMark from "@/components/LogoMark";
 
 export default function Footer() {
   return (
@@ -11,9 +12,9 @@ export default function Footer() {
 
           {/* Brand */}
           <div className="col-span-1">
-            <div className="mb-4 flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-white text-xs font-black">R</span>
-              <p className="text-lg font-bold text-white">Ring<span className="text-blue-400">loop</span></p>
+            <div className="mb-4 flex items-center gap-2.5">
+              <LogoMark size={28} />
+              <p className="text-[1.1rem] font-bold text-white tracking-tight">Ring<span className="text-blue-400">Loop</span></p>
             </div>
             <p className="text-sm leading-relaxed text-gray-500">
               AI-powered missed call recovery for medical institutes and appointment-based businesses.
@@ -53,7 +54,7 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="mt-14 border-t border-white/5 pt-7 flex flex-col items-center justify-between gap-3 sm:flex-row">
-          <p className="text-xs text-gray-600">© {new Date().getFullYear()} Ringloop. All rights reserved.</p>
+          <p className="text-xs text-gray-600">© {new Date().getFullYear()} RingLoop. All rights reserved.</p>
           <div className="flex items-center gap-5 text-xs text-gray-600">
             <Link href="/privacy" className="hover:text-gray-300 transition-colors">Privacy Policy</Link>
             <span>·</span>

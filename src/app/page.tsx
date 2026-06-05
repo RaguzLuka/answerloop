@@ -3,7 +3,7 @@ import Footer from "@/components/Footer";
 import Link from "next/link";
 
 /* ─────────────────────────────────────────────────────────────────
-   Ringloop — Landing page (redesigned)
+   RingLoop — Landing page (redesigned)
 ───────────────────────────────────────────────────────────────── */
 
 export default function Home() {
@@ -33,7 +33,7 @@ export default function Home() {
             {/* Headline */}
             <h1 className="animate-fade-up delay-100 mb-6 text-5xl font-bold leading-[1.08] tracking-tight md:text-[4.5rem] lg:text-[5.25rem]">
               Your clinic misses calls.<br />
-              <span className="text-blue-600">Ringloop books them.</span>
+              <span className="text-blue-600">RingLoop books them.</span>
             </h1>
 
             {/* Sub */}
@@ -170,7 +170,7 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-              <p className="mt-4 text-xs text-gray-400">Ringloop pays for itself in the first recovered booking.</p>
+              <p className="mt-4 text-xs text-gray-400">RingLoop pays for itself in the first recovered booking.</p>
             </div>
           </div>
         </section>
@@ -184,10 +184,10 @@ export default function Home() {
               <div>
                 <p className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-blue-400">The solution</p>
                 <h2 className="mb-5 text-4xl font-bold leading-[1.15] tracking-tight">
-                  Ringloop answers every call. Even when you can&apos;t.
+                  RingLoop answers every call. Even when you can&apos;t.
                 </h2>
                 <p className="mb-8 text-gray-400 leading-relaxed">
-                  When a patient calls and nobody answers, Ringloop automatically sends them a WhatsApp message within 30 seconds. The AI has a full conversation, collects all booking details, and confirms the appointment.
+                  When a patient calls and nobody answers, RingLoop automatically sends them a WhatsApp message within 30 seconds. The AI has a full conversation, collects all booking details, and confirms the appointment.
                 </p>
                 <Link
                   href="/how-it-works"
@@ -200,7 +200,7 @@ export default function Home() {
 
               <div className="space-y-3">
                 {[
-                  { icon: "📞", title: "Patient calls, no answer",      desc: "Call forwarding triggers Ringloop instantly" },
+                  { icon: "📞", title: "Patient calls, no answer",      desc: "Call forwarding triggers RingLoop instantly" },
                   { icon: "💬", title: "AI sends WhatsApp in 30s",      desc: "Patient receives a message from your clinic" },
                   { icon: "🤖", title: "AI handles the conversation",   desc: "Collects name, treatment, doctor, time" },
                   { icon: "✅", title: "Appointment confirmed",         desc: "Booking appears in your calendar automatically" },
@@ -224,15 +224,15 @@ export default function Home() {
         {/* ── COMPARISON ───────────────────────────────────── */}
         <section className="mx-auto max-w-5xl px-6 py-28">
           <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.12em] text-gray-400">Comparison</p>
-          <h2 className="mb-4 text-center text-4xl font-bold tracking-tight">Why Ringloop?</h2>
-          <p className="mb-14 text-center text-gray-500">See how Ringloop compares to traditional solutions.</p>
+          <h2 className="mb-4 text-center text-4xl font-bold tracking-tight">Why RingLoop?</h2>
+          <p className="mb-14 text-center text-gray-500">See how RingLoop compares to traditional solutions.</p>
 
           <div className="overflow-hidden rounded-2xl border border-gray-200 shadow-sm">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50/80">
                   <th className="p-5 text-left text-sm font-semibold text-gray-400">Feature</th>
-                  <th className="p-5 text-center text-sm font-bold text-blue-600 bg-blue-50">Ringloop</th>
+                  <th className="p-5 text-center text-sm font-bold text-blue-600 bg-blue-50">RingLoop</th>
                   <th className="p-5 text-center text-sm font-semibold text-gray-400">Receptionist</th>
                   <th className="p-5 text-center text-sm font-semibold text-gray-400">Voicemail</th>
                 </tr>
@@ -284,7 +284,7 @@ export default function Home() {
                 { icon: "💬", title: "WhatsApp & SMS",       desc: "Follows up on the channel your patients already use daily." },
                 { icon: "🤖", title: "AI conversation",      desc: "Understands any language, any phrasing, any medical request." },
                 { icon: "📅", title: "Auto booking",         desc: "Collects all booking details and confirms the appointment." },
-                { icon: "🏥", title: "Custom AI persona",    desc: "The AI introduces itself as your clinic — not as Ringloop." },
+                { icon: "🏥", title: "Custom AI persona",    desc: "The AI introduces itself as your clinic — not as RingLoop." },
                 { icon: "🌍", title: "Multi-language",       desc: "Croatian, English, German — whatever the patient writes." },
                 { icon: "👨‍⚕️", title: "Doctor preference",  desc: "Asks if the patient has a preferred doctor before booking." },
                 { icon: "🔔", title: "Missed call trigger",  desc: "Every missed call gets a follow-up. No patient left behind." },
@@ -308,7 +308,7 @@ export default function Home() {
         <section id="industries" className="mx-auto max-w-5xl px-6 py-28">
           <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.12em] text-gray-400">Industries</p>
           <h2 className="mb-4 text-center text-4xl font-bold tracking-tight">Built for every medical institute.</h2>
-          <p className="mb-14 text-center text-gray-500">If your clinic takes appointments, Ringloop works for you.</p>
+          <p className="mb-14 text-center text-gray-500">If your clinic takes appointments, RingLoop works for you.</p>
 
           <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
             {[
@@ -338,7 +338,7 @@ export default function Home() {
             <Link href="/contact" className="text-blue-600 underline underline-offset-2 hover:text-blue-700">
               Contact us
             </Link>{" "}
-            — Ringloop works for any appointment-based business.
+            — RingLoop works for any appointment-based business.
           </p>
         </section>
 
@@ -346,12 +346,12 @@ export default function Home() {
         <section className="bg-gray-50/80 border-y border-gray-100 py-28">
           <div className="mx-auto max-w-5xl px-6">
             <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.12em] text-gray-400">Testimonials</p>
-            <h2 className="mb-14 text-center text-4xl font-bold tracking-tight">Clinics love Ringloop.</h2>
+            <h2 className="mb-14 text-center text-4xl font-bold tracking-tight">Clinics love RingLoop.</h2>
 
             <div className="grid gap-5 md:grid-cols-3">
               {[
                 {
-                  quote: "We were missing 20+ calls a month. Ringloop turned most of them into booked appointments. It paid for itself in the first week.",
+                  quote: "We were missing 20+ calls a month. RingLoop turned most of them into booked appointments. It paid for itself in the first week.",
                   name: "Dr. Ana K.",
                   role: "Dental Clinic, Zagreb",
                   initials: "AK",
@@ -403,7 +403,7 @@ export default function Home() {
               Ready to stop losing patients?
             </h2>
             <p className="mb-10 text-lg text-gray-400">
-              Book a free 20-minute demo and see exactly how Ringloop works for your clinic.
+              Book a free 20-minute demo and see exactly how RingLoop works for your clinic.
             </p>
             <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
               <Link

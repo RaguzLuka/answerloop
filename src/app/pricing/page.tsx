@@ -3,7 +3,7 @@ import Footer from "@/components/Footer";
 import Link from "next/link";
 
 export const metadata = {
-  title: "Pricing — Ringloop",
+  title: "Pricing — RingLoop",
   description: "Simple, transparent pricing. €200/month per clinic location. Everything included.",
 };
 
@@ -30,7 +30,7 @@ export default function Pricing() {
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_0%,_rgba(37,99,235,0.25),_transparent)] pointer-events-none" />
 
             <div className="relative">
-              <p className="mb-1.5 text-center text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">Ringloop</p>
+              <p className="mb-1.5 text-center text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">RingLoop</p>
               <p className="text-center text-8xl font-bold tracking-tight">€200</p>
               <p className="mt-1 text-center text-gray-400">/month per clinic location</p>
               <p className="mt-2 mb-10 text-center text-sm text-gray-600">No setup fee · No contract · Cancel anytime</p>
@@ -71,8 +71,8 @@ export default function Pricing() {
         {/* ROI */}
         <section className="mx-auto max-w-5xl px-6 pb-24">
           <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.12em] text-gray-400">ROI Calculator</p>
-          <h2 className="mb-4 text-center text-4xl font-bold tracking-tight">Ringloop pays for itself fast.</h2>
-          <p className="mb-14 text-center text-gray-500">Here&apos;s what a typical clinic earns back with Ringloop.</p>
+          <h2 className="mb-4 text-center text-4xl font-bold tracking-tight">RingLoop pays for itself fast.</h2>
+          <p className="mb-14 text-center text-gray-500">Here&apos;s what a typical clinic earns back with RingLoop.</p>
 
           <div className="grid gap-5 md:grid-cols-3">
             {[
@@ -94,7 +94,7 @@ export default function Pricing() {
                     { label: "Missed calls/month", value: row.missed },
                     { label: "Patients recovered", value: row.recovered },
                     { label: "Revenue recovered",  value: row.value },
-                    { label: "Ringloop cost",       value: row.cost },
+                    { label: "RingLoop cost",       value: row.cost },
                     { label: "Net profit",          value: row.profit },
                     { label: "ROI",                 value: row.roi },
                   ].map((item) => (
