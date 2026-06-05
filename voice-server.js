@@ -68,13 +68,12 @@ wss.on("connection", (twilioWs, req) => {
   let fullTranscript = "";
   let bookingHandled = false;
 
-  // Connect to OpenAI Realtime API
+  // Connect to OpenAI Realtime API (GA endpoint)
   openaiWs = new WebSocket(
-    "wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17",
+    "wss://api.openai.com/v1/realtime?model=gpt-realtime",
     {
       headers: {
         Authorization: `Bearer ${OPENAI_API_KEY}`,
-        "OpenAI-Beta": "realtime=v1",
       },
     }
   );
