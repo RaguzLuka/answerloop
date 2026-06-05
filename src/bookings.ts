@@ -33,8 +33,10 @@ export async function getBookingsDue24hReminder(): Promise<Booking[]> {
     if (b.reminderSent) return false;
     const appointmentTime = new Date(b.time).getTime();
     const diff = appointmentTime - now;
-    // Between 23h and 25h away
-    return diff >= 23 * 60 * 60 * 1000 && diff <= 25 * 60 * 60 * 1000;
+    // The cron runs once a day (Hobby plan limit), so catch every
+    // appointment happening within the next 12–48h. The reminderSent
+    // flag prevents the same booking being reminded twice.
+    return diff >= 12 * 60 * 60 * 1000 && diff <= 48 * 60 * 60 * 1000;
   });
 }
 
