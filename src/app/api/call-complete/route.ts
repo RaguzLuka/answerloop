@@ -11,16 +11,8 @@ export async function POST(request: Request) {
 
   const clinic = getClinic(to);
 
-  // Only send WhatsApp if the call was not answered by the AI (e.g., caller hung up before speaking)
-  // The AI voice agent handles its own messaging — this is a fallback for truly missed calls.
-  if (callStatus === "no-answer" || callStatus === "busy" || callStatus === "failed") {
-    if (from && from !== "anonymous") {
-      await sendWhatsApp(
-        from,
-        `Hi! Sorry we missed your call. This is ${clinic.name} — feel free to message us here or call back and our AI assistant will book you right in. 😊`
-      );
-    }
-  }
+  // WhatsApp is only used for 24h appointment reminders (see /api/cron/reminders).
+  // No automatic messages are sent on call completion.
 
   return new Response("OK");
 }

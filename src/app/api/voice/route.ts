@@ -35,6 +35,7 @@ async function handleCall(request: Request) {
   <Gather input="speech" action="${gatherUrl}" method="POST" speechTimeout="3" language="hr-HR" timeout="10">
   </Gather>
   <Say voice="Polly.Joanna">I didn't catch that. Please call back and we'll be happy to help. Goodbye!</Say>
+  <Hangup/>
 </Response>`,
     { headers: { "Content-Type": "text/xml" } }
   );
