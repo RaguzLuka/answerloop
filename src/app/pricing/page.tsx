@@ -33,15 +33,15 @@ export default function Pricing() {
 
               <div className="mb-10 grid gap-3 sm:grid-cols-2">
                 {[
-                  "Dedicated WhatsApp number",
-                  "Unlimited AI conversations",
-                  "WhatsApp & SMS follow-ups",
-                  "Automatic appointment booking",
+                  "AI voice receptionist (24/7)",
+                  "Answers every forwarded call",
+                  "Books appointments by voice",
+                  "WhatsApp reminder 24h before",
                   "Collects name, treatment & doctor",
-                  "Patient lead summary per booking",
+                  "Patient summary per booking",
                   "Multi-language AI support",
                   "Custom AI persona for your clinic",
-                  "Missed call trigger (24/7)",
+                  "WhatsApp support contact option",
                   "Google Calendar integration",
                   "Priority email & WhatsApp support",
                   "Full setup & onboarding included",

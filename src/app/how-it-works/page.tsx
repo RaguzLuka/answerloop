@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export const metadata = {
   title: "How It Works — RingLoop",
-  description: "Learn exactly how RingLoop follows up missed calls and books appointments automatically.",
+  description: "Learn exactly how RingLoop answers calls by voice, books appointments, and sends WhatsApp reminders.",
 };
 
 export default function HowItWorks() {
@@ -15,7 +15,7 @@ export default function HowItWorks() {
           <div className="relative mx-auto max-w-3xl">
             <p className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-blue-600">How it works</p>
             <h1 className="mb-5 text-5xl font-bold leading-[1.1] tracking-tight md:text-6xl">Simple setup.<br />Powerful results.</h1>
-            <p className="text-lg text-gray-500 leading-relaxed">From missed call to booked appointment — here&apos;s exactly what happens.</p>
+            <p className="text-lg text-gray-500 leading-relaxed">From forwarded call to confirmed appointment — here&apos;s exactly what happens.</p>
           </div>
         </section>
 
@@ -30,54 +30,44 @@ export default function HowItWorks() {
               preview: (
                 <div className="rounded-2xl bg-white p-5 shadow-sm border border-gray-100 text-sm space-y-2">
                   <p className="text-gray-700">📞 Incoming call to <strong>Zagreb Dental Clinic</strong></p>
-                  <p className="text-red-500 font-medium">✕ No answer — forwarded to RingLoop</p>
+                  <p className="text-red-500 font-medium">✕ No answer — forwarding to RingLoop AI</p>
                 </div>
               ),
             },
             {
               step: "02",
-              title: "RingLoop detects the missed call",
-              desc: "The moment the call comes in, RingLoop identifies the patient's phone number and which clinic the call was for.",
-              detail: "Each clinic has a dedicated RingLoop number. The system knows which clinic to represent and uses that clinic's name, treatments, and AI persona in all communications.",
+              title: "AI picks up the call within seconds",
+              desc: "RingLoop answers immediately — no hold music, no voicemail. The AI greets the patient using your clinic's name and begins the booking conversation naturally.",
+              detail: "The AI voice is warm and professional. It introduces itself as your clinic's receptionist — patients interact with it like they would a real person. The conversation is powered by advanced AI that understands natural speech in any language.",
               preview: (
-                <div className="rounded-2xl bg-white p-5 shadow-sm border border-gray-100 text-sm space-y-1.5">
-                  <p className="text-gray-500">Caller: <span className="font-semibold text-gray-900">+385 99 436 3110</span></p>
-                  <p className="text-gray-500">Clinic: <span className="font-semibold text-gray-900">Zagreb Dental Clinic</span></p>
-                  <p className="text-green-600 font-medium mt-2">✓ Identified — sending follow-up</p>
+                <div className="space-y-2">
+                  <div className="rounded-2xl bg-slate-800 px-4 py-3 text-sm text-white max-w-[90%]">
+                    <p className="text-xs text-slate-400 mb-1">🤖 AI Receptionist</p>
+                    &ldquo;Hello! Thank you for calling Zagreb Dental. I&apos;m here to help you book an appointment. What treatment are you looking for?&rdquo;
+                  </div>
+                  <p className="text-xs text-gray-400 pl-1">Answered in 4 seconds ✓</p>
                 </div>
               ),
             },
             {
               step: "03",
-              title: "AI sends a WhatsApp message in 30 seconds",
-              desc: "The patient receives a friendly WhatsApp message from your clinic's AI within 30 seconds of the missed call.",
-              detail: "The message is sent from a dedicated WhatsApp Business number registered under your clinic's name. The patient sees your clinic name — not RingLoop.",
-              preview: (
-                <div className="space-y-2">
-                  <div className="rounded-2xl bg-white p-4 text-sm shadow-sm border border-gray-100 text-gray-800 max-w-[85%]">
-                    Hi! Sorry we missed your call. This is Zagreb Dental — how can we help? 😊
-                  </div>
-                  <p className="text-xs text-gray-400 pl-1">Sent in 28 seconds ✓</p>
-                </div>
-              ),
-            },
-            {
-              step: "04",
               title: "AI has a full booking conversation",
-              desc: "The AI asks what treatment the patient needs, collects their name, asks about doctor preference, and finds a suitable time.",
-              detail: "The AI is powered by Claude — one of the most advanced AI models available. It understands natural language, handles follow-up questions, and responds in whatever language the patient writes in.",
+              desc: "The AI collects everything needed to book the appointment: what treatment, the patient's name, their preferred date and time, and whether they have a preferred doctor.",
+              detail: "The conversation is completely natural — the AI handles follow-up questions, understands different phrasings, and responds in the same language the patient speaks (Croatian, English, German, and more).",
               preview: (
                 <div className="space-y-2">
                   {[
                     { from: "ai",     text: "What treatment are you looking for?" },
-                    { from: "client", text: "Dental checkup" },
-                    { from: "ai",     text: "Your name?" },
-                    { from: "client", text: "Marko Horvat" },
-                    { from: "ai",     text: "Preferred doctor?" },
-                    { from: "client", text: "Any is fine" },
+                    { from: "client", text: "Dental checkup please." },
+                    { from: "ai",     text: "Of course! May I have your full name?" },
+                    { from: "client", text: "Marko Horvat." },
+                    { from: "ai",     text: "What date and time works for you?" },
+                    { from: "client", text: "Tomorrow at 10am." },
+                    { from: "ai",     text: "Any preferred doctor, or is any doctor fine?" },
+                    { from: "client", text: "Any is fine." },
                   ].map((msg, i) => (
                     <div key={i} className={`flex ${msg.from === "client" ? "justify-end" : ""}`}>
-                      <div className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-xs ${msg.from === "ai" ? "bg-white shadow-sm border border-gray-100 text-gray-800" : "bg-[#DCF8C6] text-gray-800"}`}>
+                      <div className={`max-w-[80%] rounded-2xl px-3.5 py-2 text-xs ${msg.from === "ai" ? "bg-white shadow-sm border border-gray-100 text-gray-800" : "bg-blue-600 text-white"}`}>
                         {msg.text}
                       </div>
                     </div>
@@ -86,25 +76,45 @@ export default function HowItWorks() {
               ),
             },
             {
-              step: "05",
-              title: "Appointment confirmed & calendar updated",
-              desc: "Once a time is agreed, the AI confirms the booking and your calendar is updated automatically.",
-              detail: "Bookings appear in your Google Calendar. Your team also receives a clear summary: patient name, treatment requested, doctor preference, and confirmed time.",
+              step: "04",
+              title: "Appointment confirmed by voice",
+              desc: "Once all details are collected, the AI confirms the booking clearly, tells the patient what to expect, and lets them know they can call back or WhatsApp if they need anything.",
+              detail: "Your team receives a full patient summary instantly — name, treatment, doctor preference, and confirmed time. Bookings can also be pushed to Google Calendar automatically.",
               preview: (
                 <div className="space-y-3">
-                  <div className="rounded-2xl bg-[#DCF8C6] p-3.5 text-sm text-gray-800 max-w-[90%] ml-auto">
-                    ✅ Booked! Dental checkup tomorrow at 10:00. See you then, Marko!
+                  <div className="rounded-2xl bg-slate-800 px-4 py-3 text-sm text-white max-w-[95%]">
+                    <p className="text-xs text-slate-400 mb-1">🤖 AI Receptionist</p>
+                    &ldquo;✅ Booked! Dental checkup tomorrow at 10:00. You&apos;ll get a WhatsApp reminder. If you need anything, call us back or message on WhatsApp. See you then, Marko!&rdquo;
                   </div>
                   <div className="rounded-2xl bg-green-50 border border-green-200 p-4 text-xs">
-                    <p className="font-semibold text-green-700 mb-1.5">📅 Calendar updated</p>
+                    <p className="font-semibold text-green-700 mb-1.5">📅 Booking logged</p>
                     <p className="text-green-600">Marko Horvat — Dental checkup</p>
-                    <p className="text-green-600">Tomorrow 10:00–10:30</p>
+                    <p className="text-green-600">Tomorrow 10:00 · Any doctor</p>
                   </div>
                 </div>
               ),
             },
+            {
+              step: "05",
+              title: "WhatsApp reminder sent 24 hours before",
+              desc: "The patient automatically receives a WhatsApp message 24 hours before their appointment with all the details. They can reply to reschedule or ask questions.",
+              detail: "The reminder is sent from a WhatsApp Business number registered under your clinic's name. Patients see your clinic — not RingLoop. It's a professional, automatic touchpoint that reduces no-shows.",
+              preview: (
+                <div className="space-y-2">
+                  <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4 text-sm text-gray-800 max-w-[90%]">
+                    <p className="text-xs text-gray-400 mb-2">Zagreb Dental Clinic · WhatsApp</p>
+                    Hi Marko! 👋 Reminder from Zagreb Dental.<br /><br />
+                    Your appointment is tomorrow:<br />
+                    📋 Dental checkup<br />
+                    🕐 10:00<br /><br />
+                    Need to reschedule? Just reply here. See you tomorrow!
+                  </div>
+                  <p className="text-xs text-gray-400 pl-1">Sent automatically 24h before ✓</p>
+                </div>
+              ),
+            },
           ].map((s, i) => (
-            <div key={s.step} className={`grid items-center gap-12 md:grid-cols-2 ${i % 2 === 1 ? "" : ""}`}>
+            <div key={s.step} className="grid items-center gap-12 md:grid-cols-2">
               <div className={i % 2 === 1 ? "md:order-2" : ""}>
                 <p className="mb-2 text-7xl font-bold text-blue-100 leading-none">{s.step}</p>
                 <h2 className="mb-4 text-2xl font-bold tracking-tight">{s.title}</h2>
@@ -131,10 +141,10 @@ export default function HowItWorks() {
 
             <div className="grid gap-4 md:grid-cols-4">
               {[
-                { step: "1", title: "Sign up",           desc: "Book a demo and we set up your account." },
-                { step: "2", title: "We configure AI",   desc: "We set up your clinic name, treatments, and AI persona." },
-                { step: "3", title: "You forward calls", desc: "Set up call forwarding on your phone. Takes 2 minutes." },
-                { step: "4", title: "You're live",       desc: "RingLoop starts catching missed calls immediately." },
+                { step: "1", title: "Sign up",              desc: "Book a demo and we set up your account." },
+                { step: "2", title: "We configure AI",      desc: "We set up your clinic name, treatments, and AI voice persona." },
+                { step: "3", title: "You forward calls",    desc: "Set up call forwarding on your phone. Takes 2 minutes." },
+                { step: "4", title: "You're live",          desc: "RingLoop starts answering missed calls immediately." },
               ].map((s) => (
                 <div key={s.step} className="rounded-2xl border border-gray-100 bg-white p-6 text-center shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                   <div className="mx-auto mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white font-bold shadow-sm shadow-blue-200">{s.step}</div>
@@ -151,8 +161,8 @@ export default function HowItWorks() {
           <div className="dot-grid absolute inset-0 pointer-events-none" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_60%_at_50%_100%,_rgba(37,99,235,0.3),_transparent)] pointer-events-none" />
           <div className="relative mx-auto max-w-2xl px-6">
-            <h2 className="mb-5 text-4xl font-bold tracking-tight">Ready to see it in action?</h2>
-            <p className="mb-8 text-gray-400">Book a free demo and we&apos;ll show you RingLoop working for your clinic.</p>
+            <h2 className="mb-5 text-4xl font-bold tracking-tight">Hear it answer a live call.</h2>
+            <p className="mb-8 text-gray-400">Book a free demo and we&apos;ll call your number so you can hear RingLoop in action.</p>
             <Link
               href="/contact"
               className="group inline-flex items-center gap-2 rounded-full bg-blue-600 px-8 py-4 font-semibold text-white shadow-lg shadow-blue-900/40 hover:bg-blue-500 transition-all duration-200"
