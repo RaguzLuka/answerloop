@@ -187,18 +187,18 @@ export default function Home() {
         <div className="divide-dark-to-light" />
 
         {/* ── COMPARISON ───────────────────────────────────── */}
-        <section className="mx-auto max-w-5xl px-6 pb-32">
-          <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Comparison</p>
-          <h2 className="mb-4 text-center text-4xl font-bold tracking-tight">Why RingLoop?</h2>
-          <p className="mb-14 text-center text-slate-500">See how RingLoop compares to traditional solutions.</p>
-          <div className="overflow-hidden rounded-2xl border border-slate-100 shadow-sm">
+        <section className="mx-auto max-w-5xl px-6 pt-20 pb-32">
+          <p className="mb-4 text-center text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Comparison</p>
+          <h2 className="mb-5 text-center text-4xl font-bold tracking-tight">Why RingLoop?</h2>
+          <p className="mb-16 text-center text-slate-500 text-[1.05rem]">See how RingLoop compares to traditional solutions.</p>
+          <div className="overflow-hidden rounded-2xl border border-slate-100 shadow-sm shadow-slate-100">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50/80">
-                  <th className="p-5 text-left text-sm font-semibold text-slate-400">Feature</th>
-                  <th className="p-5 text-center text-sm font-bold text-blue-600 bg-blue-50/60">RingLoop</th>
-                  <th className="p-5 text-center text-sm font-semibold text-slate-400">Receptionist</th>
-                  <th className="p-5 text-center text-sm font-semibold text-slate-400">Voicemail</th>
+                  <th className="px-6 py-5 text-left text-sm font-semibold text-slate-400">Feature</th>
+                  <th className="px-6 py-5 text-center text-sm font-bold text-blue-600 bg-blue-50/60">RingLoop</th>
+                  <th className="px-6 py-5 text-center text-sm font-semibold text-slate-400">Receptionist</th>
+                  <th className="px-6 py-5 text-center text-sm font-semibold text-slate-400">Voicemail</th>
                 </tr>
               </thead>
               <tbody>
@@ -211,15 +211,15 @@ export default function Home() {
                   { feature: "No salary or sick days",           rl: true,   rec: false, vm: true  },
                   { feature: "Monthly cost",                     rl: "€200", rec: "€1,500+", vm: "€0" },
                 ].map((row, i) => (
-                  <tr key={row.feature} className={`transition-colors hover:bg-blue-50/20 ${i % 2 === 0 ? "bg-white" : "bg-slate-50/40"}`}>
-                    <td className="p-5 text-sm font-medium text-slate-700">{row.feature}</td>
-                    <td className="p-5 text-center bg-blue-50/30">
+                  <tr key={row.feature} className={`transition-colors duration-200 hover:bg-blue-50/20 ${i % 2 === 0 ? "bg-white" : "bg-slate-50/40"}`}>
+                    <td className="px-6 py-5 text-sm font-medium text-slate-700">{row.feature}</td>
+                    <td className="px-6 py-5 text-center bg-blue-50/30">
                       {typeof row.rl === "boolean" ? <Check ok={row.rl} /> : <span className="font-bold text-blue-600 text-sm">{row.rl}</span>}
                     </td>
-                    <td className="p-5 text-center">
+                    <td className="px-6 py-5 text-center">
                       {typeof row.rec === "boolean" ? <Check ok={row.rec} /> : <span className="text-sm text-slate-500">{row.rec}</span>}
                     </td>
-                    <td className="p-5 text-center">
+                    <td className="px-6 py-5 text-center">
                       {typeof row.vm === "boolean" ? <Check ok={row.vm} /> : <span className="text-sm text-slate-500">{row.vm}</span>}
                     </td>
                   </tr>
@@ -265,7 +265,7 @@ export default function Home() {
         <div className="divide-dark-to-light" />
 
         {/* ── INDUSTRIES ───────────────────────────────────── */}
-        <section id="industries" className="mx-auto max-w-5xl px-6 pb-32">
+        <section id="industries" className="mx-auto max-w-5xl px-6 pt-20 pb-32">
           <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Industries</p>
           <h2 className="mb-4 text-center text-4xl font-bold tracking-tight">Built for every medical institute.</h2>
           <p className="mb-14 text-center text-slate-500">If your clinic takes appointments, RingLoop works for you.</p>
