@@ -84,7 +84,7 @@ async function handleGather(request: Request) {
       `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Say voice="Polly.Joanna">Sorry, I didn't catch that. Could you repeat that please?</Say>
-  <Gather input="speech" action="${gatherUrl}" method="POST" speechTimeout="3" language="en-US" timeout="10">
+  <Gather input="speech" action="${gatherUrl}" method="POST" speechTimeout="3" language="hr-HR" timeout="10">
   </Gather>
 </Response>`,
       { headers: { "Content-Type": "text/xml" } }
@@ -152,7 +152,7 @@ async function handleGather(request: Request) {
     `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Say voice="Polly.Joanna">${escapeXml(spokenReply)}</Say>
-  <Gather input="speech" action="${gatherUrl}" method="POST" speechTimeout="3" language="en-US" timeout="10">
+  <Gather input="speech" action="${gatherUrl}" method="POST" speechTimeout="3" language="hr-HR" timeout="10">
   </Gather>
   <Say voice="Polly.Joanna">I didn't catch that. If you need help, please call back or send us a message on WhatsApp. Goodbye!</Say>
 </Response>`,

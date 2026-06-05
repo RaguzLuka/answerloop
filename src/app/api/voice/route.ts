@@ -32,7 +32,7 @@ async function handleCall(request: Request) {
   <Say voice="Polly.Joanna" language="en-US">
     Hello! Thank you for calling ${clinic.name}. I'm an AI assistant and I'm here to help you book an appointment. What treatment are you looking for?
   </Say>
-  <Gather input="speech" action="${gatherUrl}" method="POST" speechTimeout="3" language="en-US" timeout="10">
+  <Gather input="speech" action="${gatherUrl}" method="POST" speechTimeout="3" language="hr-HR" timeout="10">
   </Gather>
   <Say voice="Polly.Joanna">I didn't catch that. Please call back and we'll be happy to help. Goodbye!</Say>
 </Response>`,
