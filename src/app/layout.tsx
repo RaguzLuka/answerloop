@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Nav from "@/components/Nav";
+import Footer from "@/components/Footer";
 import CookieBanner from "@/components/CookieBanner";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import BackToTop from "@/components/BackToTop";
@@ -19,8 +21,7 @@ export const metadata: Metadata = {
   keywords: ["missed call recovery", "AI receptionist", "medical clinic", "WhatsApp booking", "appointment booking", "dental clinic AI"],
   openGraph: {
     title: "RingLoop — AI missed call recovery for medical clinics",
-    description:
-      "Your clinic misses calls. RingLoop books them. An AI receptionist that follows up every missed call via WhatsApp, 24/7.",
+    description: "Your clinic misses calls. RingLoop books them. An AI receptionist that follows up every missed call via WhatsApp, 24/7.",
     url: "https://ringloop.net",
     siteName: "RingLoop",
     type: "website",
@@ -29,20 +30,19 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "RingLoop — AI missed call recovery for medical clinics",
-    description:
-      "Your clinic misses calls. RingLoop books them. An AI receptionist that follows up every missed call via WhatsApp, 24/7.",
+    description: "Your clinic misses calls. RingLoop books them. An AI receptionist that follows up every missed call via WhatsApp, 24/7.",
   },
-  robots: {
-    index: true,
-    follow: true,
-  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
+        {/* Nav lives here — outside template.tsx so fixed positioning never breaks */}
+        <Nav />
         {children}
+        <Footer />
         <WhatsAppButton />
         <BackToTop />
         <CookieBanner />

@@ -1,5 +1,3 @@
-import Nav from "@/components/Nav";
-import Footer from "@/components/Footer";
 import LeadForm from "@/components/LeadForm";
 
 export const metadata = {
@@ -9,8 +7,6 @@ export const metadata = {
 
 export default function Contact() {
   return (
-    <>
-      <Nav />
       <main className="pt-16">
 
         {/* Hero */}
@@ -105,7 +101,5 @@ export default function Contact() {
         </section>
 
       </main>
-      <Footer />
-    </>
   );
 }

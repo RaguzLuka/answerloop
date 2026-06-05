@@ -1,5 +1,3 @@
-import Nav from "@/components/Nav";
-import Footer from "@/components/Footer";
 import Link from "next/link";
 
 export const metadata = {
@@ -9,8 +7,6 @@ export const metadata = {
 
 export default function HowItWorks() {
   return (
-    <>
-      <Nav />
       <main className="pt-16">
 
         {/* Hero */}
@@ -168,7 +164,5 @@ export default function HowItWorks() {
         </section>
 
       </main>
-      <Footer />
-    </>
   );
 }

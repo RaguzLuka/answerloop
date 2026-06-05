@@ -1,5 +1,3 @@
-import Nav from "@/components/Nav";
-import Footer from "@/components/Footer";
 import Link from "next/link";
 
 export const metadata = {
@@ -9,8 +7,6 @@ export const metadata = {
 
 export default function Pricing() {
   return (
-    <>
-      <Nav />
       <main className="pt-16">
 
         {/* Hero */}
@@ -150,7 +146,5 @@ export default function Pricing() {
         </section>
 
       </main>
-      <Footer />
-    </>
   );
 }

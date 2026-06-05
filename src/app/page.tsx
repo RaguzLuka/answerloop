@@ -1,11 +1,7 @@
-import Nav from "@/components/Nav";
-import Footer from "@/components/Footer";
 import Link from "next/link";
 
 export default function Home() {
   return (
-    <>
-      <Nav />
       <main className="overflow-x-hidden bg-white text-slate-900 pt-16">
 
         {/* ── HERO ─────────────────────────────────────────── */}
@@ -392,8 +388,6 @@ export default function Home() {
         </section>
 
       </main>
-      <Footer />
-    </>
   );
 }
 

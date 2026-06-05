@@ -1,5 +1,3 @@
-import Nav from "@/components/Nav";
-import Footer from "@/components/Footer";
 
 export const metadata = {
   title: "Privacy Policy — RingLoop",
@@ -8,8 +6,6 @@ export const metadata = {
 
 export default function Privacy() {
   return (
-    <>
-      <Nav />
       <main className="pt-16">
         <section className="relative overflow-hidden px-6 py-24 text-center">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-5%,_#dbeafe,_transparent)]" />
@@ -126,8 +122,6 @@ export default function Privacy() {
           </div>
         </section>
       </main>
-      <Footer />
-    </>
   );
 }
 
