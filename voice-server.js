@@ -184,6 +184,7 @@ wss.on("connection", (twilioWs, req) => {
         openaiWs.send(JSON.stringify({
           type: "response.create",
           response: {
+            output_modalities: ["audio"],
             instructions: `Greet the caller warmly in Croatian using the exact clinic name "${clinicName}". Then ask in Croatian what treatment they are looking for. Keep it short — one or two sentences.`,
           },
         }));
