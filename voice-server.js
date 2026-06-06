@@ -102,23 +102,25 @@ wss.on("connection", (twilioWs, req) => {
       },
     }));
 
-    // Trigger the initial greeting
+    // Trigger the initial greeting (GA API schema)
     openaiWs.send(JSON.stringify({
-      type: "conversation.item.create",
-      item: {
-        type: "message",
-        role: "user",
-        content: [{ type: "input_text", text: "The call just connected. Please greet the caller now." }],
+      type: "response.create",
+      response: {
+        instructions: "The call just connected. Greet the caller warmly using the clinic name and ask what treatment they are looking for. Respond in the language the caller is likely to speak — default to Croatian since this is a Croatian clinic.",
       },
     }));
-    openaiWs.send(JSON.stringify({ type: "response.create" }));
   });
 
   openaiWs.on("message", (data) => {
     const msg = JSON.parse(data.toString());
 
-    // Stream AI audio back to Twilio
-    if (msg.type === "response.audio.delta" && streamSid) {
+    // Log non-audio events for debugging
+    if (msg.type !== "response.output_audio.delta" && msg.type !== "response.audio.delta") {
+      console.log(`[OPENAI EVT] ${msg.type}`);
+    }
+
+    // Stream AI audio back to Twilio (GA event name)
+    if ((msg.type === "response.output_audio.delta" || msg.type === "response.audio.delta") && streamSid) {
       twilioWs.send(JSON.stringify({
         event: "media",
         streamSid,
@@ -126,21 +128,22 @@ wss.on("connection", (twilioWs, req) => {
       }));
     }
 
-    // Accumulate AI text to detect booking confirmation
-    if (msg.type === "response.text.delta") {
+    // Accumulate AI transcript to detect booking confirmation
+    if (msg.type === "response.output_audio_transcript.delta" || msg.type === "response.audio_transcript.delta") {
       fullTranscript += msg.delta;
     }
 
-    if (msg.type === "response.text.done") {
-      console.log(`[AI] ${msg.text}`);
-      if (!bookingHandled && msg.text && msg.text.includes("BOOKING_CONFIRMED:")) {
+    if (msg.type === "response.done") {
+      console.log(`[AI TRANSCRIPT] ${fullTranscript}`);
+      if (!bookingHandled && fullTranscript.includes("BOOKING_CONFIRMED:")) {
         bookingHandled = true;
-        const line = msg.text.split("\n").find((l) => l.startsWith("BOOKING_CONFIRMED:"));
+        const line = fullTranscript.split("\n").find((l) => l.startsWith("BOOKING_CONFIRMED:"));
         if (line) {
           console.log(`[BOOKING] ${line}`);
           handleBooking(line, clinicName, callerPhone).catch(console.error);
         }
       }
+      fullTranscript = "";
     }
 
     if (msg.type === "error") {
