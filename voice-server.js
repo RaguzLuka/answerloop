@@ -109,13 +109,8 @@ wss.on("connection", (twilioWs, req) => {
       },
     }));
 
-    // Trigger the initial greeting (GA API schema)
-    openaiWs.send(JSON.stringify({
-      type: "response.create",
-      response: {
-        instructions: "The call just connected. Greet the caller warmly using the clinic name and ask what treatment they are looking for. Respond in the language the caller is likely to speak — default to Croatian since this is a Croatian clinic.",
-      },
-    }));
+    // Greeting is triggered AFTER we receive the Twilio stream.start event
+    // (which contains the clinic name). See twilioWs message handler.
   });
 
   openaiWs.on("message", (data) => {
@@ -176,13 +171,20 @@ wss.on("connection", (twilioWs, req) => {
       callerPhone = params.callerPhone ?? callerPhone;
       console.log(`[VOICE] Stream started | Clinic: ${clinicName} | Caller: ${callerPhone}`);
 
-      // Update OpenAI session with clinic-specific prompt once we have the params
+      // Update OpenAI session with clinic-specific prompt once we have the params,
+      // then trigger the greeting with the correct clinic name.
       if (openaiWs?.readyState === WebSocket.OPEN) {
         openaiWs.send(JSON.stringify({
           type: "session.update",
           session: {
             type: "realtime",
             instructions: buildSystemPrompt(clinicName, treatments, callerPhone),
+          },
+        }));
+        openaiWs.send(JSON.stringify({
+          type: "response.create",
+          response: {
+            instructions: `Greet the caller warmly in Croatian using the exact clinic name "${clinicName}". Then ask in Croatian what treatment they are looking for. Keep it short — one or two sentences.`,
           },
         }));
       }
