@@ -128,10 +128,6 @@ wss.on("connection", (twilioWs, req) => {
       console.log(`[OPENAI EVT] ${msg.type}`);
     }
 
-    // When user starts speaking, clear Twilio's audio buffer so AI stops mid-sentence
-    if (msg.type === "input_audio_buffer.speech_started" && streamSid) {
-      twilioWs.send(JSON.stringify({ event: "clear", streamSid }));
-    }
 
     // Stream AI audio back to Twilio (GA event name)
     if ((msg.type === "response.output_audio.delta" || msg.type === "response.audio.delta") && streamSid) {
