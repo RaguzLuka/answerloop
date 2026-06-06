@@ -91,7 +91,13 @@ wss.on("connection", (twilioWs, req) => {
         audio: {
           input: {
             format: { type: "audio/pcmu" },
-            turn_detection: { type: "server_vad", silence_duration_ms: 800, threshold: 0.5 },
+            turn_detection: {
+              type: "server_vad",
+              silence_duration_ms: 500,
+              threshold: 0.5,
+              prefix_padding_ms: 300,
+              create_response: true,
+            },
           },
           output: {
             format: { type: "audio/pcmu" },
