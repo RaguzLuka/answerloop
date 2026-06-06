@@ -97,6 +97,7 @@ wss.on("connection", (twilioWs, req) => {
               threshold: 0.5,
               prefix_padding_ms: 300,
               create_response: true,
+              interrupt_response: true,
             },
           },
           output: {
@@ -120,9 +121,16 @@ wss.on("connection", (twilioWs, req) => {
   openaiWs.on("message", (data) => {
     const msg = JSON.parse(data.toString());
 
-    // Log non-audio events for debugging
-    if (msg.type !== "response.output_audio.delta" && msg.type !== "response.audio.delta") {
+    // Log non-audio-delta events for debugging
+    if (msg.type !== "response.output_audio.delta" &&
+        msg.type !== "response.audio.delta" &&
+        msg.type !== "response.output_audio_transcript.delta") {
       console.log(`[OPENAI EVT] ${msg.type}`);
+    }
+
+    // When user starts speaking, clear Twilio's audio buffer so AI stops mid-sentence
+    if (msg.type === "input_audio_buffer.speech_started" && streamSid) {
+      twilioWs.send(JSON.stringify({ event: "clear", streamSid }));
     }
 
     // Stream AI audio back to Twilio (GA event name)
