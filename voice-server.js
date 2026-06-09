@@ -94,16 +94,17 @@ wss.on("connection", (twilioWs) => {
     openaiWs.send(JSON.stringify({
       type: "session.update",
       session: {
+        type: "realtime",
         modalities: ["audio", "text"],
-        voice: "nova",                      // nova handles Croatian and other languages well
-        input_audio_format: "g711_ulaw",    // Twilio μ-law format
+        voice: "nova",
+        input_audio_format: "g711_ulaw",
         output_audio_format: "g711_ulaw",
         input_audio_transcription: {
-          model: "whisper-1",               // enables user speech transcription logs
+          model: "whisper-1",
         },
         turn_detection: {
           type: "server_vad",
-          silence_duration_ms: 600,         // wait 600ms of silence before responding
+          silence_duration_ms: 600,
           threshold: 0.5,
           prefix_padding_ms: 300,
           create_response: true,
@@ -195,7 +196,6 @@ wss.on("connection", (twilioWs) => {
     openaiWs.send(JSON.stringify({
       type: "response.create",
       response: {
-        modalities: ["audio", "text"],
         instructions: `You are answering the phone at "${clinicName}". Greet the caller exactly like a real Croatian receptionist would. Say something like: "Dobar dan, hvala što ste nazvali ${clinicName}, kako vam mogu pomoći?" — natural, warm, professional. One sentence only. Use Croatian.`,
       },
     }));
