@@ -95,7 +95,6 @@ wss.on("connection", (twilioWs) => {
       type: "session.update",
       session: {
         type: "realtime",
-        modalities: ["audio", "text"],
         voice: "nova",
         input_audio_format: "g711_ulaw",
         output_audio_format: "g711_ulaw",
@@ -118,7 +117,7 @@ wss.on("connection", (twilioWs) => {
     const msg = JSON.parse(data.toString());
 
     // Log all non-audio events for debugging
-    if (msg.type !== "response.audio.delta") {
+    if (msg.type !== "response.audio.delta" && msg.type !== "response.output_audio.delta" && msg.type !== "response.output_audio_transcript.delta") {
       console.log(`[OPENAI EVT] ${msg.type}`);
     }
 
@@ -132,7 +131,7 @@ wss.on("connection", (twilioWs) => {
     }
 
     // Stream AI audio back to Twilio
-    if (msg.type === "response.audio.delta" && streamSid) {
+    if ((msg.type === "response.audio.delta" || msg.type === "response.output_audio.delta") && streamSid) {
       twilioWs.send(JSON.stringify({
         event: "media",
         streamSid,
@@ -141,7 +140,7 @@ wss.on("connection", (twilioWs) => {
     }
 
     // Accumulate AI transcript for the current response turn
-    if (msg.type === "response.audio_transcript.delta") {
+    if (msg.type === "response.audio_transcript.delta" || msg.type === "response.output_audio_transcript.delta") {
       currentTurnTranscript += msg.delta;
     }
 
