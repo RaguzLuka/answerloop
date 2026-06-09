@@ -95,7 +95,6 @@ wss.on("connection", (twilioWs) => {
       type: "session.update",
       session: {
         type: "realtime",
-        voice: "nova",
         input_audio_format: "g711_ulaw",
         output_audio_format: "g711_ulaw",
         input_audio_transcription: {
@@ -187,6 +186,7 @@ wss.on("connection", (twilioWs) => {
     openaiWs.send(JSON.stringify({
       type: "session.update",
       session: {
+        type: "realtime",
         instructions: buildSystemPrompt(clinicName, treatments, callerPhone),
       },
     }));
