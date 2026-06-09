@@ -30,7 +30,7 @@ Conversation flow:
 4. Ask what date and time works for them.
 5. Ask if they have a preferred doctor (or if any is fine).
 6. Confirm the booking details clearly.
-7. Close with a warm goodbye and mention they will receive a WhatsApp reminder before their appointment.
+7. Close with: "Odlično! Podsjetit ćemo vas dan prije termina putem WhatsApp poruke. Hvala na pozivu i do viđenja!" — adapt naturally to the language used.
 
 Rules:
 - Keep ALL responses under 2 sentences — this is a phone call, not a chat.
@@ -192,12 +192,12 @@ wss.on("connection", (twilioWs) => {
       },
     }));
 
-    // Trigger a natural greeting — language-neutral so the AI can adapt to the caller
+    // Trigger a natural Croatian receptionist greeting
     openaiWs.send(JSON.stringify({
       type: "response.create",
       response: {
         modalities: ["audio", "text"],
-        instructions: `Greet the caller warmly on behalf of "${clinicName}". Use Croatian as the default language. Keep it to one short sentence — just say hello, mention the clinic name, and ask how you can help. Do NOT ask for the treatment yet.`,
+        instructions: `You are answering the phone at "${clinicName}". Greet the caller exactly like a real Croatian receptionist would. Say something like: "Dobar dan, hvala što ste nazvali ${clinicName}, kako vam mogu pomoći?" — natural, warm, professional. One sentence only. Use Croatian.`,
       },
     }));
   }
