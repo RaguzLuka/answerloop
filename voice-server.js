@@ -15,29 +15,35 @@ const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
 const WHATSAPP_FROM = process.env.WHATSAPP_FROM ?? "whatsapp:+14155238886";
 const ADMIN_WHATSAPP = process.env.ADMIN_WHATSAPP_NUMBER;
 
+// Supported languages — extend as needed
+// The AI auto-detects the caller's language and responds in kind.
+const SUPPORTED_LANGUAGES = ["Croatian", "English", "German", "Italian", "Slovenian"];
+
 function buildSystemPrompt(clinicName, treatments, callerPhone) {
   return `You are an AI receptionist answering a live phone call for ${clinicName}.
 Your job is to book an appointment for the caller.
 
 Conversation flow:
-1. Greet the caller warmly using the clinic name.
+1. Greet the caller warmly using the clinic name. Use a short, natural greeting.
 2. Ask what treatment they are looking for.
 3. Ask for their full name.
 4. Ask what date and time works for them.
 5. Ask if they have a preferred doctor (or if any is fine).
-6. Confirm the booking clearly.
-7. Close with: "You will receive a WhatsApp reminder before your appointment. If you need anything, feel free to call back. Have a great day!"
+6. Confirm the booking details clearly.
+7. Close with a warm goodbye and mention they will receive a WhatsApp reminder before their appointment.
 
 Rules:
-- Keep ALL responses under 2 sentences — this is a phone call.
-- Be warm, natural, and professional.
+- Keep ALL responses under 2 sentences — this is a phone call, not a chat.
+- Be warm, natural, and professional — like a real receptionist.
 - Supported treatments: ${treatments}.
-- If asked about prices, say the team will follow up with details.
+- If asked about prices, say: "Our team will send you the details — let's first get you booked in."
 - Never make up availability — confirm whatever time the caller requests.
-- Respond in Croatian if the caller speaks Croatian, English otherwise.
-- When booking is fully confirmed (name + treatment + time + doctor collected), include this exact line in your response:
+- CRITICAL: Detect the caller's language from their very first words and respond in that same language for the entire conversation. Supported languages: ${SUPPORTED_LANGUAGES.join(", ")}. If the language is unclear, use Croatian.
+- Never mix languages mid-conversation.
+- When booking is fully confirmed (you have name + treatment + time + doctor), include this exact tag on its own line at the end of your response:
   BOOKING_CONFIRMED: name=<name> treatment=<treatment> doctor=<doctor> time=<time> phone=${callerPhone}
-- Never say BOOKING_CONFIRMED out loud — it is a silent system tag only.`;
+- NEVER say "BOOKING_CONFIRMED" out loud — it is a silent system tag only.
+- After confirming the booking, say goodbye and end the conversation naturally.`;
 }
 
 async function sendWhatsApp(to, message) {
@@ -57,7 +63,7 @@ async function sendWhatsApp(to, message) {
   console.log(`[WHATSAPP] Sent to ${to} | SID: ${data.sid} | Error: ${data.error_message ?? "none"}`);
 }
 
-wss.on("connection", (twilioWs, req) => {
+wss.on("connection", (twilioWs) => {
   console.log("[VOICE] New Twilio media stream connection");
 
   let openaiWs = null;
@@ -65,67 +71,68 @@ wss.on("connection", (twilioWs, req) => {
   let clinicName = "the clinic";
   let treatments = "general consultation";
   let callerPhone = "unknown";
-  let fullTranscript = "";
+  let currentTurnTranscript = "";
   let bookingHandled = false;
+  let sessionReady = false;
+  let pendingGreeting = false;
 
-  // Connect to OpenAI Realtime API (GA endpoint)
+  // Connect to OpenAI Realtime API
   openaiWs = new WebSocket(
-    "wss://api.openai.com/v1/realtime?model=gpt-realtime",
+    "wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17",
     {
       headers: {
         Authorization: `Bearer ${OPENAI_API_KEY}`,
+        "OpenAI-Beta": "realtime=v1",
       },
     }
   );
 
   openaiWs.on("open", () => {
     console.log("[OPENAI] Connected to Realtime API");
+    sessionReady = false;
 
-    // Configure session (GA Realtime API schema)
+    // Configure session with correct schema
     openaiWs.send(JSON.stringify({
       type: "session.update",
       session: {
-        type: "realtime",
-        model: "gpt-realtime",
-        output_modalities: ["audio"],
-        audio: {
-          input: {
-            format: { type: "audio/pcmu" },
-            turn_detection: {
-              type: "server_vad",
-              silence_duration_ms: 500,
-              threshold: 0.5,
-              prefix_padding_ms: 300,
-              create_response: true,
-              interrupt_response: true,
-            },
-          },
-          output: {
-            format: { type: "audio/pcmu" },
-            voice: "shimmer",
-          },
+        modalities: ["audio", "text"],
+        voice: "nova",                      // nova handles Croatian and other languages well
+        input_audio_format: "g711_ulaw",    // Twilio μ-law format
+        output_audio_format: "g711_ulaw",
+        input_audio_transcription: {
+          model: "whisper-1",               // enables user speech transcription logs
+        },
+        turn_detection: {
+          type: "server_vad",
+          silence_duration_ms: 600,         // wait 600ms of silence before responding
+          threshold: 0.5,
+          prefix_padding_ms: 300,
+          create_response: true,
         },
         instructions: buildSystemPrompt(clinicName, treatments, callerPhone),
       },
     }));
-
-    // Greeting is triggered AFTER we receive the Twilio stream.start event
-    // (which contains the clinic name). See twilioWs message handler.
   });
 
   openaiWs.on("message", (data) => {
     const msg = JSON.parse(data.toString());
 
-    // Log non-audio-delta events for debugging
-    if (msg.type !== "response.output_audio.delta" &&
-        msg.type !== "response.audio.delta" &&
-        msg.type !== "response.output_audio_transcript.delta") {
+    // Log all non-audio events for debugging
+    if (msg.type !== "response.audio.delta") {
       console.log(`[OPENAI EVT] ${msg.type}`);
     }
 
+    // Session ready — if stream already started, send the greeting now
+    if (msg.type === "session.created" || msg.type === "session.updated") {
+      sessionReady = true;
+      if (pendingGreeting) {
+        pendingGreeting = false;
+        triggerGreeting();
+      }
+    }
 
-    // Stream AI audio back to Twilio (GA event name)
-    if ((msg.type === "response.output_audio.delta" || msg.type === "response.audio.delta") && streamSid) {
+    // Stream AI audio back to Twilio
+    if (msg.type === "response.audio.delta" && streamSid) {
       twilioWs.send(JSON.stringify({
         event: "media",
         streamSid,
@@ -133,22 +140,35 @@ wss.on("connection", (twilioWs, req) => {
       }));
     }
 
-    // Accumulate AI transcript to detect booking confirmation
-    if (msg.type === "response.output_audio_transcript.delta" || msg.type === "response.audio_transcript.delta") {
-      fullTranscript += msg.delta;
+    // Accumulate AI transcript for the current response turn
+    if (msg.type === "response.audio_transcript.delta") {
+      currentTurnTranscript += msg.delta;
     }
 
+    // Also capture text output for booking detection
+    if (msg.type === "response.text.delta") {
+      currentTurnTranscript += msg.delta;
+    }
+
+    // Response turn complete — check for booking and reset transcript
     if (msg.type === "response.done") {
-      console.log(`[AI TRANSCRIPT] ${fullTranscript}`);
-      if (!bookingHandled && fullTranscript.includes("BOOKING_CONFIRMED:")) {
+      console.log(`[AI] ${currentTurnTranscript}`);
+
+      if (!bookingHandled && currentTurnTranscript.includes("BOOKING_CONFIRMED:")) {
         bookingHandled = true;
-        const line = fullTranscript.split("\n").find((l) => l.startsWith("BOOKING_CONFIRMED:"));
+        const line = currentTurnTranscript.split("\n").find((l) => l.trim().startsWith("BOOKING_CONFIRMED:"));
         if (line) {
-          console.log(`[BOOKING] ${line}`);
-          handleBooking(line, clinicName, callerPhone).catch(console.error);
+          console.log(`[BOOKING] ${line.trim()}`);
+          handleBooking(line.trim(), clinicName, callerPhone).catch(console.error);
         }
       }
-      fullTranscript = "";
+
+      currentTurnTranscript = ""; // reset after each turn
+    }
+
+    // Log user speech transcription
+    if (msg.type === "conversation.item.input_audio_transcription.completed") {
+      console.log(`[CALLER] ${msg.transcript}`);
     }
 
     if (msg.type === "error") {
@@ -156,8 +176,31 @@ wss.on("connection", (twilioWs, req) => {
     }
   });
 
-  openaiWs.on("close", () => console.log("[OPENAI] Disconnected"));
+  openaiWs.on("close", (code, reason) => {
+    console.log(`[OPENAI] Disconnected — code: ${code} reason: ${reason?.toString()}`);
+  });
   openaiWs.on("error", (err) => console.error("[OPENAI] Error:", err.message));
+
+  function triggerGreeting() {
+    if (!openaiWs || openaiWs.readyState !== WebSocket.OPEN) return;
+
+    // Update session with clinic-specific prompt
+    openaiWs.send(JSON.stringify({
+      type: "session.update",
+      session: {
+        instructions: buildSystemPrompt(clinicName, treatments, callerPhone),
+      },
+    }));
+
+    // Trigger a natural greeting — language-neutral so the AI can adapt to the caller
+    openaiWs.send(JSON.stringify({
+      type: "response.create",
+      response: {
+        modalities: ["audio", "text"],
+        instructions: `Greet the caller warmly on behalf of "${clinicName}". Use Croatian as the default language. Keep it to one short sentence — just say hello, mention the clinic name, and ask how you can help. Do NOT ask for the treatment yet.`,
+      },
+    }));
+  }
 
   // Handle messages from Twilio
   twilioWs.on("message", (data) => {
@@ -171,23 +214,11 @@ wss.on("connection", (twilioWs, req) => {
       callerPhone = params.callerPhone ?? callerPhone;
       console.log(`[VOICE] Stream started | Clinic: ${clinicName} | Caller: ${callerPhone}`);
 
-      // Update OpenAI session with clinic-specific prompt once we have the params,
-      // then trigger the greeting with the correct clinic name.
-      if (openaiWs?.readyState === WebSocket.OPEN) {
-        openaiWs.send(JSON.stringify({
-          type: "session.update",
-          session: {
-            type: "realtime",
-            instructions: buildSystemPrompt(clinicName, treatments, callerPhone),
-          },
-        }));
-        openaiWs.send(JSON.stringify({
-          type: "response.create",
-          response: {
-            output_modalities: ["audio"],
-            instructions: `Greet the caller warmly in Croatian using the exact clinic name "${clinicName}". Then ask in Croatian what treatment they are looking for. Keep it short — one or two sentences.`,
-          },
-        }));
+      if (sessionReady) {
+        triggerGreeting();
+      } else {
+        // Session not ready yet — flag so we greet once it is
+        pendingGreeting = true;
       }
     }
 
@@ -227,12 +258,17 @@ async function handleBooking(line, clinicName, callerPhone) {
   if (ADMIN_WHATSAPP) {
     await sendWhatsApp(
       ADMIN_WHATSAPP,
-      `📅 New booking at ${clinicName}!\nPatient: ${name}\nTreatment: ${treatment}\nDoctor: ${doctor}\nTime: ${time}\nPhone: ${callerPhone}`
+      `📅 New booking at ${clinicName}!\n` +
+      `Patient: ${name}\n` +
+      `Treatment: ${treatment}\n` +
+      `Doctor: ${doctor}\n` +
+      `Time: ${time}\n` +
+      `Phone: ${callerPhone}`
     );
   }
 }
 
-// Health check endpoint
+// Health check
 app.get("/", (req, res) => res.json({ status: "RingLoop voice server running" }));
 
 const PORT = process.env.PORT || 8080;
