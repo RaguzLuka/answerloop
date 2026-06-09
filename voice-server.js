@@ -2,6 +2,66 @@ const express = require("express");
 const http = require("http");
 const { WebSocketServer, WebSocket } = require("ws");
 
+// === µ-law ↔ PCM16 24kHz audio conversion helpers ===
+// Twilio uses g711 µ-law 8kHz; gpt-realtime-2 uses PCM16 LE 24kHz
+
+function ulawDecode(u) {
+  u = ~u & 0xFF;
+  const sign = u & 0x80;
+  const exp = (u >> 4) & 0x07;
+  const mantissa = u & 0x0F;
+  let sample = ((mantissa << 1) | 0x21) << exp;
+  sample -= 33;
+  return sign ? -sample : sample;
+}
+
+function ulawEncode(sample) {
+  const BIAS = 33;
+  const MAX = 32767;
+  const sign = sample < 0 ? 0x80 : 0;
+  if (sign) sample = -sample;
+  if (sample > MAX) sample = MAX;
+  sample += BIAS;
+  let exp = 7;
+  for (let m = 0x4000; (sample & m) === 0 && exp > 0; m >>= 1) exp--;
+  const mantissa = (sample >> (exp + 3)) & 0x0F;
+  return (~(sign | (exp << 4) | mantissa)) & 0xFF;
+}
+
+// base64 g711 µ-law (8kHz) → base64 PCM16 LE (24kHz)
+function ulawB64ToPcm24kB64(b64) {
+  const ulaw = Buffer.from(b64, "base64");
+  const pcm8k = Buffer.alloc(ulaw.length * 2);
+  for (let i = 0; i < ulaw.length; i++) {
+    pcm8k.writeInt16LE(ulawDecode(ulaw[i]), i * 2);
+  }
+  // Upsample 8kHz → 24kHz (repeat each sample 3×)
+  const pcm24k = Buffer.alloc(ulaw.length * 6);
+  for (let i = 0; i < ulaw.length; i++) {
+    const s = pcm8k.readInt16LE(i * 2);
+    pcm24k.writeInt16LE(s, (i * 3) * 2);
+    pcm24k.writeInt16LE(s, (i * 3 + 1) * 2);
+    pcm24k.writeInt16LE(s, (i * 3 + 2) * 2);
+  }
+  return pcm24k.toString("base64");
+}
+
+// base64 PCM16 LE (24kHz) → base64 g711 µ-law (8kHz)
+function pcm24kB64ToUlawB64(b64) {
+  const pcm24k = Buffer.from(b64, "base64");
+  const samples24k = pcm24k.length / 2;
+  const samples8k = Math.floor(samples24k / 3);
+  const ulaw = Buffer.alloc(samples8k);
+  for (let i = 0; i < samples8k; i++) {
+    // Average 3 samples to reduce aliasing
+    const s1 = pcm24k.readInt16LE((i * 3) * 2);
+    const s2 = pcm24k.readInt16LE((i * 3 + 1) * 2);
+    const s3 = pcm24k.readInt16LE((i * 3 + 2) * 2);
+    ulaw[i] = ulawEncode(Math.round((s1 + s2 + s3) / 3));
+  }
+  return ulaw.toString("base64");
+}
+
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -90,16 +150,11 @@ wss.on("connection", (twilioWs) => {
     console.log("[OPENAI] Connected to Realtime API");
     sessionReady = false;
 
-    // Configure session with correct schema
+    // Configure session — gpt-realtime-2 does not support format/voice/transcription params
     openaiWs.send(JSON.stringify({
       type: "session.update",
       session: {
         type: "realtime",
-        input_audio_format: "g711_ulaw",
-        output_audio_format: "g711_ulaw",
-        input_audio_transcription: {
-          model: "whisper-1",
-        },
         turn_detection: {
           type: "server_vad",
           silence_duration_ms: 600,
@@ -129,12 +184,13 @@ wss.on("connection", (twilioWs) => {
       }
     }
 
-    // Stream AI audio back to Twilio
-    if ((msg.type === "response.audio.delta" || msg.type === "response.output_audio.delta") && streamSid) {
+    // Stream AI audio back to Twilio (convert PCM16 24kHz → g711 µ-law 8kHz)
+    if ((msg.type === "response.audio.delta" || msg.type === "response.output_audio.delta") && streamSid && msg.delta) {
+      const ulawPayload = pcm24kB64ToUlawB64(msg.delta);
       twilioWs.send(JSON.stringify({
         event: "media",
         streamSid,
-        media: { payload: msg.delta },
+        media: { payload: ulawPayload },
       }));
     }
 
@@ -221,9 +277,11 @@ wss.on("connection", (twilioWs) => {
     }
 
     if (msg.event === "media" && openaiWs?.readyState === WebSocket.OPEN) {
+      // Convert g711 µ-law 8kHz → PCM16 24kHz before sending to OpenAI
+      const pcm24k = ulawB64ToPcm24kB64(msg.media.payload);
       openaiWs.send(JSON.stringify({
         type: "input_audio_buffer.append",
-        audio: msg.media.payload,
+        audio: pcm24k,
       }));
     }
 
