@@ -86,19 +86,20 @@ Your job is to book an appointment for the caller.
 Conversation flow — follow this order:
 1. Greet the caller warmly using the clinic name. Short and natural.
 2. Ask what treatment they are looking for.
-3. Ask if this is their first visit or if they are a returning patient.
-4. Ask for their full name.
-5. Ask what date and time works for them.
-6. Ask if they have a preferred doctor (or if any is fine).
-7. Ask about their contact number: "The number you're calling from is ${callerPhone} — should we register that one, or would you prefer a different contact number?"
+3. Ask for their full name.
+4. Ask what date and time works for them.
+5. Ask if they have a preferred doctor (or if any is fine).
+6. Ask about their contact number: "The number you're calling from is ${callerPhone} — should we register that one, or would you prefer a different contact number?"
    - If they say yes/that one/fine → use ${callerPhone}
    - If they give a different number → use that number instead
-8. Confirm all booking details clearly in one summary.
-9. Close with: "Odlično! Podsjetit ćemo vas dan prije termina. Hvala na pozivu i do viđenja!" — adapt naturally to the language used.
+7. Confirm all booking details clearly in one summary.
+8. Close with: "Odlično! Podsjetit ćemo vas dan prije termina. Hvala na pozivu i do viđenja!" — adapt naturally to the language used.
 
 Rules:
 - Keep ALL responses under 2 sentences — this is a phone call, not a chat.
 - Be warm, natural, and professional — like a real receptionist.
+- NEVER repeat a question you already asked. If the caller interrupted you, just continue naturally from where the conversation left off — don't re-ask what you were just saying.
+- Ask only ONE question at a time. Never combine two questions in one response.
 - Supported treatments: ${treatments}.
 - If asked about prices, say: "Our team will send you the details — let's first get you booked in."
 - Never make up availability — confirm whatever time the caller requests.
@@ -161,9 +162,9 @@ wss.on("connection", (twilioWs) => {
         type: "realtime",
         turn_detection: {
           type: "server_vad",
-          silence_duration_ms: 600,
-          threshold: 0.5,
-          prefix_padding_ms: 300,
+          silence_duration_ms: 800,
+          threshold: 0.6,
+          prefix_padding_ms: 200,
           create_response: true,
         },
         instructions: buildSystemPrompt(clinicName, treatments, callerPhone),
