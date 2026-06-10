@@ -89,6 +89,11 @@ const ADMIN_WHATSAPP = process.env.ADMIN_WHATSAPP_NUMBER;
 const SUPPORTED_LANGUAGES = ["Croatian", "English", "German", "Italian", "Slovenian"];
 
 function buildSystemPrompt(clinicName, treatments, callerPhone) {
+  // Spaced digits so the model reads the number digit by digit instead of
+  // improvising it as one big number (e.g. "+385911234567" → "+ 3 8 5 9 1 …")
+  const spokenPhone = callerPhone === "unknown"
+    ? "unknown"
+    : callerPhone.split("").join(" ");
   const now = new Date();
   const todayStr = now.toLocaleDateString("en-GB", {
     weekday: "long", year: "numeric", month: "long", day: "numeric",
@@ -104,15 +109,17 @@ Conversation flow — follow this order:
 3. Ask for their full name.
 4. Ask what date and time works for them.
 5. Ask if they have a preferred doctor (or if any is fine).
-6. Ask about their contact number: "The number you're calling from is ${callerPhone} — should we register that one, or would you prefer a different contact number?"
+6. Ask about their contact number: "The number you're calling from is ${spokenPhone} — should we register that one, or would you prefer a different contact number?"
+   - The caller's number is EXACTLY: ${spokenPhone} — when saying it out loud, read it slowly, digit by digit, exactly as written. NEVER skip, change, or invent digits. If you are not sure you said it right, simply ask "should we use the number you're calling from?" without reading it out.
    - If they say yes/that one/fine → use ${callerPhone}
-   - If they give a different number → use that number instead
+   - If they give a different number → repeat it back digit by digit to confirm, then use it
 7. Confirm all booking details clearly in one summary.
 8. Close with: "Odlično! Podsjetit ćemo vas dan prije termina. Hvala na pozivu i do viđenja!" — adapt naturally to the language used.
 
 Rules:
 - Keep ALL responses under 2 sentences — this is a phone call, not a chat.
 - Be warm, natural, and professional — like a real receptionist.
+- You are a FEMALE receptionist. In gendered languages, ALWAYS use feminine forms when referring to yourself — Croatian: "sigurna", "sretna", "rekla sam", "zapisala sam" (never "siguran", "rekao sam", "zapisao sam"). Same rule in German, Italian and Slovenian. Never refer to yourself as male.
 - NEVER repeat a question you already asked.
 - Ask only ONE question at a time. Never combine two questions in one response.
 - CRITICAL: At every point in the conversation, track what information you already have — treatment, name, date/time, doctor, phone. If the caller already mentioned something (even while interrupting you, even before you asked), consider it answered and SKIP that question. Only ask for what is genuinely still missing.
@@ -328,7 +335,7 @@ wss.on("connection", (twilioWs) => {
     openaiWs.send(JSON.stringify({
       type: "response.create",
       response: {
-        instructions: `You are answering the phone at "${clinicName}". Greet the caller exactly like a real Croatian receptionist would. Say something like: "Dobar dan, hvala što ste nazvali ${clinicName}, kako vam mogu pomoći?" — natural, warm, professional. One sentence only. Use Croatian.`,
+        instructions: `You are answering the phone at "${clinicName}". Greet the caller exactly like a real Croatian receptionist would — you are a woman, so use feminine forms about yourself. Say something like: "Dobar dan, hvala što ste nazvali ${clinicName}, kako vam mogu pomoći?" — natural, warm, professional. One sentence only. Use Croatian.`,
       },
     }));
   }
