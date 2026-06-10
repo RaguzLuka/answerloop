@@ -3,7 +3,10 @@ const http = require("http");
 const { WebSocketServer, WebSocket } = require("ws");
 
 // === µ-law ↔ PCM16 24kHz audio conversion helpers ===
-// Twilio uses g711 µ-law 8kHz; gpt-realtime-2 uses PCM16 LE 24kHz
+// Twilio uses g711 µ-law 8kHz. Preferred mode is NATIVE µ-law passthrough
+// (audio/pcmu) — OpenAI ingests phone audio directly, no lossy resampling.
+// These helpers remain only for the PCM fallback mode if the native format
+// is ever rejected by the API.
 
 function ulawDecode(u) {
   u = ~u & 0xFF;
@@ -86,8 +89,14 @@ const ADMIN_WHATSAPP = process.env.ADMIN_WHATSAPP_NUMBER;
 const SUPPORTED_LANGUAGES = ["Croatian", "English", "German", "Italian", "Slovenian"];
 
 function buildSystemPrompt(clinicName, treatments, callerPhone) {
+  const now = new Date();
+  const todayStr = now.toLocaleDateString("en-GB", {
+    weekday: "long", year: "numeric", month: "long", day: "numeric",
+    timeZone: "Europe/Zagreb",
+  });
   return `You are an AI receptionist answering a live phone call for ${clinicName}.
 Your job is to book an appointment for the caller.
+Today is ${todayStr} (Europe/Zagreb timezone). Use this to resolve relative dates like "tomorrow" or "next Tuesday" into concrete dates.
 
 Conversation flow — follow this order:
 1. Greet the caller warmly using the clinic name. Short and natural.
@@ -117,7 +126,8 @@ Rules:
 - When the caller gives their name, ALWAYS repeat it back to confirm: e.g. "Samo da potvrdim, vaše ime je [name]?" If they correct you, use the corrected version. Never guess silently on a name.
 - If you are unsure how a name is spelled, politely ask them to spell it letter by letter.
 - When booking is fully confirmed, include this exact tag on its own line at the end of your response:
-  BOOKING_CONFIRMED: name=<name> treatment=<treatment> doctor=<doctor> time=<time> returning=<yes/no> phone=<confirmed contact number>
+  BOOKING_CONFIRMED: name=<name> treatment=<treatment> doctor=<doctor> time=<YYYY-MM-DDTHH:MM> returning=<yes/no> phone=<confirmed contact number>
+- In the tag, time MUST be the resolved date and time in YYYY-MM-DDTHH:MM format (e.g. 2026-06-11T10:00) — never words like "tomorrow". Use underscores instead of spaces in name/treatment/doctor values (e.g. name=Marko_Horvat).
 - NEVER say "BOOKING_CONFIRMED" out loud — it is a silent system tag only.
 - After confirming the booking, say goodbye and end the conversation naturally.`;
 }
@@ -151,6 +161,54 @@ wss.on("connection", (twilioWs) => {
   let bookingHandled = false;
   let sessionReady = false;
   let pendingGreeting = false;
+  // "ulaw" = native G.711 passthrough (best recognition, no transcoding).
+  // Falls back to "pcm" (legacy transcode pipeline) if the API rejects it.
+  let audioMode = "ulaw";
+  let nativeConfirmed = false;
+
+  function sessionConfig() {
+    if (audioMode === "ulaw") {
+      return {
+        type: "realtime",
+        output_modalities: ["audio"],
+        audio: {
+          input: {
+            format: { type: "audio/pcmu" },
+            noise_reduction: { type: "near_field" },
+            // Async transcription of caller audio — used for logs/debugging.
+            transcription: {
+              model: "gpt-4o-mini-transcribe",
+              prompt: `Phone call to a Croatian medical clinic (${clinicName}). Likely languages: Croatian, English, German, Italian, Slovenian. Croatian names (Marko, Ivana, Krešimir, Đurđica) and letters č ć š ž đ are common.`,
+            },
+            // Semantic VAD: ends the turn when the caller has finished their
+            // thought, not after a fixed silence — fewer mid-sentence cutoffs.
+            turn_detection: {
+              type: "semantic_vad",
+              eagerness: "auto",
+              create_response: true,
+              interrupt_response: true,
+            },
+          },
+          output: {
+            format: { type: "audio/pcmu" },
+          },
+        },
+        instructions: buildSystemPrompt(clinicName, treatments, callerPhone),
+      };
+    }
+    // Legacy PCM fallback — exactly the configuration that shipped before.
+    return {
+      type: "realtime",
+      turn_detection: {
+        type: "server_vad",
+        silence_duration_ms: 800,
+        threshold: 0.6,
+        prefix_padding_ms: 200,
+        create_response: true,
+      },
+      instructions: buildSystemPrompt(clinicName, treatments, callerPhone),
+    };
+  }
 
   // Connect to OpenAI Realtime API
   openaiWs = new WebSocket(
@@ -165,22 +223,7 @@ wss.on("connection", (twilioWs) => {
   openaiWs.on("open", () => {
     console.log("[OPENAI] Connected to Realtime API");
     sessionReady = false;
-
-    // Configure session — gpt-realtime-2 does not support format/voice/transcription params
-    openaiWs.send(JSON.stringify({
-      type: "session.update",
-      session: {
-        type: "realtime",
-        turn_detection: {
-          type: "server_vad",
-          silence_duration_ms: 800,
-          threshold: 0.6,
-          prefix_padding_ms: 200,
-          create_response: true,
-        },
-        instructions: buildSystemPrompt(clinicName, treatments, callerPhone),
-      },
-    }));
+    openaiWs.send(JSON.stringify({ type: "session.update", session: sessionConfig() }));
   });
 
   openaiWs.on("message", (data) => {
@@ -193,6 +236,10 @@ wss.on("connection", (twilioWs) => {
 
     // Session ready — if stream already started, send the greeting now
     if (msg.type === "session.created" || msg.type === "session.updated") {
+      if (msg.type === "session.updated") {
+        nativeConfirmed = audioMode === "ulaw";
+        console.log(`[OPENAI] Session configured | audio mode: ${audioMode}`);
+      }
       sessionReady = true;
       if (pendingGreeting) {
         pendingGreeting = false;
@@ -200,9 +247,15 @@ wss.on("connection", (twilioWs) => {
       }
     }
 
-    // Stream AI audio back to Twilio (convert PCM16 24kHz → g711 µ-law 8kHz)
+    // Caller interrupted the AI — immediately flush Twilio's buffered audio so
+    // the AI stops talking now instead of finishing its queued sentence.
+    if (msg.type === "input_audio_buffer.speech_started" && streamSid) {
+      twilioWs.send(JSON.stringify({ event: "clear", streamSid }));
+    }
+
+    // Stream AI audio back to Twilio (native µ-law passthrough, or PCM→µ-law in fallback mode)
     if ((msg.type === "response.audio.delta" || msg.type === "response.output_audio.delta") && streamSid && msg.delta) {
-      const ulawPayload = pcm24kB64ToUlawB64(msg.delta);
+      const ulawPayload = audioMode === "ulaw" ? msg.delta : pcm24kB64ToUlawB64(msg.delta);
       twilioWs.send(JSON.stringify({
         event: "media",
         streamSid,
@@ -243,6 +296,14 @@ wss.on("connection", (twilioWs) => {
 
     if (msg.type === "error") {
       console.error("[OPENAI ERROR]", JSON.stringify(msg.error));
+      // If the native µ-law session config was rejected, fall back to the
+      // legacy PCM transcode pipeline so the call still works.
+      if (audioMode === "ulaw" && !nativeConfirmed) {
+        console.warn("[OPENAI] Native µ-law config rejected — falling back to PCM transcode mode");
+        audioMode = "pcm";
+        openaiWs.send(JSON.stringify({ type: "input_audio_buffer.clear" }));
+        openaiWs.send(JSON.stringify({ type: "session.update", session: sessionConfig() }));
+      }
     }
   });
 
@@ -293,11 +354,12 @@ wss.on("connection", (twilioWs) => {
     }
 
     if (msg.event === "media" && openaiWs?.readyState === WebSocket.OPEN) {
-      // Convert g711 µ-law 8kHz → PCM16 24kHz before sending to OpenAI
-      const pcm24k = ulawB64ToPcm24kB64(msg.media.payload);
+      // Native mode: pass Twilio's µ-law straight through (no lossy resampling).
+      // Fallback mode: convert g711 µ-law 8kHz → PCM16 24kHz.
+      const audio = audioMode === "ulaw" ? msg.media.payload : ulawB64ToPcm24kB64(msg.media.payload);
       openaiWs.send(JSON.stringify({
         type: "input_audio_buffer.append",
-        audio: pcm24k,
+        audio,
       }));
     }
 
@@ -320,9 +382,11 @@ async function handleBooking(line, clinicName, callerPhone) {
     const match = line.match(new RegExp(`${key}=([^\\s]+)`));
     return match ? match[1] : "";
   };
-  const name = get("name");
-  const treatment = get("treatment");
-  const doctor = get("doctor");
+  // Multi-word values use underscores in the tag — restore spaces for display
+  const pretty = (v) => v.replace(/_/g, " ");
+  const name = pretty(get("name"));
+  const treatment = pretty(get("treatment"));
+  const doctor = pretty(get("doctor"));
   const time = get("time");
   const returning = get("returning");
   const confirmedPhone = get("phone") || callerPhone;
