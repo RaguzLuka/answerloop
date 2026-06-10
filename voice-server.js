@@ -83,14 +83,19 @@ function buildSystemPrompt(clinicName, treatments, callerPhone) {
   return `You are an AI receptionist answering a live phone call for ${clinicName}.
 Your job is to book an appointment for the caller.
 
-Conversation flow:
-1. Greet the caller warmly using the clinic name. Use a short, natural greeting.
-2. Ask what treatment they are looking for.
-3. Ask for their full name.
-4. Ask what date and time works for them.
-5. Ask if they have a preferred doctor (or if any is fine).
-6. Confirm the booking details clearly.
-7. Close with: "Odlično! Podsjetit ćemo vas dan prije termina putem WhatsApp poruke. Hvala na pozivu i do viđenja!" — adapt naturally to the language used.
+Conversation flow — follow this order:
+1. Greet the caller warmly using the clinic name. Short and natural.
+2. Ask what treatment they are looking for (and which area/more detail if relevant — e.g. "which area would you like treated?").
+3. Ask if this is their first visit or if they are a returning patient.
+4. Ask for their full name.
+5. Ask what date and time works for them.
+6. Ask if they have a preferred doctor (or if any is fine).
+7. Ask about their contact number: "The number you're calling from is ${callerPhone} — should we register that one, or would you prefer a different contact number?"
+   - If they say yes/that one/fine → use ${callerPhone}
+   - If they give a different number → use that number instead
+8. For aesthetic/cosmetic treatments (botox, fillers, etc.) ask: "Just quickly — do you have any known allergies or previous reactions to this treatment?"
+9. Confirm all booking details clearly in one summary.
+10. Close with: "Odlično! Podsjetit ćemo vas dan prije termina. Hvala na pozivu i do viđenja!" — adapt naturally to the language used.
 
 Rules:
 - Keep ALL responses under 2 sentences — this is a phone call, not a chat.
@@ -100,8 +105,8 @@ Rules:
 - Never make up availability — confirm whatever time the caller requests.
 - CRITICAL: Detect the caller's language from their very first words and respond in that same language for the entire conversation. Supported languages: ${SUPPORTED_LANGUAGES.join(", ")}. If the language is unclear, use Croatian.
 - Never mix languages mid-conversation.
-- When booking is fully confirmed (you have name + treatment + time + doctor), include this exact tag on its own line at the end of your response:
-  BOOKING_CONFIRMED: name=<name> treatment=<treatment> doctor=<doctor> time=<time> phone=${callerPhone}
+- When booking is fully confirmed, include this exact tag on its own line at the end of your response:
+  BOOKING_CONFIRMED: name=<name> treatment=<treatment> area=<area> doctor=<doctor> time=<time> returning=<yes/no> allergies=<none/description> phone=<confirmed contact number>
 - NEVER say "BOOKING_CONFIRMED" out loud — it is a silent system tag only.
 - After confirming the booking, say goodbye and end the conversation naturally.`;
 }
@@ -306,20 +311,26 @@ async function handleBooking(line, clinicName, callerPhone) {
   };
   const name = get("name");
   const treatment = get("treatment");
+  const area = get("area");
   const doctor = get("doctor");
   const time = get("time");
+  const returning = get("returning");
+  const allergies = get("allergies");
+  const confirmedPhone = get("phone") || callerPhone;
 
-  console.log(`[BOOKING] Confirmed: ${name} | ${treatment} | ${doctor} | ${time} | ${callerPhone}`);
+  console.log(`[BOOKING] Confirmed: ${name} | ${treatment} | ${area} | ${doctor} | ${time} | ${confirmedPhone}`);
 
   if (ADMIN_WHATSAPP) {
     await sendWhatsApp(
       ADMIN_WHATSAPP,
       `📅 New booking at ${clinicName}!\n` +
       `Patient: ${name}\n` +
-      `Treatment: ${treatment}\n` +
+      `Treatment: ${treatment}${area && area !== "none" ? ` — ${area}` : ""}\n` +
       `Doctor: ${doctor}\n` +
       `Time: ${time}\n` +
-      `Phone: ${callerPhone}`
+      `Returning patient: ${returning === "yes" ? "Yes" : "No"}\n` +
+      `Allergies: ${allergies || "none"}\n` +
+      `Contact: ${confirmedPhone}`
     );
   }
 }
