@@ -22,6 +22,7 @@ export default function Footer() {
             <p className="mb-4 text-xs font-semibold uppercase tracking-[0.12em] text-gray-600">Product</p>
             <ul className="space-y-2.5 text-sm">
               <li><Link href="/how-it-works" className="hover:text-white transition-colors">How it works</Link></li>
+              <li><Link href="/demo"         className="hover:text-white transition-colors">Live demo</Link></li>
               <li><Link href="/#features"    className="hover:text-white transition-colors">Features</Link></li>
               <li><Link href="/pricing"      className="hover:text-white transition-colors">Pricing</Link></li>
             </ul>
