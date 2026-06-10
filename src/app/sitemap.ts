@@ -1,7 +1,7 @@
 import { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = "https://ringloop.net";
+  const base = "https://www.ringloop.net";
   const now  = new Date();
 
   return [

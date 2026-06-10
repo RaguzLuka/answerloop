@@ -114,7 +114,7 @@ export default function HowItWorks() {
               ),
             },
           ].map((s, i) => (
-            <div key={s.step} className="grid items-center gap-12 md:grid-cols-2">
+            <div key={s.step} data-reveal className="grid items-center gap-12 md:grid-cols-2">
               <div className={i % 2 === 1 ? "md:order-2" : ""}>
                 <p className="mb-2 text-7xl font-bold text-blue-100 leading-none">{s.step}</p>
                 <h2 className="mb-4 text-2xl font-bold tracking-tight">{s.title}</h2>
@@ -145,8 +145,8 @@ export default function HowItWorks() {
                 { step: "2", title: "We configure AI",      desc: "We set up your clinic name, treatments, and AI voice persona." },
                 { step: "3", title: "You forward calls",    desc: "Set up call forwarding on your phone. Takes 2 minutes." },
                 { step: "4", title: "You're live",          desc: "RingLoop starts answering missed calls immediately." },
-              ].map((s) => (
-                <div key={s.step} className="rounded-2xl border border-gray-100 bg-white p-6 text-center shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+              ].map((s, i) => (
+                <div key={s.step} data-reveal className={`r-delay-${(i % 3) + 1} rounded-2xl border border-gray-100 bg-white p-6 text-center shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200`}>
                   <div className="mx-auto mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white font-bold shadow-sm shadow-blue-200">{s.step}</div>
                   <h3 className="mb-2 font-semibold">{s.title}</h3>
                   <p className="text-sm text-gray-500 leading-relaxed">{s.desc}</p>

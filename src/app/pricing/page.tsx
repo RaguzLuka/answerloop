@@ -75,10 +75,11 @@ export default function Pricing() {
               { type: "Small clinic",  missed: "10 calls/month", recovered: "6 patients",  value: "€600",   cost: "€200", profit: "€400",   roi: "200%",    hi: false },
               { type: "Medium clinic", missed: "20 calls/month", recovered: "12 patients", value: "€1,800", cost: "€200", profit: "€1,600", roi: "800%",    hi: true  },
               { type: "Busy clinic",   missed: "40 calls/month", recovered: "25 patients", value: "€3,750", cost: "€200", profit: "€3,550", roi: "1,775%",  hi: false },
-            ].map((row) => (
+            ].map((row, i) => (
               <div
                 key={row.type}
-                className={`rounded-2xl p-8 border transition-all duration-200 hover:-translate-y-0.5 ${
+                data-reveal
+                className={`r-delay-${(i % 3) + 1} rounded-2xl p-8 border transition-all duration-200 hover:-translate-y-0.5 ${
                   row.hi
                     ? "bg-blue-600 border-blue-600 text-white shadow-xl shadow-blue-200"
                     : "bg-white border-gray-100 shadow-sm hover:shadow-md"

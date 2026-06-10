@@ -20,7 +20,7 @@ export default function Privacy() {
           <div className="prose prose-gray max-w-none space-y-10">
 
             <Block title="1. Who we are">
-              <p>RingLoop (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;) is a software service that provides AI-powered missed call recovery for medical institutes and appointment-based businesses. Our website is <a href="https://ringloop.net" className="text-blue-600 hover:underline">ringloop.net</a>.</p>
+              <p>RingLoop (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;) is a software service that provides an AI voice receptionist — answering forwarded calls, booking appointments, and sending appointment reminders — for medical institutes and appointment-based businesses. Our website is <a href="https://ringloop.net" className="text-blue-600 hover:underline">ringloop.net</a>.</p>
               <p>For questions about this policy, contact us at <a href="mailto:hello@ringloop.net" className="text-blue-600 hover:underline">hello@ringloop.net</a>.</p>
             </Block>
 

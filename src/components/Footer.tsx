@@ -13,7 +13,7 @@ export default function Footer() {
           <div className="col-span-1">
             <p className="mb-4 text-[1.2rem] font-bold text-white tracking-tight">Ring<span className="text-blue-400">Loop</span></p>
             <p className="text-sm leading-relaxed text-gray-500">
-              AI-powered missed call recovery for medical institutes and appointment-based businesses.
+              The AI voice receptionist for medical clinics. Answers every missed call, books the appointment, and reminds the patient — 24/7.
             </p>
           </div>
 
@@ -54,7 +54,7 @@ export default function Footer() {
           <div className="flex items-center gap-5 text-xs text-gray-600">
             <Link href="/privacy" className="hover:text-gray-300 transition-colors">Privacy Policy</Link>
             <span>·</span>
-            <span>Built for medical institutes across Europe 🇪🇺</span>
+            <span>Built for medical institutes across Europe</span>
           </div>
         </div>
       </div>

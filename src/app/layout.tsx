@@ -6,44 +6,79 @@ import Footer from "@/components/Footer";
 import CookieBanner from "@/components/CookieBanner";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import BackToTop from "@/components/BackToTop";
+import Reveal from "@/components/Reveal";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://ringloop.net"),
+  metadataBase: new URL("https://www.ringloop.net"),
   title: {
-    default: "RingLoop — AI missed call recovery for medical clinics",
+    default: "RingLoop — AI voice receptionist for medical clinics",
     template: "%s — RingLoop",
   },
   description:
-    "RingLoop follows up every missed call with an AI that chats on WhatsApp, qualifies the patient, and books the appointment automatically. €200/month, no contract.",
-  keywords: ["missed call recovery", "AI receptionist", "medical clinic", "WhatsApp booking", "appointment booking", "dental clinic AI"],
+    "RingLoop answers your clinic's missed calls with a natural AI voice, books the appointment on the spot, and sends patients a WhatsApp reminder 24 hours before. €200/month, no contract.",
+  keywords: ["AI receptionist", "AI voice agent", "medical clinic", "missed call recovery", "appointment booking", "dental clinic AI", "clinic phone answering"],
   openGraph: {
-    title: "RingLoop — AI missed call recovery for medical clinics",
-    description: "Your clinic misses calls. RingLoop books them. An AI receptionist that follows up every missed call via WhatsApp, 24/7.",
-    url: "https://ringloop.net",
+    title: "RingLoop — AI voice receptionist for medical clinics",
+    description: "Your clinic misses calls. RingLoop answers them. An AI receptionist that picks up every forwarded call, books appointments by voice, and reminds patients on WhatsApp — 24/7.",
+    url: "https://www.ringloop.net",
     siteName: "RingLoop",
     type: "website",
     locale: "en_EU",
   },
   twitter: {
     card: "summary_large_image",
-    title: "RingLoop — AI missed call recovery for medical clinics",
-    description: "Your clinic misses calls. RingLoop books them. An AI receptionist that follows up every missed call via WhatsApp, 24/7.",
+    title: "RingLoop — AI voice receptionist for medical clinics",
+    description: "Your clinic misses calls. RingLoop answers them. An AI receptionist that books appointments by voice, 24/7.",
   },
+  alternates: { canonical: "./" },
   robots: { index: true, follow: true },
   verification: {
     google: "6Crkty_au9n6QFAPhxX4IkcGfAZriGCksXweub5AkGQ",
   },
 };
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://www.ringloop.net/#organization",
+      name: "RingLoop",
+      url: "https://www.ringloop.net",
+      email: "hello@ringloop.net",
+      description: "AI voice receptionist for medical clinics. Answers missed calls, books appointments by voice, and sends WhatsApp reminders.",
+      areaServed: "Europe",
+    },
+    {
+      "@type": "Service",
+      name: "RingLoop AI Voice Receptionist",
+      provider: { "@id": "https://www.ringloop.net/#organization" },
+      serviceType: "AI phone answering and appointment booking for medical clinics",
+      areaServed: "Europe",
+      offers: {
+        "@type": "Offer",
+        price: "200",
+        priceCurrency: "EUR",
+        description: "€200 per month per clinic location. No setup fee, no contract.",
+      },
+    },
+  ],
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         {/* Nav lives here — outside template.tsx so fixed positioning never breaks */}
         <Nav />
+        <Reveal />
         {children}
         <Footer />
         <WhatsAppButton />
