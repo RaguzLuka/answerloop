@@ -1,0 +1,57 @@
+name: Uptime check
+
+on:
+  schedule:
+    - cron: "*/10 * * * *" # every 10 minutes
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check website
+        id: site
+        continue-on-error: true
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 https://www.ringloop.net)
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          [ "$code" = "200" ]
+
+      - name: Check voice server
+        id: voice
+        continue-on-error: true
+        env:
+          VOICE_SERVER_URL: ${{ vars.VOICE_SERVER_URL }}
+        run: |
+          if [ -z "$VOICE_SERVER_URL" ]; then
+            echo "code=skipped (set VOICE_SERVER_URL repo variable)" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 "$VOICE_SERVER_URL")
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          [ "$code" = "200" ]
+
+      - name: Alert on failure
+        if: steps.site.outcome == 'failure' || steps.voice.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SITE_CODE: ${{ steps.site.outputs.code }}
+          VOICE_CODE: ${{ steps.voice.outputs.code }}
+        run: |
+          body="Uptime check failed at $(date -u '+%Y-%m-%d %H:%M UTC')
+          - Website (www.ringloop.net): HTTP ${SITE_CODE:-no response}
+          - Voice server: HTTP ${VOICE_CODE:-no response}
+
+          The voice server going down means clinic calls ring into silence — check Railway first."
+          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --label uptime --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "$body"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" \
+              --title "🔴 RingLoop uptime check failing" \
+              --label uptime \
+              --body "$body"
+          fi

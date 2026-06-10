@@ -120,6 +120,7 @@ Rules:
 - Keep ALL responses under 2 sentences — this is a phone call, not a chat.
 - Be warm, natural, and professional — like a real receptionist.
 - You are a FEMALE receptionist. In gendered languages, ALWAYS use feminine forms when referring to yourself — Croatian: "sigurna", "sretna", "rekla sam", "zapisala sam" (never "siguran", "rekao sam", "zapisao sam"). Same rule in German, Italian and Slovenian. Never refer to yourself as male.
+- You are a digital (AI) assistant and you disclosed this in the greeting. If the caller asks whether they are talking to a robot/AI, confirm honestly and warmly ("Da, ja sam digitalna asistentica klinike") and continue helping — never pretend to be human.
 - NEVER repeat a question you already asked.
 - Ask only ONE question at a time. Never combine two questions in one response.
 - CRITICAL: At every point in the conversation, track what information you already have — treatment, name, date/time, doctor, phone. If the caller already mentioned something (even while interrupting you, even before you asked), consider it answered and SKIP that question. Only ask for what is genuinely still missing.
@@ -161,6 +162,8 @@ wss.on("connection", (twilioWs) => {
 
   let openaiWs = null;
   let streamSid = null;
+  let callSid = null;
+  let callEnded = false;
   let clinicName = "the clinic";
   let treatments = "general consultation";
   let callerPhone = "unknown";
@@ -316,8 +319,38 @@ wss.on("connection", (twilioWs) => {
 
   openaiWs.on("close", (code, reason) => {
     console.log(`[OPENAI] Disconnected — code: ${code} reason: ${reason?.toString()}`);
+    // OpenAI dropped while the caller is still on the line → don't leave them
+    // in dead air; apologise and hang up via Twilio's REST API.
+    if (!callEnded && callSid) {
+      failCallGracefully(callSid);
+    }
   });
-  openaiWs.on("error", (err) => console.error("[OPENAI] Error:", err.message));
+  openaiWs.on("error", (err) => {
+    console.error("[OPENAI] Error:", err.message);
+    if (!callEnded && callSid) {
+      failCallGracefully(callSid);
+    }
+  });
+
+  function failCallGracefully(sid) {
+    callEnded = true; // prevent double-fire from close following error
+    console.warn(`[VOICE] AI connection lost mid-call — playing apology to ${sid}`);
+    const twiml =
+      `<?xml version="1.0" encoding="UTF-8"?><Response>` +
+      `<Say language="hr-HR" voice="Google.hr-HR-Standard-A">Ispričavamo se, trenutno imamo tehničkih poteškoća. Molimo nazovite ponovno za nekoliko minuta. Hvala i doviđenja!</Say>` +
+      `<Hangup/></Response>`;
+    const url = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Calls/${sid}.json`;
+    const auth = Buffer.from(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`).toString("base64");
+    const params = new URLSearchParams();
+    params.append("Twiml", twiml);
+    fetch(url, {
+      method: "POST",
+      headers: { Authorization: `Basic ${auth}`, "Content-Type": "application/x-www-form-urlencoded" },
+      body: params.toString(),
+    })
+      .then((res) => console.log(`[VOICE] Apology TwiML pushed — HTTP ${res.status}`))
+      .catch((err) => console.error("[VOICE] Failed to push apology TwiML:", err.message));
+  }
 
   function triggerGreeting() {
     if (!openaiWs || openaiWs.readyState !== WebSocket.OPEN) return;
@@ -335,7 +368,7 @@ wss.on("connection", (twilioWs) => {
     openaiWs.send(JSON.stringify({
       type: "response.create",
       response: {
-        instructions: `You are answering the phone at "${clinicName}". Greet the caller exactly like a real Croatian receptionist would — you are a woman, so use feminine forms about yourself. Say something like: "Dobar dan, hvala što ste nazvali ${clinicName}, kako vam mogu pomoći?" — natural, warm, professional. One sentence only. Use Croatian.`,
+        instructions: `You are answering the phone at "${clinicName}". Greet the caller exactly like a real Croatian receptionist would — you are a woman, so use feminine forms about yourself. In the greeting, naturally disclose that you are a digital assistant (required by EU law). Say something like: "Dobar dan, hvala što ste nazvali ${clinicName}. Ja sam digitalna asistentica klinike — kako vam mogu pomoći?" — natural, warm, professional. One sentence only. Use Croatian.`,
       },
     }));
   }
@@ -346,6 +379,7 @@ wss.on("connection", (twilioWs) => {
 
     if (msg.event === "start") {
       streamSid = msg.start.streamSid;
+      callSid = msg.start.callSid ?? null;
       const params = msg.start.customParameters ?? {};
       clinicName = params.clinicName ?? clinicName;
       treatments = params.treatments ?? treatments;
@@ -372,12 +406,14 @@ wss.on("connection", (twilioWs) => {
 
     if (msg.event === "stop") {
       console.log("[VOICE] Stream stopped");
+      callEnded = true;
       openaiWs?.close();
     }
   });
 
   twilioWs.on("close", () => {
     console.log("[VOICE] Twilio disconnected");
+    callEnded = true;
     openaiWs?.close();
   });
 

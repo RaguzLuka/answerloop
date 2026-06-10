@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { getClinic } from "@/clinics";
+import { verifiedTwilioParams } from "@/twilio-verify";
 
 function getOpenAI() {
   return new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -49,10 +50,13 @@ function escapeXml(text: string) {
 }
 
 export async function POST(request: Request) {
-  const body = await request.formData();
-  const from = body.get("From")?.toString() ?? "unknown";
-  const to = body.get("To")?.toString() ?? "";
-  const incomingMessage = body.get("Body")?.toString() ?? "";
+  const body = await verifiedTwilioParams(request);
+  if (body === null) {
+    return new Response("Forbidden", { status: 403 });
+  }
+  const from = body.From ?? "unknown";
+  const to = body.To ?? "";
+  const incomingMessage = body.Body ?? "";
 
   const clinic = getClinic(to);
 

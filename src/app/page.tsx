@@ -86,6 +86,16 @@ export default function Home() {
               No contract &nbsp;·&nbsp; Cancel anytime &nbsp;·&nbsp; Setup in 24h &nbsp;·&nbsp; €200/month
             </p>
 
+            <a
+              href="tel:+14788003855"
+              className="animate-fade-up delay-400 mt-7 inline-flex items-center gap-2.5 rounded-full border border-blue-100 bg-white/80 px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur-sm hover:border-blue-300 hover:text-blue-700 transition-all duration-300"
+            >
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-white">
+                <Icon name="phone" className="h-3 w-3" />
+              </span>
+              Hear her live — call the demo line: +1 478 800 3855
+            </a>
+
             {/* Phone call mockup */}
             <div className="animate-fade-up delay-500 animate-float mx-auto mt-16 w-full max-w-[330px] overflow-hidden rounded-[26px] border border-slate-100 bg-white shadow-2xl shadow-blue-100/40 text-left">
               <div className="flex items-center gap-3 bg-[#1a1a2e] px-4 py-3">
@@ -457,6 +467,10 @@ export default function Home() {
               </Link>
             </div>
             <p className="mt-6 text-sm text-slate-500">No contract &nbsp;·&nbsp; Cancel anytime &nbsp;·&nbsp; Setup in 24h</p>
+            <p className="mt-3 text-sm text-slate-500">
+              Or hear her right now:{" "}
+              <a href="tel:+14788003855" className="font-semibold text-blue-400 hover:text-blue-300 transition-colors">+1 478 800 3855</a>
+            </p>
           </div>
         </section>
 

@@ -1,22 +1,19 @@
 import { getClinic } from "@/clinics";
+import { verifiedTwilioParams } from "@/twilio-verify";
 
 const VOICE_SERVER_URL = process.env.VOICE_SERVER_URL ?? "";
 
 async function handleCall(request: Request) {
-  const contentType = request.headers.get("content-type") ?? "";
-  let to = "", from = "", callSid = "";
-
-  if (contentType.includes("application/x-www-form-urlencoded") || contentType.includes("multipart/form-data")) {
-    const body = await request.formData();
-    to = body.get("To")?.toString() ?? "";
-    from = body.get("From")?.toString() ?? "";
-    callSid = body.get("CallSid")?.toString() ?? "";
-  } else {
-    const url = new URL(request.url);
-    to = url.searchParams.get("To") ?? "";
-    from = url.searchParams.get("From") ?? "";
-    callSid = url.searchParams.get("CallSid") ?? "";
+  const params = await verifiedTwilioParams(request);
+  if (params === null) {
+    return new Response("Forbidden", { status: 403 });
   }
+
+  // POST: params from validated body. GET (redirect fallback): query string.
+  const query = new URL(request.url).searchParams;
+  const to = params.To ?? query.get("To") ?? "";
+  const from = params.From ?? query.get("From") ?? "";
+  const callSid = params.CallSid ?? query.get("CallSid") ?? "";
 
   const clinic = getClinic(to);
   console.log(`[VOICE] Incoming call to ${clinic.name} from ${from} | SID: ${callSid}`);
