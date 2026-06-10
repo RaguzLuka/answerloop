@@ -29,19 +29,25 @@ function ulawEncode(sample) {
 }
 
 // base64 g711 µ-law (8kHz) → base64 PCM16 LE (24kHz)
+// Uses linear interpolation for smoother audio → better speech recognition
 function ulawB64ToPcm24kB64(b64) {
   const ulaw = Buffer.from(b64, "base64");
-  const pcm8k = Buffer.alloc(ulaw.length * 2);
-  for (let i = 0; i < ulaw.length; i++) {
-    pcm8k.writeInt16LE(ulawDecode(ulaw[i]), i * 2);
+  const n = ulaw.length;
+  if (n === 0) return "";
+  // Decode µ-law → PCM16 8kHz
+  const pcm8k = new Int16Array(n);
+  for (let i = 0; i < n; i++) {
+    pcm8k[i] = ulawDecode(ulaw[i]);
   }
-  // Upsample 8kHz → 24kHz (repeat each sample 3×)
-  const pcm24k = Buffer.alloc(ulaw.length * 6);
-  for (let i = 0; i < ulaw.length; i++) {
-    const s = pcm8k.readInt16LE(i * 2);
-    pcm24k.writeInt16LE(s, (i * 3) * 2);
-    pcm24k.writeInt16LE(s, (i * 3 + 1) * 2);
-    pcm24k.writeInt16LE(s, (i * 3 + 2) * 2);
+  // Upsample 8kHz → 24kHz with linear interpolation (3× factor)
+  const pcm24k = Buffer.alloc(n * 6);
+  for (let i = 0; i < n; i++) {
+    const cur = pcm8k[i];
+    const next = i + 1 < n ? pcm8k[i + 1] : cur;
+    // 3 interpolated samples per source sample
+    pcm24k.writeInt16LE(cur, (i * 3) * 2);
+    pcm24k.writeInt16LE(Math.round(cur + (next - cur) / 3), (i * 3 + 1) * 2);
+    pcm24k.writeInt16LE(Math.round(cur + (2 * (next - cur)) / 3), (i * 3 + 2) * 2);
   }
   return pcm24k.toString("base64");
 }
@@ -107,6 +113,9 @@ Rules:
 - Never make up availability — confirm whatever time the caller requests.
 - CRITICAL: Detect the caller's language from their very first words and respond in that same language for the entire conversation. Supported languages: ${SUPPORTED_LANGUAGES.join(", ")}. If the language is unclear, use Croatian.
 - Never mix languages mid-conversation.
+- You are answering for a CROATIAN clinic. Croatian names (e.g. Marko, Ivana, Đurđica, Krešimir, Mateo, Antonija) and Croatian letters (č, ć, š, ž, đ) are common — listen carefully for them.
+- When the caller gives their name, ALWAYS repeat it back to confirm: e.g. "Samo da potvrdim, vaše ime je [name]?" If they correct you, use the corrected version. Never guess silently on a name.
+- If you are unsure how a name is spelled, politely ask them to spell it letter by letter.
 - When booking is fully confirmed, include this exact tag on its own line at the end of your response:
   BOOKING_CONFIRMED: name=<name> treatment=<treatment> doctor=<doctor> time=<time> returning=<yes/no> phone=<confirmed contact number>
 - NEVER say "BOOKING_CONFIRMED" out loud — it is a silent system tag only.
