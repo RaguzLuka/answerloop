@@ -129,6 +129,7 @@ Rules:
 - The clinic's team (callers may ask for them by name — recognize these names when spoken, even with imperfect pronunciation): ${staff}. If the caller names someone not on this list, politely confirm the name and book it anyway.` : ""}${hours ? `
 - Working hours: ${hours}. Only confirm appointments within these hours. If the caller asks for a time outside them, kindly say the clinic is closed then and offer the nearest available working time.` : ""}${durations ? `
 - Treatment durations: ${durations}. When confirming the booking, mention how long the treatment takes (e.g. "termin traje oko 45 minuta") and make sure the requested time plus its duration still fits within working hours.` : ""}
+- NOISY CALLS: callers may be in cars or on the street. If you hear noise or an unintelligible fragment, do NOT treat it as an answer and do NOT restart — say once "Oprostite, nisam vas dobro čula — možete li ponoviti?" and continue from exactly where the conversation was. If noise persists, stay patient and keep asking only for the missing piece; never end the call because of noise.
 - If asked about prices, say: "Our team will send you the details — let's first get you booked in."
 - Never make up availability — confirm whatever time the caller requests.
 - LANGUAGE: Croatian is the STRONG DEFAULT — callers to this clinic are Croatian unless proven otherwise. Only switch to another language (${SUPPORTED_LANGUAGES.join(", ")}) if the caller speaks a CLEAR, FULL sentence in it. Short or ambiguous utterances are NEVER enough evidence: "halo", "hello", "hej", "molim", a name, or background noise do NOT mean English — stay in Croatian. When in ANY doubt, speak Croatian; a Croatian caller addressed in English is a serious error, the reverse is easily corrected.
@@ -174,6 +175,7 @@ wss.on("connection", (twilioWs) => {
   let hours = "";
   let durations = "";
   let callerPhone = "unknown";
+  let pendingClearTimer = null;
   let currentTurnTranscript = "";
   let bookingHandled = false;
   let sessionReady = false;
@@ -264,10 +266,24 @@ wss.on("connection", (twilioWs) => {
       }
     }
 
-    // Caller interrupted the AI — immediately flush Twilio's buffered audio so
-    // the AI stops talking now instead of finishing its queued sentence.
+    // Caller interrupted the AI — flush Twilio's buffered audio so she stops
+    // talking instead of finishing the queued sentence. DEBOUNCED: noise bursts
+    // (traffic, wind) also trigger speech_started, so we only flush if the
+    // "speech" is still going after 300ms. A real interruption barely notices
+    // the delay; a noise blip (speech_stopped arrives quickly) never flushes.
     if (msg.type === "input_audio_buffer.speech_started" && streamSid) {
-      twilioWs.send(JSON.stringify({ event: "clear", streamSid }));
+      if (pendingClearTimer) clearTimeout(pendingClearTimer);
+      pendingClearTimer = setTimeout(() => {
+        pendingClearTimer = null;
+        if (twilioWs.readyState === WebSocket.OPEN && streamSid) {
+          twilioWs.send(JSON.stringify({ event: "clear", streamSid }));
+        }
+      }, 300);
+    }
+    if (msg.type === "input_audio_buffer.speech_stopped" && pendingClearTimer) {
+      // Speech ended within the debounce window — treat it as noise, keep talking
+      clearTimeout(pendingClearTimer);
+      pendingClearTimer = null;
     }
 
     // Stream AI audio back to Twilio (native µ-law passthrough, or PCM→µ-law in fallback mode)
@@ -424,6 +440,7 @@ wss.on("connection", (twilioWs) => {
   twilioWs.on("close", () => {
     console.log("[VOICE] Twilio disconnected");
     callEnded = true;
+    if (pendingClearTimer) { clearTimeout(pendingClearTimer); pendingClearTimer = null; }
     openaiWs?.close();
   });
 
