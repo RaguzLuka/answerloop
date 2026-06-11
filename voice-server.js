@@ -158,6 +158,7 @@ Rules:
   BOOKING_CONFIRMED: name=<name> treatment=<treatment> doctor=<doctor> time=<YYYY-MM-DDTHH:MM> returning=<yes/no> phone=<confirmed contact number>
 - In the tag, time MUST be the resolved date and time in YYYY-MM-DDTHH:MM format (e.g. 2026-06-11T10:00) — never words like "tomorrow". Use underscores instead of spaces in name/treatment/doctor values (e.g. name=Marko_Horvat).
 - NEVER say "BOOKING_CONFIRMED" out loud — it is a silent system tag only.
+- CRITICAL: the tag is machine-readable English and does NOT count as language mixing. In the turn where you output the tag, every SPOKEN word — the booking summary and the goodbye — stays in the caller's language (Croatian for Croatian callers). NEVER switch your spoken language to English because the tag is in English. Example of a correct final turn for a Croatian caller: "Zapisala sam: Ivan Marić, konzultacija kod Željka, u srijedu u 14 sati. Podsjetit ćemo vas dan prije termina — hvala na pozivu i doviđenja!" followed by the silent tag.
 - After confirming the booking, say goodbye and end the conversation naturally.`;
 }
 
