@@ -21,15 +21,17 @@ async function handleCall(request: Request) {
   // Use OpenAI Realtime API via Railway WebSocket server
   const wsUrl = VOICE_SERVER_URL.replace(/^https?/, "wss") + "/media-stream";
 
+  const esc = (s: string) =>
+    s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+  const param = (name: string, value?: string) =>
+    value ? `      <Parameter name="${name}" value="${esc(value)}"/>\n` : "";
+
   return new Response(
     `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Connect>
     <Stream url="${wsUrl}">
-      <Parameter name="clinicName" value="${clinic.name}"/>
-      <Parameter name="treatments" value="${clinic.treatments}"/>
-      <Parameter name="callerPhone" value="${from}"/>
-    </Stream>
+${param("clinicName", clinic.name)}${param("treatments", clinic.treatments)}${param("staff", clinic.staff)}${param("hours", clinic.hours)}${param("callerPhone", from)}    </Stream>
   </Connect>
 </Response>`,
     { headers: { "Content-Type": "text/xml" } }

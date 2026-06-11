@@ -88,7 +88,7 @@ const ADMIN_WHATSAPP = process.env.ADMIN_WHATSAPP_NUMBER;
 // The AI auto-detects the caller's language and responds in kind.
 const SUPPORTED_LANGUAGES = ["Croatian", "English", "German", "Italian", "Slovenian"];
 
-function buildSystemPrompt(clinicName, treatments, callerPhone) {
+function buildSystemPrompt(clinicName, treatments, callerPhone, staff = "", hours = "") {
   // Spaced digits so the model reads the number digit by digit instead of
   // improvising it as one big number (e.g. "+385911234567" → "+ 3 8 5 9 1 …")
   const spokenPhone = callerPhone === "unknown"
@@ -108,7 +108,7 @@ Conversation flow — follow this order:
 2. Ask what treatment they are looking for.
 3. Ask for their full name.
 4. Ask what date and time works for them.
-5. Ask if they have a preferred doctor (or if any is fine).
+5. Ask if they have a preferred doctor/therapist (or if any is fine).
 6. Ask about their contact number: "The number you're calling from is ${spokenPhone} — should we register that one, or would you prefer a different contact number?"
    - The caller's number is EXACTLY: ${spokenPhone} — when saying it out loud, read it slowly, digit by digit, exactly as written. NEVER skip, change, or invent digits. If you are not sure you said it right, simply ask "should we use the number you're calling from?" without reading it out.
    - If they say yes/that one/fine → use ${callerPhone}
@@ -125,7 +125,9 @@ Rules:
 - Ask only ONE question at a time. Never combine two questions in one response.
 - CRITICAL: At every point in the conversation, track what information you already have — treatment, name, date/time, doctor, phone. If the caller already mentioned something (even while interrupting you, even before you asked), consider it answered and SKIP that question. Only ask for what is genuinely still missing.
 - If the caller gives you multiple pieces of information at once (e.g. "I want botox, I'm Marko, Friday at 3"), acknowledge it and move straight to the next missing piece — never re-ask what was already said.
-- Supported treatments: ${treatments}.
+- Supported treatments: ${treatments}.${staff ? `
+- The clinic's team (callers may ask for them by name — recognize these names when spoken, even with imperfect pronunciation): ${staff}. If the caller names someone not on this list, politely confirm the name and book it anyway.` : ""}${hours ? `
+- Working hours: ${hours}. Only confirm appointments within these hours. If the caller asks for a time outside them, kindly say the clinic is closed then and offer the nearest available working time.` : ""}
 - If asked about prices, say: "Our team will send you the details — let's first get you booked in."
 - Never make up availability — confirm whatever time the caller requests.
 - CRITICAL: Detect the caller's language from their very first words and respond in that same language for the entire conversation. Supported languages: ${SUPPORTED_LANGUAGES.join(", ")}. If the language is unclear, use Croatian.
@@ -166,6 +168,8 @@ wss.on("connection", (twilioWs) => {
   let callEnded = false;
   let clinicName = "the clinic";
   let treatments = "general consultation";
+  let staff = "";
+  let hours = "";
   let callerPhone = "unknown";
   let currentTurnTranscript = "";
   let bookingHandled = false;
@@ -203,7 +207,7 @@ wss.on("connection", (twilioWs) => {
             format: { type: "audio/pcmu" },
           },
         },
-        instructions: buildSystemPrompt(clinicName, treatments, callerPhone),
+        instructions: buildSystemPrompt(clinicName, treatments, callerPhone, staff, hours),
       };
     }
     // Legacy PCM fallback — exactly the configuration that shipped before.
@@ -216,7 +220,7 @@ wss.on("connection", (twilioWs) => {
         prefix_padding_ms: 200,
         create_response: true,
       },
-      instructions: buildSystemPrompt(clinicName, treatments, callerPhone),
+      instructions: buildSystemPrompt(clinicName, treatments, callerPhone, staff, hours),
     };
   }
 
@@ -360,7 +364,7 @@ wss.on("connection", (twilioWs) => {
       type: "session.update",
       session: {
         type: "realtime",
-        instructions: buildSystemPrompt(clinicName, treatments, callerPhone),
+        instructions: buildSystemPrompt(clinicName, treatments, callerPhone, staff, hours),
       },
     }));
 
@@ -383,6 +387,8 @@ wss.on("connection", (twilioWs) => {
       const params = msg.start.customParameters ?? {};
       clinicName = params.clinicName ?? clinicName;
       treatments = params.treatments ?? treatments;
+      staff = params.staff ?? staff;
+      hours = params.hours ?? hours;
       callerPhone = params.callerPhone ?? callerPhone;
       console.log(`[VOICE] Stream started | Clinic: ${clinicName} | Caller: ${callerPhone}`);
 
