@@ -502,9 +502,27 @@ async function handleBooking(line, clinicName, callerPhone, smsSender = "") {
     .slice(0, 11)
     .trim();
 
+  const sender = smsSender || clinicFallback || SMS_FROM;
+
+  // Confirmation SMS to the PATIENT who just booked
+  const patientPhone = confirmedPhone.replace(/\s/g, "");
+  if (/^\+\d{8,15}$/.test(patientPhone)) {
+    const doctorPart = doctor && !/^(any|bilo|svejedno|nema)/i.test(doctor) ? ` (${doctor})` : "";
+    await sendTwilioMessage(
+      sender,
+      patientPhone,
+      `Poštovani, vaš termin u ${clinicName} je potvrđen:\n` +
+      `${treatment}${doctorPart}\n${time}\n\n` +
+      `Vidimo se!`
+    ).catch((err) => console.error("[SMS] Patient confirmation failed:", err.message));
+  } else {
+    console.warn(`[SMS] Skipping patient confirmation — invalid phone: ${confirmedPhone}`);
+  }
+
+  // Notification to the clinic/admin
   if (ADMIN_PHONE) {
     await sendTwilioMessage(
-      smsSender || clinicFallback || SMS_FROM,
+      sender,
       ADMIN_PHONE,
       `📅 New booking at ${clinicName}!\n` +
       `Patient: ${name}\n` +
