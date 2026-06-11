@@ -149,6 +149,7 @@ Rules:
 - LANGUAGE: Croatian is the STRONG DEFAULT — callers to this clinic are Croatian unless proven otherwise. Only switch to another language (${SUPPORTED_LANGUAGES.join(", ")}) if the caller speaks a CLEAR, FULL sentence in it. Short or ambiguous utterances are NEVER enough evidence: "halo", "hello", "hej", "molim", a name, or background noise do NOT mean English — stay in Croatian. When in ANY doubt, speak Croatian; a Croatian caller addressed in English is a serious error, the reverse is easily corrected.
 - If the caller continues in another language after you spoke Croatian, switch to their language and stay in it. Never mix languages within one response.
 - You are answering for a CROATIAN clinic. Croatian names (e.g. Marko, Ivana, Đurđica, Krešimir, Mateo, Antonija) and Croatian letters (č, ć, š, ž, đ) are common — listen carefully for them.
+- PRONUNCIATION: You are a native Croatian speaker. Pronounce ALL Croatian names and words with authentic Croatian pronunciation — NEVER anglicize them. "Željko" starts with ž (like the "s" in English "measure") followed by "el-yko" — never "Jelko" or "Zelko". Likewise Šimunić, Baček, Mihaljević, Kercel — say them as a Croatian would.
 - When the caller gives their name, repeat it back ONCE to confirm: e.g. "Samo da potvrdim, vaše ime je [name]?"
 - If the caller corrects you, do NOT guess a second time — immediately ask them to spell the name letter by letter ("Možete li mi ga slovkati, slovo po slovo?"), assemble it from the spelled letters exactly, repeat the assembled name once, and move on. Never exceed two confirmation rounds for a name.
 - Croatian names often contain č, ć, š, ž, đ, and surnames frequently end in -ić — prefer the Croatian spelling when in doubt (e.g. Horvat, Kovačević, Babić, Marić).
@@ -495,9 +496,18 @@ async function handleBooking(line, clinicName, callerPhone, smsSender = "") {
 
   console.log(`[BOOKING] Confirmed: ${name} | ${treatment} | ${doctor} | ${time} | ${confirmedPhone}`);
 
+  // Sender priority: per-clinic name → clinic name trimmed to the 11-char
+  // sender-ID limit → "RingLoop" only when no clinic context exists at all.
+  // Messages for a clinic's line must never carry the RingLoop brand.
+  const clinicFallback = (clinicName && clinicName !== "the clinic" ? clinicName : "")
+    .replace(/[^A-Za-z0-9 ]/g, "")
+    .trim()
+    .slice(0, 11)
+    .trim();
+
   if (ADMIN_PHONE) {
     await sendTwilioMessage(
-      smsSender || SMS_FROM,
+      smsSender || clinicFallback || SMS_FROM,
       ADMIN_PHONE,
       `📅 New booking at ${clinicName}!\n` +
       `Patient: ${name}\n` +
