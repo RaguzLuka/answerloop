@@ -5,6 +5,8 @@ export interface Clinic {
   staff?: string;
   /** Working hours — the AI only confirms appointments inside these. */
   hours?: string;
+  /** Typical duration per treatment — lets the AI plan the schedule and tell patients how long they'll stay. */
+  durations?: string;
   address?: string;
 }
 
@@ -19,6 +21,8 @@ const clinics: Record<string, Clinic> = {
     staff:
       "Željko Kercel (voditelj, postoperativna i neurološka rehabilitacija), Iva Šimunić (medicinska masaža, kupice), Anja Mihaljević (kupice, osteopatske tehnike), Katja Baček (PNF, DNS), Ivana Relja (Schroth terapeutkinja, posturalni problemi), Josipa Batina (dry needling, Mulligan tehnika)",
     hours: "ponedjeljak–petak 8:00–20:00 (vikendom zatvoreno)",
+    // TODO: fill in once the owner confirms per-treatment durations, e.g.:
+    // durations: "fizioterapeutska procjena 60 min, fizikalna terapija 45 min, masaža 30 min, udarni val 20 min",
     address: "Avenija Dubrava 108, Zagreb",
   },
 

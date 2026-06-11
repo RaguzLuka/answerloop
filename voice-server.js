@@ -88,7 +88,7 @@ const ADMIN_WHATSAPP = process.env.ADMIN_WHATSAPP_NUMBER;
 // The AI auto-detects the caller's language and responds in kind.
 const SUPPORTED_LANGUAGES = ["Croatian", "English", "German", "Italian", "Slovenian"];
 
-function buildSystemPrompt(clinicName, treatments, callerPhone, staff = "", hours = "") {
+function buildSystemPrompt(clinicName, treatments, callerPhone, staff = "", hours = "", durations = "") {
   // Spaced digits so the model reads the number digit by digit instead of
   // improvising it as one big number (e.g. "+385911234567" → "+ 3 8 5 9 1 …")
   const spokenPhone = callerPhone === "unknown"
@@ -127,14 +127,16 @@ Rules:
 - If the caller gives you multiple pieces of information at once (e.g. "I want botox, I'm Marko, Friday at 3"), acknowledge it and move straight to the next missing piece — never re-ask what was already said.
 - Supported treatments: ${treatments}.${staff ? `
 - The clinic's team (callers may ask for them by name — recognize these names when spoken, even with imperfect pronunciation): ${staff}. If the caller names someone not on this list, politely confirm the name and book it anyway.` : ""}${hours ? `
-- Working hours: ${hours}. Only confirm appointments within these hours. If the caller asks for a time outside them, kindly say the clinic is closed then and offer the nearest available working time.` : ""}
+- Working hours: ${hours}. Only confirm appointments within these hours. If the caller asks for a time outside them, kindly say the clinic is closed then and offer the nearest available working time.` : ""}${durations ? `
+- Treatment durations: ${durations}. When confirming the booking, mention how long the treatment takes (e.g. "termin traje oko 45 minuta") and make sure the requested time plus its duration still fits within working hours.` : ""}
 - If asked about prices, say: "Our team will send you the details — let's first get you booked in."
 - Never make up availability — confirm whatever time the caller requests.
 - CRITICAL: Detect the caller's language from their very first words and respond in that same language for the entire conversation. Supported languages: ${SUPPORTED_LANGUAGES.join(", ")}. If the language is unclear, use Croatian.
 - Never mix languages mid-conversation.
 - You are answering for a CROATIAN clinic. Croatian names (e.g. Marko, Ivana, Đurđica, Krešimir, Mateo, Antonija) and Croatian letters (č, ć, š, ž, đ) are common — listen carefully for them.
-- When the caller gives their name, ALWAYS repeat it back to confirm: e.g. "Samo da potvrdim, vaše ime je [name]?" If they correct you, use the corrected version. Never guess silently on a name.
-- If you are unsure how a name is spelled, politely ask them to spell it letter by letter.
+- When the caller gives their name, repeat it back ONCE to confirm: e.g. "Samo da potvrdim, vaše ime je [name]?"
+- If the caller corrects you, do NOT guess a second time — immediately ask them to spell the name letter by letter ("Možete li mi ga slovkati, slovo po slovo?"), assemble it from the spelled letters exactly, repeat the assembled name once, and move on. Never exceed two confirmation rounds for a name.
+- Croatian names often contain č, ć, š, ž, đ, and surnames frequently end in -ić — prefer the Croatian spelling when in doubt (e.g. Horvat, Kovačević, Babić, Marić).
 - When booking is fully confirmed, include this exact tag on its own line at the end of your response:
   BOOKING_CONFIRMED: name=<name> treatment=<treatment> doctor=<doctor> time=<YYYY-MM-DDTHH:MM> returning=<yes/no> phone=<confirmed contact number>
 - In the tag, time MUST be the resolved date and time in YYYY-MM-DDTHH:MM format (e.g. 2026-06-11T10:00) — never words like "tomorrow". Use underscores instead of spaces in name/treatment/doctor values (e.g. name=Marko_Horvat).
@@ -170,6 +172,7 @@ wss.on("connection", (twilioWs) => {
   let treatments = "general consultation";
   let staff = "";
   let hours = "";
+  let durations = "";
   let callerPhone = "unknown";
   let currentTurnTranscript = "";
   let bookingHandled = false;
@@ -207,7 +210,7 @@ wss.on("connection", (twilioWs) => {
             format: { type: "audio/pcmu" },
           },
         },
-        instructions: buildSystemPrompt(clinicName, treatments, callerPhone, staff, hours),
+        instructions: buildSystemPrompt(clinicName, treatments, callerPhone, staff, hours, durations),
       };
     }
     // Legacy PCM fallback — exactly the configuration that shipped before.
@@ -220,7 +223,7 @@ wss.on("connection", (twilioWs) => {
         prefix_padding_ms: 200,
         create_response: true,
       },
-      instructions: buildSystemPrompt(clinicName, treatments, callerPhone, staff, hours),
+      instructions: buildSystemPrompt(clinicName, treatments, callerPhone, staff, hours, durations),
     };
   }
 
@@ -364,7 +367,7 @@ wss.on("connection", (twilioWs) => {
       type: "session.update",
       session: {
         type: "realtime",
-        instructions: buildSystemPrompt(clinicName, treatments, callerPhone, staff, hours),
+        instructions: buildSystemPrompt(clinicName, treatments, callerPhone, staff, hours, durations),
       },
     }));
 
@@ -389,6 +392,7 @@ wss.on("connection", (twilioWs) => {
       treatments = params.treatments ?? treatments;
       staff = params.staff ?? staff;
       hours = params.hours ?? hours;
+      durations = params.durations ?? durations;
       callerPhone = params.callerPhone ?? callerPhone;
       console.log(`[VOICE] Stream started | Clinic: ${clinicName} | Caller: ${callerPhone}`);
 
