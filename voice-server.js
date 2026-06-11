@@ -102,6 +102,7 @@ function buildSystemPrompt(clinicName, treatments, callerPhone, staff = "", hour
   return `You are an AI receptionist answering a live phone call for ${clinicName}.
 Your job is to book an appointment for the caller.
 Today is ${todayStr} (Europe/Zagreb timezone). Use this to resolve relative dates like "tomorrow" or "next Tuesday" into concrete dates.
+When SPEAKING dates, always say them naturally in the caller's language ("u ponedjeljak, petnaestog lipnja u devet sati") — NEVER read out ISO formats like "2026-06-15" aloud. ISO format belongs ONLY in the silent BOOKING_CONFIRMED tag.
 
 Conversation flow — follow this order:
 1. Greet the caller warmly using the clinic name. Short and natural.
@@ -109,8 +110,8 @@ Conversation flow — follow this order:
 3. Ask for their full name.
 4. Ask what date and time works for them.
 5. Ask if they have a preferred doctor/therapist (or if any is fine).
-6. Ask about their contact number: "The number you're calling from is ${spokenPhone} — should we register that one, or would you prefer a different contact number?"
-   - The caller's number is EXACTLY: ${spokenPhone} — when saying it out loud, read it slowly, digit by digit, exactly as written. NEVER skip, change, or invent digits. If you are not sure you said it right, simply ask "should we use the number you're calling from?" without reading it out.
+6. Ask about their contact number IN THE CALLER'S LANGUAGE (never copy this template in English unless the caller speaks English). Croatian example: "Zovete nas s broja ${spokenPhone} — želite li da registriramo taj broj, ili neki drugi kontakt broj?"
+   - The caller's number is EXACTLY: ${spokenPhone} — when saying it out loud, read it slowly, digit by digit, exactly as written. NEVER skip, change, or invent digits. If you are not sure you said it right, simply ask (in the caller's language) whether to use the number they are calling from, without reading it out.
    - If they say yes/that one/fine → use ${callerPhone}
    - If they give a different number → repeat it back digit by digit to confirm, then use it
 7. Confirm all booking details clearly in one summary.
@@ -119,7 +120,7 @@ Conversation flow — follow this order:
 Rules:
 - Keep ALL responses under 2 sentences — this is a phone call, not a chat.
 - Be warm, natural, and professional — like a real receptionist.
-- You are a FEMALE receptionist. In gendered languages, ALWAYS use feminine forms when referring to yourself — Croatian: "sigurna", "sretna", "rekla sam", "zapisala sam" (never "siguran", "rekao sam", "zapisao sam"). Same rule in German, Italian and Slovenian. Never refer to yourself as male.
+- You are a FEMALE receptionist. In gendered languages, ALWAYS use feminine forms when referring to yourself — Croatian: "sigurna", "sretna", "rekla sam", "zapisala sam" (never "siguran", "rekao sam", "zapisao sam"). Same rule in German, Italian and Slovenian. Never refer to yourself as male. Feminine forms apply ONLY to yourself alone — when speaking about yourself and the caller together, use standard mixed-group forms ("dogovorili smo", not "dogovorile smo", unless the caller is clearly female).
 - You are a digital (AI) assistant and you disclosed this in the greeting. If the caller asks whether they are talking to a robot/AI, confirm honestly and warmly ("Da, ja sam digitalna asistentica klinike") and continue helping — never pretend to be human.
 - NEVER repeat a question you already asked.
 - Ask only ONE question at a time. Never combine two questions in one response.
@@ -246,19 +247,25 @@ wss.on("connection", (twilioWs) => {
   });
 
   openaiWs.on("message", (data) => {
-    const msg = JSON.parse(data.toString());
+    let msg;
+    try {
+      msg = JSON.parse(data.toString());
+    } catch {
+      console.error("[OPENAI] Ignoring malformed message");
+      return;
+    }
 
     // Log all non-audio events for debugging
     if (msg.type !== "response.audio.delta" && msg.type !== "response.output_audio.delta" && msg.type !== "response.output_audio_transcript.delta") {
       console.log(`[OPENAI EVT] ${msg.type}`);
     }
 
-    // Session ready — if stream already started, send the greeting now
-    if (msg.type === "session.created" || msg.type === "session.updated") {
-      if (msg.type === "session.updated") {
-        nativeConfirmed = audioMode === "ulaw";
-        console.log(`[OPENAI] Session configured | audio mode: ${audioMode}`);
-      }
+    // Session ready ONLY once our session.update is applied (session.updated).
+    // Greeting or audio before that would run against the default PCM16 config
+    // and come out as static in µ-law mode.
+    if (msg.type === "session.updated") {
+      nativeConfirmed = audioMode === "ulaw";
+      console.log(`[OPENAI] Session configured | audio mode: ${audioMode}`);
       sessionReady = true;
       if (pendingGreeting) {
         pendingGreeting = false;
@@ -398,7 +405,13 @@ wss.on("connection", (twilioWs) => {
 
   // Handle messages from Twilio
   twilioWs.on("message", (data) => {
-    const msg = JSON.parse(data.toString());
+    let msg;
+    try {
+      msg = JSON.parse(data.toString());
+    } catch {
+      console.error("[TWILIO] Ignoring malformed message");
+      return;
+    }
 
     if (msg.event === "start") {
       streamSid = msg.start.streamSid;
@@ -419,6 +432,11 @@ wss.on("connection", (twilioWs) => {
         pendingGreeting = true;
       }
     }
+
+    // Drop audio frames until the µ-law session config is confirmed — appending
+    // µ-law into the default PCM16 buffer would feed the model garbage. The
+    // caller only misses a few ms of silence before the greeting.
+    if (msg.event === "media" && !sessionReady) return;
 
     if (msg.event === "media" && openaiWs?.readyState === WebSocket.OPEN) {
       // Native mode: pass Twilio's µ-law straight through (no lossy resampling).
@@ -457,7 +475,7 @@ async function handleBooking(line, clinicName, callerPhone) {
   const name = pretty(get("name"));
   const treatment = pretty(get("treatment"));
   const doctor = pretty(get("doctor"));
-  const time = get("time");
+  const time = get("time").replace("T", " "); // ISO tag → readable "2026-06-11 10:00"
   const returning = get("returning");
   const confirmedPhone = get("phone") || callerPhone;
 
@@ -476,6 +494,15 @@ async function handleBooking(line, clinicName, callerPhone) {
     );
   }
 }
+
+// Safety net: one bad message or rejected promise must never take down the
+// whole server (and every live call with it). Log loudly, keep serving.
+process.on("uncaughtException", (err) => {
+  console.error("[FATAL-CAUGHT] Uncaught exception (server stays up):", err);
+});
+process.on("unhandledRejection", (reason) => {
+  console.error("[FATAL-CAUGHT] Unhandled rejection (server stays up):", reason);
+});
 
 // Health check
 app.get("/", (req, res) => res.json({ status: "RingLoop voice server running" }));
