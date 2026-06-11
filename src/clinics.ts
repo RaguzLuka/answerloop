@@ -7,6 +7,8 @@ export interface Clinic {
   hours?: string;
   /** Typical duration per treatment — lets the AI plan the schedule and tell patients how long they'll stay. */
   durations?: string;
+  /** SMS sender name for booking notifications — max 11 chars (alphanumeric sender ID limit). Falls back to "RingLoop". */
+  smsSender?: string;
   address?: string;
 }
 
@@ -23,6 +25,7 @@ const clinics: Record<string, Clinic> = {
     hours: "ponedjeljak–petak 8:00–20:00 (vikendom zatvoreno)",
     // TODO: fill in once the owner confirms per-treatment durations, e.g.:
     // durations: "fizioterapeutska procjena 60 min, fizikalna terapija 45 min, masaža 30 min, udarni val 20 min",
+    smsSender: "Medianus", // "FizioMedianus" exceeds the 11-char sender limit
     address: "Avenija Dubrava 108, Zagreb",
   },
 

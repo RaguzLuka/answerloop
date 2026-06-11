@@ -187,6 +187,7 @@ wss.on("connection", (twilioWs) => {
   let staff = "";
   let hours = "";
   let durations = "";
+  let smsSender = "";
   let callerPhone = "unknown";
   let pendingClearTimer = null;
   let currentTurnTranscript = "";
@@ -334,7 +335,7 @@ wss.on("connection", (twilioWs) => {
         const line = currentTurnTranscript.split("\n").find((l) => l.trim().startsWith("BOOKING_CONFIRMED:"));
         if (line) {
           console.log(`[BOOKING] ${line.trim()}`);
-          handleBooking(line.trim(), clinicName, callerPhone).catch(console.error);
+          handleBooking(line.trim(), clinicName, callerPhone, smsSender).catch(console.error);
         }
       }
 
@@ -434,6 +435,7 @@ wss.on("connection", (twilioWs) => {
       staff = params.staff ?? staff;
       hours = params.hours ?? hours;
       durations = params.durations ?? durations;
+      smsSender = params.smsSender ?? smsSender;
       callerPhone = params.callerPhone ?? callerPhone;
       console.log(`[VOICE] Stream started | Clinic: ${clinicName} | Caller: ${callerPhone}`);
 
@@ -477,7 +479,7 @@ wss.on("connection", (twilioWs) => {
   twilioWs.on("error", (err) => console.error("[TWILIO] Error:", err.message));
 });
 
-async function handleBooking(line, clinicName, callerPhone) {
+async function handleBooking(line, clinicName, callerPhone, smsSender = "") {
   const get = (key) => {
     const match = line.match(new RegExp(`${key}=([^\\s]+)`));
     return match ? match[1] : "";
@@ -495,7 +497,7 @@ async function handleBooking(line, clinicName, callerPhone) {
 
   if (ADMIN_PHONE) {
     await sendTwilioMessage(
-      SMS_FROM,
+      smsSender || SMS_FROM,
       ADMIN_PHONE,
       `📅 New booking at ${clinicName}!\n` +
       `Patient: ${name}\n` +

@@ -31,7 +31,7 @@ async function handleCall(request: Request) {
 <Response>
   <Connect>
     <Stream url="${wsUrl}">
-${param("clinicName", clinic.name)}${param("treatments", clinic.treatments)}${param("staff", clinic.staff)}${param("hours", clinic.hours)}${param("durations", clinic.durations)}${param("callerPhone", from)}    </Stream>
+${param("clinicName", clinic.name)}${param("treatments", clinic.treatments)}${param("staff", clinic.staff)}${param("hours", clinic.hours)}${param("durations", clinic.durations)}${param("smsSender", clinic.smsSender)}${param("callerPhone", from)}    </Stream>
   </Connect>
 </Response>`,
     { headers: { "Content-Type": "text/xml" } }
