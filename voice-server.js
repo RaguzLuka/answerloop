@@ -81,8 +81,12 @@ const wss = new WebSocketServer({ server, path: "/media-stream" });
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
 const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
-const WHATSAPP_FROM = process.env.WHATSAPP_FROM ?? "whatsapp:+14155238886";
-const ADMIN_WHATSAPP = process.env.ADMIN_WHATSAPP_NUMBER;
+// Booking notifications go by plain SMS — no WhatsApp Business verification needed.
+// Default sender is the alphanumeric ID "RingLoop" (works for outbound SMS to
+// Croatia without owning an SMS-capable number; verified delivered 2026-06-11).
+const SMS_FROM = process.env.SMS_FROM ?? "RingLoop";
+// Admin phone: reuses the old ADMIN_WHATSAPP_NUMBER env var if ADMIN_PHONE_NUMBER isn't set.
+const ADMIN_PHONE = (process.env.ADMIN_PHONE_NUMBER ?? process.env.ADMIN_WHATSAPP_NUMBER ?? "").replace("whatsapp:", "");
 
 // Supported languages — extend as needed
 // The AI auto-detects the caller's language and responds in kind.
@@ -155,13 +159,12 @@ Rules:
 - After confirming the booking, say goodbye and end the conversation naturally.`;
 }
 
-async function sendWhatsApp(to, message) {
-  const toNumber = to.startsWith("whatsapp:") ? to : `whatsapp:${to}`;
+async function sendTwilioMessage(from, to, message) {
   const url = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`;
   const auth = Buffer.from(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`).toString("base64");
   const params = new URLSearchParams();
-  params.append("From", WHATSAPP_FROM);
-  params.append("To", toNumber);
+  params.append("From", from);
+  params.append("To", to);
   params.append("Body", message);
   const res = await fetch(url, {
     method: "POST",
@@ -169,7 +172,7 @@ async function sendWhatsApp(to, message) {
     body: params.toString(),
   });
   const data = await res.json();
-  console.log(`[WHATSAPP] Sent to ${to} | SID: ${data.sid} | Error: ${data.error_message ?? "none"}`);
+  console.log(`[SMS] Sent to ${to} | SID: ${data.sid} | Error: ${data.error_message ?? "none"}`);
 }
 
 wss.on("connection", (twilioWs) => {
@@ -490,9 +493,10 @@ async function handleBooking(line, clinicName, callerPhone) {
 
   console.log(`[BOOKING] Confirmed: ${name} | ${treatment} | ${doctor} | ${time} | ${confirmedPhone}`);
 
-  if (ADMIN_WHATSAPP) {
-    await sendWhatsApp(
-      ADMIN_WHATSAPP,
+  if (ADMIN_PHONE) {
+    await sendTwilioMessage(
+      SMS_FROM,
+      ADMIN_PHONE,
       `📅 New booking at ${clinicName}!\n` +
       `Patient: ${name}\n` +
       `Treatment: ${treatment}\n` +

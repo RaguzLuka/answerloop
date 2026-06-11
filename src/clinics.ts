@@ -26,11 +26,6 @@ const clinics: Record<string, Clinic> = {
     address: "Avenija Dubrava 108, Zagreb",
   },
 
-  // US number — public demo line (matches the browser demo persona)
-  "+14788003855": {
-    name: "Klinika Adria",
-    treatments: "dental checkup, cleaning, teeth whitening, implants",
-  },
 };
 
 export function getClinic(toNumber: string): Clinic {

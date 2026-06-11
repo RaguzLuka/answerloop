@@ -37,9 +37,7 @@ export default function DemoPage() {
           <LiveDemo />
 
           <p className="mt-8 text-sm text-slate-400">
-            Prefer a real phone call? Dial{" "}
-            <a href="tel:+14788003855" className="font-semibold text-blue-600 hover:text-blue-700 transition-colors">+1 478 800 3855</a>
-            {" "}— she answers there too.
+            Works in any modern browser — just allow the microphone when asked.
           </p>
         </div>
       </section>
