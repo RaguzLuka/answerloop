@@ -39,7 +39,7 @@ export default function LeadForm() {
       <div className="rounded-3xl border border-green-200 bg-green-50 p-10 text-center">
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-3xl">✓</div>
         <h3 className="mb-2 text-xl font-bold text-green-800">Message received!</h3>
-        <p className="text-sm text-green-700">We&apos;ll be in touch within a few hours. Check your inbox or WhatsApp.</p>
+        <p className="text-sm text-green-700">We&apos;ll be in touch within a few hours. Check your inbox.</p>
       </div>
     );
   }
