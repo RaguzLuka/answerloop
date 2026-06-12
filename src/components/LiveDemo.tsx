@@ -3,15 +3,12 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import Icon from "@/components/Icon";
 
-type Msg = { role: "ai" | "user"; text: string };
 type Status = "idle" | "connecting" | "live" | "ended" | "error";
 
 const MAX_SECONDS = 180; // 3-minute demo cap
 
 export default function LiveDemo() {
   const [status, setStatus] = useState<Status>("idle");
-  const [messages, setMessages] = useState<Msg[]>([]);
-  const [liveAiText, setLiveAiText] = useState("");
   const [seconds, setSeconds] = useState(0);
   const [error, setError] = useState("");
 
@@ -19,7 +16,6 @@ export default function LiveDemo() {
   const micRef = useRef<MediaStream | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const transcriptRef = useRef<HTMLDivElement | null>(null);
 
   const stop = useCallback((finalStatus: Status = "idle") => {
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
@@ -27,38 +23,14 @@ export default function LiveDemo() {
     micRef.current = null;
     pcRef.current?.close();
     pcRef.current = null;
-    setLiveAiText("");
     setStatus(finalStatus);
   }, []);
 
   // Clean up on page leave
   useEffect(() => () => stop(), [stop]);
 
-  // Keep transcript scrolled to the latest message
-  useEffect(() => {
-    transcriptRef.current?.scrollTo({ top: transcriptRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, liveAiText]);
-
-  function handleEvent(evt: { type: string; delta?: string; transcript?: string }) {
-    // AI speech transcript, streamed while she talks
-    if (evt.type === "response.output_audio_transcript.delta" || evt.type === "response.audio_transcript.delta") {
-      setLiveAiText((t) => t + (evt.delta ?? ""));
-    }
-    if (evt.type === "response.output_audio_transcript.done" || evt.type === "response.audio_transcript.done") {
-      const text = evt.transcript ?? "";
-      setLiveAiText("");
-      if (text.trim()) setMessages((m) => [...m, { role: "ai", text }]);
-    }
-    // Visitor speech transcript (async, arrives after they finish a sentence)
-    if (evt.type === "conversation.item.input_audio_transcription.completed") {
-      const text = (evt.transcript ?? "").trim();
-      if (text) setMessages((m) => [...m, { role: "user", text }]);
-    }
-  }
-
   async function start() {
     setError("");
-    setMessages([]);
     setSeconds(0);
     setStatus("connecting");
     try {
@@ -79,10 +51,9 @@ export default function LiveDemo() {
       };
       pc.addTrack(mic.getTracks()[0], mic);
 
+      // Data channel kicks off her greeting; we intentionally do NOT render
+      // any transcript — imperfect speech-to-text would undermine the demo.
       const dc = pc.createDataChannel("oai-events");
-      dc.onmessage = (e) => {
-        try { handleEvent(JSON.parse(e.data)); } catch { /* ignore malformed events */ }
-      };
       dc.onopen = () => {
         // Trigger her greeting, just like picking up a real call
         dc.send(JSON.stringify({ type: "response.create" }));
@@ -174,28 +145,30 @@ export default function LiveDemo() {
             </button>
           </div>
 
-          <div ref={transcriptRef} className="h-80 space-y-3 overflow-y-auto bg-slate-50 px-5 py-5">
-            {messages.length === 0 && !liveAiText && (
-              <p className="pt-10 text-center text-sm text-slate-400">Say hello — she&apos;s listening…</p>
-            )}
-            {messages.map((msg, i) => (
-              <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-sm ${
-                  msg.role === "ai"
-                    ? "rounded-tl-sm border border-slate-100 bg-white text-slate-800"
-                    : "rounded-tr-sm bg-blue-600 text-white"
-                }`}>
-                  {msg.text}
-                </div>
-              </div>
-            ))}
-            {liveAiText && (
-              <div className="flex justify-start">
-                <div className="max-w-[85%] rounded-2xl rounded-tl-sm border border-slate-100 bg-white px-4 py-2.5 text-sm leading-relaxed text-slate-500 shadow-sm">
-                  {liveAiText}
-                </div>
-              </div>
-            )}
+          {/* Live call visual — no transcript, just talk and listen */}
+          <div className="flex h-80 flex-col items-center justify-center gap-7 bg-gradient-to-b from-slate-50 to-white px-6">
+            <div className="relative flex h-32 w-32 items-center justify-center">
+              <span className="absolute inset-0 rounded-full bg-blue-500/20 animate-ping [animation-duration:2.4s]" />
+              <span className="absolute inset-3 rounded-full bg-blue-500/15 animate-ping [animation-duration:2.4s] [animation-delay:0.4s]" />
+              <span className="relative flex h-20 w-20 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg shadow-blue-300">
+                <Icon name="phone" className="h-8 w-8" />
+              </span>
+            </div>
+
+            {/* Animated voice waveform */}
+            <div className="flex h-8 items-center gap-1.5">
+              {[14, 22, 12, 26, 16, 24, 13].map((h, i) => (
+                <span
+                  key={i}
+                  className="wave-bar w-1 rounded-full bg-blue-500"
+                  style={{ height: `${h}px`, animationDelay: `${i * 0.11}s` }}
+                />
+              ))}
+            </div>
+
+            <p className="text-sm font-medium text-slate-500">
+              Just talk — she&apos;s listening. Speak naturally, in any language.
+            </p>
           </div>
         </div>
       )}
