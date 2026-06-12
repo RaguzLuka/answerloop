@@ -77,12 +77,12 @@ export default function DemoPage() {
             In 24 hours, she can be answering <em>your</em> clinic&apos;s missed calls — with your name, your treatments, your doctors.
           </p>
           <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link href="/contact" className="group rounded-full bg-blue-600 px-8 py-4 font-semibold text-white shadow-lg shadow-blue-900/50 hover:bg-blue-500 transition-all duration-300">
+            <Link href="/contact" className="btn-shine group rounded-full bg-blue-600 px-8 py-4 font-semibold text-white shadow-lg shadow-blue-900/50 hover:bg-blue-500 transition-all duration-300">
               Set it up for my clinic
               <span className="ml-2 inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
             </Link>
             <Link href="/pricing" className="rounded-full border border-white/20 px-8 py-4 font-semibold text-white hover:border-white/40 hover:bg-white/5 transition-all duration-300">
-              €200/month — see what&apos;s included
+              See what&apos;s included
             </Link>
           </div>
         </div>

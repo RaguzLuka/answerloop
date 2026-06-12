@@ -38,8 +38,8 @@ export default function Contact() {
                 </p>
                 <div className="space-y-3">
                   {[
-                    { icon: "✉", label: "Email us",     value: "hello@ringloop.net",    href: "mailto:hello@ringloop.net" },
-                    { icon: "💬", label: "WhatsApp us",  value: "Message us directly",   href: "https://wa.me/14788003855" },
+                    { icon: "✉", label: "Email us",       value: "hello@ringloop.net",        href: "mailto:hello@ringloop.net" },
+                    { icon: "🎙", label: "Live demo",      value: "Talk to the AI right now",  href: "/demo" },
                   ].map((item) => (
                     <a
                       key={item.label}

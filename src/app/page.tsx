@@ -8,7 +8,7 @@ const faqs = [
   },
   {
     q: "How long does setup take?",
-    a: "Most clinics are live within 24 hours. We handle the AI configuration, voice persona setup, and WhatsApp number. You just flip the call forwarding switch.",
+    a: "Most clinics are live within 24 hours. We handle the AI configuration, voice persona, SMS confirmations, and optional calendar integration. You just flip the call forwarding switch.",
   },
   {
     q: "Does the AI really sound natural on the phone?",
@@ -51,6 +51,7 @@ export default function Home() {
           <div className="pointer-events-none absolute inset-0">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_65%_at_50%_-15%,_#dbeafe_0%,_transparent_72%)]" />
             <div className="animate-aurora absolute -top-48 left-1/2 h-[480px] w-[820px] rounded-full bg-blue-300/25 blur-3xl" />
+            <div className="aurora-2 absolute -top-20 left-2/3 h-[360px] w-[560px] rounded-full bg-indigo-300/20 blur-3xl" />
             <div className="absolute top-0 left-1/2 -translate-x-1/2 h-px w-3/4 bg-gradient-to-r from-transparent via-blue-300/60 to-transparent" />
           </div>
 
@@ -65,15 +66,15 @@ export default function Home() {
 
             <h1 className="animate-fade-up delay-100 mb-7 text-5xl font-bold leading-[1.07] tracking-tight md:text-[4.25rem] lg:text-[5rem]">
               Your clinic misses calls.<br />
-              <span className="text-blue-600">RingLoop answers them.</span>
+              <span className="text-shimmer">RingLoop answers them.</span>
             </h1>
 
             <p className="animate-fade-up delay-200 mx-auto mb-10 max-w-lg text-lg text-slate-500 leading-relaxed md:text-xl">
-              An AI receptionist that picks up every forwarded call, books the appointment by voice, and sends patients a WhatsApp reminder 24 hours before — automatically, 24/7.
+              An AI receptionist that picks up every forwarded call, books the appointment by voice, and confirms it to the patient by SMS — automatically, 24/7.
             </p>
 
             <div className="animate-fade-up delay-300 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-              <Link href="/contact" className="group rounded-full bg-blue-600 px-8 py-3.5 font-semibold text-white shadow-lg shadow-blue-200 hover:bg-blue-500 hover:shadow-xl hover:shadow-blue-200/80 hover:-translate-y-px transition-all duration-300">
+              <Link href="/contact" className="btn-shine group rounded-full bg-blue-600 px-8 py-3.5 font-semibold text-white shadow-lg shadow-blue-200 hover:bg-blue-500 hover:shadow-xl hover:shadow-blue-200/80 hover:-translate-y-px transition-all duration-300">
                 Book a free demo
                 <span className="ml-2 inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
               </Link>
@@ -83,7 +84,7 @@ export default function Home() {
             </div>
 
             <p className="animate-fade-up delay-400 mt-5 text-sm text-slate-400">
-              No contract &nbsp;·&nbsp; Cancel anytime &nbsp;·&nbsp; Setup in 24h &nbsp;·&nbsp; €200/month
+              No contract &nbsp;·&nbsp; Cancel anytime &nbsp;·&nbsp; Setup in 24h &nbsp;·&nbsp; Pricing tailored to your clinic
             </p>
 
             <Link
@@ -128,9 +129,13 @@ export default function Home() {
                   { from: "client", text: "Marko Horvat." },
                   { from: "ai",     text: "Thanks Marko! What date and time works for you?" },
                   { from: "client", text: "Tomorrow at 10am." },
-                  { from: "ai",     text: "✅ Booked! Dental checkup tomorrow at 10:00. You'll get a WhatsApp reminder. See you then!" },
+                  { from: "ai",     text: "✅ Booked! Dental checkup tomorrow at 10:00. You'll get an SMS confirmation right away. See you then!" },
                 ].map((msg, i) => (
-                  <div key={i} className={`flex ${msg.from === "client" ? "justify-end" : "justify-start"}`}>
+                  <div
+                    key={i}
+                    className={`bubble-in flex ${msg.from === "client" ? "justify-end" : "justify-start"}`}
+                    style={{ animationDelay: `${1.2 + i * 0.55}s` }}
+                  >
                     <div className={`max-w-[82%] rounded-2xl px-3.5 py-2 text-[12px] leading-relaxed shadow-sm ${
                       msg.from === "ai"
                         ? "rounded-tl-sm bg-white text-slate-800 border border-slate-100"
@@ -154,7 +159,7 @@ export default function Home() {
               { number: "24/7",  label: "always available" },
               { number: "3×",    label: "more bookings per month" },
             ].map((stat, i) => (
-              <div key={stat.label} data-reveal className={`r-delay-${i % 4 === 0 ? 1 : i % 4} text-center`}>
+              <div key={stat.label} data-reveal className={`reveal-pop r-delay-${i % 4 === 0 ? 1 : i % 4} text-center`}>
                 <p className="mb-1.5 text-[2.4rem] font-bold tracking-tight text-blue-600 leading-none">{stat.number}</p>
                 <p className="text-sm text-slate-500 leading-snug">{stat.label}</p>
               </div>
@@ -220,7 +225,7 @@ export default function Home() {
                 <p className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-blue-400">The solution</p>
                 <h2 className="mb-5 text-4xl font-bold leading-[1.15] tracking-tight">RingLoop answers every call. Even when you can&apos;t.</h2>
                 <p className="mb-8 text-slate-400 leading-relaxed text-[1.05rem]">
-                  Clinic forwards calls to RingLoop. Our AI picks up, has a natural voice conversation, and books the appointment. The patient gets a WhatsApp reminder 24 hours before they arrive.
+                  Clinic forwards calls to RingLoop. Our AI picks up, has a natural voice conversation, and books the appointment. The patient instantly receives an SMS confirmation with all the details.
                 </p>
                 <Link href="/how-it-works" className="group inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-6 py-3 font-semibold text-white hover:bg-white/20 hover:border-white/30 transition-all duration-300">
                   See exactly how it works
@@ -232,7 +237,7 @@ export default function Home() {
                   { icon: "phone",         title: "Patient calls, no answer",       desc: "Call forwards to RingLoop in seconds" },
                   { icon: "bot",           title: "AI picks up and talks",          desc: "Natural voice conversation — sounds like a real receptionist" },
                   { icon: "calendarCheck", title: "Appointment booked by voice",    desc: "Collects name, treatment, doctor, and time" },
-                  { icon: "message",       title: "WhatsApp reminder sent 24h before", desc: "Patient gets a reminder and can reply if they need to reschedule" },
+                  { icon: "message",       title: "SMS confirmation sent instantly",   desc: "Patient immediately receives the booking details in their pocket" },
                 ].map((step, i) => (
                   <div key={step.title} data-reveal className={`r-delay-${(i % 3) + 1} flex items-start gap-4 rounded-2xl border border-white/10 bg-white/5 p-5 hover:bg-white/10 hover:border-white/20 transition-all duration-300`}>
                     <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-500/15 text-blue-400">
@@ -274,10 +279,11 @@ export default function Home() {
                   { feature: "Available 24/7",                    rl: true,   rec: false, vm: true  },
                   { feature: "Answers calls instantly",           rl: true,   rec: false, vm: true  },
                   { feature: "Books appointments automatically",  rl: true,   rec: true,  vm: false },
-                  { feature: "Sends 24h appointment reminders",   rl: true,   rec: false, vm: false },
+                  { feature: "Confirms bookings by SMS",          rl: true,   rec: false, vm: false },
+                  { feature: "Google Calendar integration",       rl: true,   rec: true,  vm: false },
                   { feature: "Multi-language support",            rl: true,   rec: false, vm: false },
                   { feature: "No salary or sick days",            rl: true,   rec: false, vm: true  },
-                  { feature: "Monthly cost",                      rl: "€200", rec: "€1,500+", vm: "€0" },
+                  { feature: "Monthly cost",                      rl: "Tailored", rec: "€1,500+", vm: "€0" },
                 ].map((row, i) => (
                   <tr key={row.feature} className={`transition-colors duration-200 hover:bg-blue-50/20 ${i % 2 === 0 ? "bg-white" : "bg-slate-50/40"}`}>
                     <td className="px-6 py-5 text-sm font-medium text-slate-700">{row.feature}</td>
@@ -314,12 +320,12 @@ export default function Home() {
                 { icon: "phone",         title: "AI voice receptionist",  desc: "Answers every forwarded call and has a natural booking conversation." },
                 { icon: "sparkles",      title: "Advanced AI",            desc: "Understands any language, any phrasing, any medical request." },
                 { icon: "calendarCheck", title: "Auto booking",           desc: "Collects all booking details and confirms the appointment by voice." },
-                { icon: "message",       title: "WhatsApp reminders",     desc: "Sends patients a reminder 24 hours before their appointment." },
+                { icon: "message",       title: "SMS confirmations",      desc: "Every patient instantly receives their booking details by SMS." },
                 { icon: "clinic",        title: "Custom AI persona",      desc: "The AI introduces itself as your clinic — not as RingLoop." },
                 { icon: "globe",         title: "Multi-language",         desc: "Croatian, English, German — whatever the patient speaks." },
                 { icon: "user",          title: "Doctor preference",      desc: "Asks if the patient has a preferred doctor before booking." },
                 { icon: "clipboard",     title: "Patient summaries",      desc: "After every booking, your team gets a full patient summary." },
-                { icon: "sync",          title: "Calendar sync",          desc: "Bookings can be pushed to Google Calendar automatically." },
+                { icon: "sync",          title: "Calendar integration",   desc: "Google Calendar integration available — bookings land straight in your clinic's calendar." },
               ].map((f, i) => (
                 <div key={f.title} data-reveal className={`r-delay-${(i % 3) + 1} rounded-2xl border border-white/10 bg-white/5 p-6 hover:border-blue-500/25 hover:bg-white/8 transition-all duration-300`}>
                   <span className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/15 text-blue-400">
@@ -395,9 +401,9 @@ export default function Home() {
                 },
                 {
                   icon: "message",
-                  metric: "Fewer",
-                  metricLabel: "no-shows",
-                  desc: "Patients receive an automatic WhatsApp reminder 24 hours before their visit — and can reply if they need to reschedule.",
+                  metric: "Every booking",
+                  metricLabel: "confirmed by SMS",
+                  desc: "Patients instantly receive their appointment details by SMS — and bookings can land straight in your Google Calendar.",
                 },
               ].map((c, i) => (
                 <div
@@ -458,7 +464,7 @@ export default function Home() {
             <h2 className="mb-5 text-4xl font-bold tracking-tight md:text-5xl">Ready to stop losing patients?</h2>
             <p className="mb-10 text-lg text-slate-400 leading-relaxed">Book a free 20-minute demo and hear your AI receptionist answer a live call.</p>
             <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-              <Link href="/contact" className="group rounded-full bg-blue-600 px-8 py-4 font-semibold text-white shadow-lg shadow-blue-900/50 hover:bg-blue-500 hover:shadow-xl hover:-translate-y-px transition-all duration-300">
+              <Link href="/contact" className="btn-shine group rounded-full bg-blue-600 px-8 py-4 font-semibold text-white shadow-lg shadow-blue-900/50 hover:bg-blue-500 hover:shadow-xl hover:-translate-y-px transition-all duration-300">
                 Book a free demo
                 <span className="ml-2 inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
               </Link>

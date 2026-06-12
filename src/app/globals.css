@@ -47,7 +47,17 @@ body {
   .animate-fade-in,
   .animate-float,
   .animate-aurora,
+  .aurora-2,
+  .text-shimmer,
   .wave-bar {
+    animation: none;
+  }
+  .btn-shine::after {
+    animation: none;
+    display: none;
+  }
+  .bubble-in {
+    opacity: 1;
     animation: none;
   }
   [data-reveal] {
@@ -94,10 +104,61 @@ body {
   50%      { transform: scaleY(1);   }
 }
 
+/* Slow-moving gradient inside headline text — the "ad" shimmer */
+@keyframes shimmer {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+/* Light sweep across primary CTAs */
+@keyframes shine {
+  0%, 55% { left: -70%; }
+  100%    { left: 140%; }
+}
+
+/* Chat bubbles materialize one by one in the hero mockup */
+@keyframes bubbleIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.96); }
+  to   { opacity: 1; transform: none; }
+}
+
 .animate-fade-up { animation: fadeUp 0.7s cubic-bezier(.16,1,.3,1) both; }
 .animate-fade-in { animation: fadeIn 0.9s ease-out both; }
 .animate-float   { animation: float 5.5s ease-in-out infinite; }
 .animate-aurora  { animation: aurora 14s ease-in-out infinite; }
+.aurora-2        { animation: aurora 19s ease-in-out infinite reverse; }
+
+.text-shimmer {
+  background: linear-gradient(90deg, #2563eb 0%, #60a5fa 35%, #93c5fd 50%, #60a5fa 65%, #2563eb 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #2563eb; /* fallback */
+  animation: shimmer 5s linear infinite;
+}
+
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shine::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -70%;
+  width: 45%;
+  background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: skewX(-20deg);
+  animation: shine 3.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.bubble-in {
+  opacity: 0;
+  animation: bubbleIn 0.55s cubic-bezier(.16,1,.3,1) forwards;
+}
 
 .wave-bar {
   transform-origin: center;
@@ -128,6 +189,10 @@ body {
 .r-delay-1 { transition-delay: 0.08s; }
 .r-delay-2 { transition-delay: 0.16s; }
 .r-delay-3 { transition-delay: 0.24s; }
+
+/* Pop variant: scales up while fading in (stats, key numbers) */
+[data-reveal].reveal-pop { transform: translateY(20px) scale(0.9); }
+[data-reveal].reveal-pop.revealed { transform: none; }
 
 /* ── Dot-grid texture (dark sections) ──────────────────────── */
 .dot-grid {

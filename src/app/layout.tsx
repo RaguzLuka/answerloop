@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     template: "%s — RingLoop",
   },
   description:
-    "RingLoop answers your clinic's missed calls with a natural AI voice, books the appointment on the spot, and sends patients a WhatsApp reminder 24 hours before. €200/month, no contract.",
+    "RingLoop answers your clinic's missed calls with a natural AI voice, books the appointment on the spot, and confirms it to the patient by SMS. Pricing tailored to your clinic, no contract.",
   keywords: ["AI receptionist", "AI voice agent", "medical clinic", "missed call recovery", "appointment booking", "dental clinic AI", "clinic phone answering"],
   openGraph: {
     title: "RingLoop — AI voice receptionist for medical clinics",
@@ -60,9 +60,7 @@ const jsonLd = {
       areaServed: "Europe",
       offers: {
         "@type": "Offer",
-        price: "200",
-        priceCurrency: "EUR",
-        description: "€200 per month per clinic location. No setup fee, no contract.",
+        description: "Pricing tailored to each clinic — on request. No setup fee, no contract.",
       },
     },
   ],

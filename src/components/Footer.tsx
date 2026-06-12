@@ -43,7 +43,7 @@ export default function Footer() {
             <p className="mb-4 text-xs font-semibold uppercase tracking-[0.12em] text-gray-600">Contact</p>
             <ul className="space-y-2.5 text-sm">
               <li><a href="mailto:hello@ringloop.net" className="hover:text-white transition-colors">hello@ringloop.net</a></li>
-              <li><a href="https://wa.me/14788003855"  className="hover:text-white transition-colors">WhatsApp us</a></li>
+              <li><Link href="/demo" className="hover:text-white transition-colors">Try the live demo</Link></li>
               <li><Link href="/contact" className="hover:text-white transition-colors">Book a demo</Link></li>
             </ul>
           </div>

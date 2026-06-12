@@ -55,7 +55,7 @@ export default function OgImage() {
         </div>
 
         <div style={{ display: "flex", gap: 36, fontSize: 24, color: "#cbd5e1" }}>
-          <span>€200/month</span>
+          <span>Tailored pricing</span>
           <span style={{ color: "#475569" }}>·</span>
           <span>No contract</span>
           <span style={{ color: "#475569" }}>·</span>

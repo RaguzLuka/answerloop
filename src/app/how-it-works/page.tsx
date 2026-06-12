@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export const metadata = {
   title: "How It Works — RingLoop",
-  description: "Learn exactly how RingLoop answers calls by voice, books appointments, and sends WhatsApp reminders.",
+  description: "Learn exactly how RingLoop answers calls by voice, books appointments, and confirms them to patients by SMS.",
 };
 
 export default function HowItWorks() {
@@ -78,13 +78,13 @@ export default function HowItWorks() {
             {
               step: "04",
               title: "Appointment confirmed by voice",
-              desc: "Once all details are collected, the AI confirms the booking clearly, tells the patient what to expect, and lets them know they can call back or WhatsApp if they need anything.",
-              detail: "Your team receives a full patient summary instantly — name, treatment, doctor preference, and confirmed time. Bookings can also be pushed to Google Calendar automatically.",
+              desc: "Once all details are collected, the AI confirms the booking clearly, tells the patient what to expect, and lets them know they can call back anytime if they need anything.",
+              detail: "Your team receives a full patient summary instantly — name, treatment, doctor preference, and confirmed time. With Google Calendar integration, bookings land straight in your clinic's calendar.",
               preview: (
                 <div className="space-y-3">
                   <div className="rounded-2xl bg-slate-800 px-4 py-3 text-sm text-white max-w-[95%]">
                     <p className="text-xs text-slate-400 mb-1">🤖 AI Receptionist</p>
-                    &ldquo;✅ Booked! Dental checkup tomorrow at 10:00. You&apos;ll get a WhatsApp reminder. If you need anything, call us back or message on WhatsApp. See you then, Marko!&rdquo;
+                    &ldquo;✅ Booked! Dental checkup tomorrow at 10:00. You&apos;ll receive an SMS confirmation right away. If you need anything, just call us back. See you then, Marko!&rdquo;
                   </div>
                   <div className="rounded-2xl bg-green-50 border border-green-200 p-4 text-xs">
                     <p className="font-semibold text-green-700 mb-1.5">📅 Booking logged</p>
@@ -96,20 +96,19 @@ export default function HowItWorks() {
             },
             {
               step: "05",
-              title: "WhatsApp reminder sent 24 hours before",
-              desc: "The patient automatically receives a WhatsApp message 24 hours before their appointment with all the details. They can reply to reschedule or ask questions.",
-              detail: "The reminder is sent from a WhatsApp Business number registered under your clinic's name. Patients see your clinic — not RingLoop. It's a professional, automatic touchpoint that reduces no-shows.",
+              title: "SMS confirmation sent instantly",
+              desc: "The moment the call ends, the patient receives an SMS with all the appointment details, and your team gets the full booking summary at the same time.",
+              detail: "The SMS arrives under your clinic's name — patients see your clinic, not RingLoop. With Google Calendar integration, the booking also lands straight in your calendar.",
               preview: (
                 <div className="space-y-2">
                   <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-4 text-sm text-gray-800 max-w-[90%]">
-                    <p className="text-xs text-gray-400 mb-2">Zagreb Dental Clinic · WhatsApp</p>
-                    Hi Marko! 👋 Reminder from Zagreb Dental.<br /><br />
-                    Your appointment is tomorrow:<br />
+                    <p className="text-xs text-gray-400 mb-2">Zagreb Dental · SMS</p>
+                    Dear Marko, your appointment at Zagreb Dental is confirmed:<br /><br />
                     📋 Dental checkup<br />
-                    🕐 10:00<br /><br />
-                    Need to reschedule? Just reply here. See you tomorrow!
+                    🕐 Tomorrow, 10:00<br /><br />
+                    See you then!
                   </div>
-                  <p className="text-xs text-gray-400 pl-1">Sent automatically 24h before ✓</p>
+                  <p className="text-xs text-gray-400 pl-1">Sent seconds after the call ✓</p>
                 </div>
               ),
             },
