@@ -40,26 +40,27 @@ const faqJsonLd = {
 
 export default function Home() {
   return (
-      <main className="overflow-x-hidden bg-white text-slate-900 pt-16">
+      <main className="overflow-x-hidden bg-white text-slate-900">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
         />
 
         {/* ── HERO ─────────────────────────────────────────── */}
-        <section className="relative min-h-[94vh] flex items-center justify-center overflow-hidden px-6 py-32 text-center">
+        <section className="relative min-h-[94vh] flex items-center justify-center overflow-hidden bg-[#050c1e] px-6 py-32 text-center text-white">
           <div className="pointer-events-none absolute inset-0">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_65%_at_50%_-15%,_#dbeafe_0%,_transparent_72%)]" />
-            <div className="animate-aurora absolute -top-48 left-1/2 h-[480px] w-[820px] rounded-full bg-blue-300/25 blur-3xl" />
-            <div className="aurora-2 absolute -top-20 left-2/3 h-[360px] w-[560px] rounded-full bg-indigo-300/20 blur-3xl" />
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 h-px w-3/4 bg-gradient-to-r from-transparent via-blue-300/60 to-transparent" />
+            <div className="dot-grid absolute inset-0" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_85%_60%_at_50%_-10%,_rgba(37,99,235,0.28),_transparent_70%)]" />
+            <div className="animate-aurora absolute -top-48 left-1/2 h-[480px] w-[820px] rounded-full bg-blue-600/20 blur-3xl" />
+            <div className="aurora-2 absolute -top-20 left-2/3 h-[380px] w-[580px] rounded-full bg-violet-600/15 blur-3xl" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 h-px w-3/4 bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
           </div>
 
           <div className="relative mx-auto max-w-4xl">
-            <div className="animate-fade-up mb-9 inline-flex items-center gap-2.5 rounded-full border border-blue-200/70 bg-blue-50/80 px-4 py-1.5 text-xs font-semibold text-blue-700 shadow-sm shadow-blue-100/50 backdrop-blur-sm">
+            <div className="animate-fade-up mb-9 inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold text-blue-300 backdrop-blur-sm">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-60" />
-                <span className="relative h-2 w-2 rounded-full bg-blue-600" />
+                <span className="relative h-2 w-2 rounded-full bg-blue-400" />
               </span>
               Now live for medical institutes across Europe
             </div>
@@ -69,27 +70,27 @@ export default function Home() {
               <span className="text-shimmer">RingLoop answers them.</span>
             </h1>
 
-            <p className="animate-fade-up delay-200 mx-auto mb-10 max-w-lg text-lg text-slate-500 leading-relaxed md:text-xl">
+            <p className="animate-fade-up delay-200 mx-auto mb-10 max-w-lg text-lg text-slate-400 leading-relaxed md:text-xl">
               An AI receptionist that picks up every forwarded call, books the appointment by voice, and confirms it to the patient by SMS — automatically, 24/7.
             </p>
 
             <div className="animate-fade-up delay-300 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-              <Link href="/contact" className="btn-shine group rounded-full bg-blue-600 px-8 py-3.5 font-semibold text-white shadow-lg shadow-blue-200 hover:bg-blue-500 hover:shadow-xl hover:shadow-blue-200/80 hover:-translate-y-px transition-all duration-300">
+              <Link href="/contact" className="btn-shine group rounded-full bg-blue-600 px-8 py-3.5 font-semibold text-white shadow-lg shadow-blue-900/50 hover:bg-blue-500 hover:shadow-xl hover:-translate-y-px transition-all duration-300">
                 Book a free demo
                 <span className="ml-2 inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
               </Link>
-              <Link href="/how-it-works" className="rounded-full border border-slate-200 bg-white px-8 py-3.5 font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900 hover:bg-slate-50 transition-all duration-300">
+              <Link href="/how-it-works" className="rounded-full border border-white/15 bg-white/5 px-8 py-3.5 font-semibold text-slate-200 hover:border-white/30 hover:text-white hover:bg-white/10 transition-all duration-300">
                 See how it works
               </Link>
             </div>
 
-            <p className="animate-fade-up delay-400 mt-5 text-sm text-slate-400">
+            <p className="animate-fade-up delay-400 mt-5 text-sm text-slate-500">
               No contract &nbsp;·&nbsp; Cancel anytime &nbsp;·&nbsp; Setup in 24h &nbsp;·&nbsp; Pricing tailored to your clinic
             </p>
 
             <Link
               href="/demo"
-              className="animate-fade-up delay-400 mt-7 inline-flex items-center gap-2.5 rounded-full border border-blue-100 bg-white/80 px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur-sm hover:border-blue-300 hover:text-blue-700 transition-all duration-300"
+              className="animate-fade-up delay-400 mt-7 inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-semibold text-slate-200 backdrop-blur-sm hover:border-blue-400/50 hover:text-white transition-all duration-300"
             >
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-white">
                 <Icon name="phone" className="h-3 w-3" />
@@ -98,7 +99,7 @@ export default function Home() {
             </Link>
 
             {/* Phone call mockup */}
-            <div className="animate-fade-up delay-500 animate-float mx-auto mt-16 w-full max-w-[330px] overflow-hidden rounded-[26px] border border-slate-100 bg-white shadow-2xl shadow-blue-100/40 text-left">
+            <div className="animate-fade-up delay-500 animate-float mx-auto mt-16 w-full max-w-[330px] overflow-hidden rounded-[26px] border border-white/10 bg-white shadow-2xl shadow-blue-950/60 text-left">
               <div className="flex items-center gap-3 bg-[#1a1a2e] px-4 py-3">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white"><Icon name="phone" className="h-4 w-4" /></div>
                 <div className="flex-1 min-w-0">
@@ -150,8 +151,11 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Divider */}
+        <div className="divide-dark-to-light" />
+
         {/* ── STATS ────────────────────────────────────────── */}
-        <section className="border-y border-slate-100 bg-[#f8faff] py-14">
+        <section className="border-b border-slate-100 bg-[#f8faff] py-14">
           <div className="mx-auto grid max-w-5xl grid-cols-2 gap-y-8 px-6 md:grid-cols-4">
             {[
               { number: "62%",   label: "of missed calls never call back" },
