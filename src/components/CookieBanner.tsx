@@ -27,23 +27,23 @@ export default function CookieBanner() {
 
   return (
     <div className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-2xl">
-      <div className="rounded-2xl border border-gray-200 bg-white shadow-2xl px-6 py-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-gray-600 leading-relaxed">
+      <div className="rounded-2xl border border-[var(--line)] bg-white/95 backdrop-blur-xl shadow-2xl shadow-[rgba(12,27,56,0.12)] px-6 py-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-ink-soft leading-relaxed">
           We use cookies to understand how visitors use our site. Essential cookies are always active.{" "}
-          <Link href="/privacy#cookies" className="text-blue-600 hover:underline">
+          <Link href="/privacy#cookies" className="text-blue hover:underline">
             Learn more
           </Link>
         </p>
         <div className="flex shrink-0 gap-3">
           <button
             onClick={decline}
-            className="rounded-full border border-gray-200 px-5 py-2 text-sm font-medium text-gray-600 hover:border-gray-400 transition-colors"
+            className="rounded-full border border-[var(--line)] px-5 py-2 text-sm font-medium text-ink-soft hover:border-blue/30 hover:text-ink transition-colors"
           >
             Decline
           </button>
           <button
             onClick={accept}
-            className="rounded-full bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+            className="btn-primary px-5 py-2 text-sm"
           >
             Accept all
           </button>

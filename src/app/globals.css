@@ -1,15 +1,39 @@
 @import "tailwindcss";
 
+/* ════════════════════════════════════════════════════════════
+   RINGLOOP — "PREMIUM CLINICAL" DESIGN SYSTEM
+   Porcelain light, deep navy ink, one refined sapphire blue.
+   Serif display headlines (Fraunces) + clean sans body (Geist).
+   Calm, airy, expensive — built for medical clinics.
+   ════════════════════════════════════════════════════════════ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #0f172a;
-  --blue:        #2563EB;
-  --navy:        #050c1e;
+  --paper:     #f7f9fc;  /* page background — cool porcelain     */
+  --ink:       #0c1b38;  /* primary text — deep navy             */
+  --ink-soft:  #4a5878;  /* secondary text                       */
+  --muted:     #8c98b4;  /* tertiary text / labels               */
+  --blue:      #2156e8;  /* sapphire — the one accent            */
+  --blue-deep: #173f9e;  /* hover / depth                        */
+  --sky:       #e9f0fc;  /* pale blue tint                       */
+  --night:     #081530;  /* dark "night shift" sections          */
+  --line:      #e4eaf4;  /* hairlines on light                   */
+  --line-dark: rgba(233, 240, 252, 0.10);  /* hairlines on navy  */
+
+  --background: var(--paper);
+  --foreground: var(--ink);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-paper:     #f7f9fc;
+  --color-ink:       #0c1b38;
+  --color-ink-soft:  #4a5878;
+  --color-muted:     #8c98b4;
+  --color-blue:      #2156e8;
+  --color-blue-deep: #173f9e;
+  --color-sky:       #e9f0fc;
+  --color-night:     #081530;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -18,6 +42,7 @@
 
 html {
   scroll-behavior: smooth;
+  background: var(--paper);
 }
 
 body {
@@ -30,44 +55,75 @@ body {
 }
 
 ::selection {
-  background: #bfdbfe;
-  color: #1e3a8a;
+  background: rgba(33, 86, 232, 0.18);
+  color: var(--blue-deep);
 }
 
-/* Visible keyboard focus without affecting mouse users */
 :focus-visible {
   outline: 2px solid var(--blue);
   outline-offset: 3px;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
-/* Respect users who turn off animations (also an accessibility/Lighthouse win) */
+/* Display type — modern rounded-grotesque headlines, tight tracking */
+.font-display {
+  font-family: var(--font-display), var(--font-geist-sans), sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+/* Accent words inside headlines: gradient ink instead of italics */
+.font-display em {
+  font-style: normal;
+  background: linear-gradient(94deg, #2156e8 10%, #5f8cf3 60%, #7fa6f8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* On navy sections the gradient starts lighter so it stays luminous */
+.bg-night .font-display em,
+.bg-night em {
+  background: linear-gradient(94deg, #7fa6f8, #c4d7ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-style: normal;
+}
+
+/* Small uppercase label */
+@layer components {
+  .label {
+    font-size: 0.6875rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+}
+
+/* ── Reduced motion ────────────────────────────────────────── */
+
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-up,
   .animate-fade-in,
-  .animate-float,
-  .animate-aurora,
-  .aurora-2,
-  .text-shimmer,
-  .wave-bar {
+  .ring-pulse,
+  .ring-pulse-2,
+  .wave-bar,
+  .subtitle-line,
+  .halo-drift {
     animation: none;
   }
-  .btn-shine::after {
-    animation: none;
-    display: none;
-  }
-  .bubble-in {
-    opacity: 1;
-    animation: none;
-  }
+  .subtitle-line { opacity: 1; position: static; }
+  .animate-float { animation: none; }
+  .marquee { animation: none; }
+  .parallax, .parallax-soft { animation: none; }
   [data-reveal] {
     opacity: 1;
     transform: none;
+    filter: none;
     transition: none;
   }
-  html {
-    scroll-behavior: auto;
-  }
+  html { scroll-behavior: auto; }
 }
 
 /* ── Animations ────────────────────────────────────────────── */
@@ -82,87 +138,59 @@ body {
   to   { opacity: 1; }
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0px);   }
-  50%       { transform: translateY(-10px); }
+/* Slow drifting halo — keeps light sections gently alive */
+@keyframes haloDrift {
+  0%, 100% { transform: translate(-50%, 0) scale(1);     opacity: 0.7; }
+  50%      { transform: translate(-46%, 4%) scale(1.08); opacity: 1;   }
 }
 
-@keyframes glow-pulse {
-  0%, 100% { opacity: 0.6; }
-  50%       { opacity: 1;   }
+/* Incoming-call pulse rings */
+@keyframes ringPulse {
+  0%   { transform: scale(0.6); opacity: 0.7; }
+  100% { transform: scale(1.6); opacity: 0;   }
 }
 
-/* Slow drifting glow — gives hero/dark sections a living, cinematic feel */
-@keyframes aurora {
-  0%, 100% { transform: translate(-50%, 0) scale(1);    opacity: 0.5; }
-  50%      { transform: translate(-46%, 3%) scale(1.12); opacity: 0.85; }
-}
-
-/* Voice waveform bars (the product is a voice agent — let it "speak") */
+/* Voice waveform bars */
 @keyframes soundwave {
-  0%, 100% { transform: scaleY(0.3); }
-  50%      { transform: scaleY(1);   }
+  0%, 100% { transform: scaleY(0.25); }
+  50%      { transform: scaleY(1);    }
 }
 
-/* Slow-moving gradient inside headline text — the "ad" shimmer */
-@keyframes shimmer {
-  0%   { background-position: 0% 50%; }
-  100% { background-position: 200% 50%; }
+/* Subtitles cycling inside the hero call card */
+@keyframes subtitleCycle {
+  0%       { opacity: 0; transform: translateY(8px); }
+  1.5%     { opacity: 1; transform: translateY(0);   }
+  12.5%    { opacity: 1; transform: translateY(0);   }
+  14%      { opacity: 0; transform: translateY(-6px); }
+  100%     { opacity: 0; }
 }
 
-/* Light sweep across primary CTAs */
-@keyframes shine {
-  0%, 55% { left: -70%; }
-  100%    { left: 140%; }
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-9px); }
 }
 
-/* Chat bubbles materialize one by one in the hero mockup */
-@keyframes bubbleIn {
-  from { opacity: 0; transform: translateY(10px) scale(0.96); }
-  to   { opacity: 1; transform: none; }
-}
+.animate-fade-up { animation: fadeUp 0.8s cubic-bezier(.16,1,.3,1) both; }
+.animate-float   { animation: float 6.5s ease-in-out infinite; }
+.animate-fade-in { animation: fadeIn 1.1s ease-out both; }
+.halo-drift      { animation: haloDrift 16s ease-in-out infinite; }
 
-.animate-fade-up { animation: fadeUp 0.7s cubic-bezier(.16,1,.3,1) both; }
-.animate-fade-in { animation: fadeIn 0.9s ease-out both; }
-.animate-float   { animation: float 5.5s ease-in-out infinite; }
-.animate-aurora  { animation: aurora 14s ease-in-out infinite; }
-.aurora-2        { animation: aurora 19s ease-in-out infinite reverse; }
-
-.text-shimmer {
-  background: linear-gradient(90deg, #60a5fa 0%, #a78bfa 30%, #c4b5fd 50%, #a78bfa 70%, #60a5fa 100%);
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: #60a5fa; /* fallback */
-  animation: shimmer 5s linear infinite;
+.ring-pulse {
+  animation: ringPulse 2.4s cubic-bezier(0.2, 0.6, 0.4, 1) infinite;
 }
-
-.btn-shine {
-  position: relative;
-  overflow: hidden;
-}
-.btn-shine::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: -70%;
-  width: 45%;
-  background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.35), transparent);
-  transform: skewX(-20deg);
-  animation: shine 3.6s ease-in-out infinite;
-  pointer-events: none;
-}
-
-.bubble-in {
-  opacity: 0;
-  animation: bubbleIn 0.55s cubic-bezier(.16,1,.3,1) forwards;
+.ring-pulse-2 {
+  animation: ringPulse 2.4s cubic-bezier(0.2, 0.6, 0.4, 1) infinite;
+  animation-delay: 0.8s;
 }
 
 .wave-bar {
   transform-origin: center;
   animation: soundwave 1.1s ease-in-out infinite;
+}
+
+.subtitle-line {
+  opacity: 0;
+  animation: subtitleCycle 24.5s linear infinite;
 }
 
 .delay-100 { animation-delay: 0.10s; }
@@ -171,45 +199,171 @@ body {
 .delay-400 { animation-delay: 0.48s; }
 .delay-500 { animation-delay: 0.62s; }
 
-/* ── Scroll reveal (elements with data-reveal animate in on scroll) ── */
+/* ── Scroll reveal (Reveal.tsx adds .revealed) ─────────────── */
+/* Default: rise + de-blur. Feels like focus pulling in a lens. */
+
 [data-reveal] {
   opacity: 0;
-  transform: translateY(28px);
+  transform: translateY(34px);
+  filter: blur(10px);
   transition:
     opacity   0.9s cubic-bezier(.16,1,.3,1),
-    transform 0.9s cubic-bezier(.16,1,.3,1);
+    transform 0.9s cubic-bezier(.16,1,.3,1),
+    filter    0.9s cubic-bezier(.16,1,.3,1);
 }
 
 [data-reveal].revealed {
   opacity: 1;
   transform: none;
+  filter: none;
 }
 
-/* Stagger helpers for grids of cards */
 .r-delay-1 { transition-delay: 0.08s; }
 .r-delay-2 { transition-delay: 0.16s; }
 .r-delay-3 { transition-delay: 0.24s; }
 
-/* Pop variant: scales up while fading in (stats, key numbers) */
-[data-reveal].reveal-pop { transform: translateY(20px) scale(0.9); }
-[data-reveal].reveal-pop.revealed { transform: none; }
+/* Variants — mix directions so scrolling feels choreographed */
+[data-reveal].reveal-pop   { transform: translateY(24px) scale(0.9); }
+[data-reveal].reveal-left  { transform: translateX(-48px); }
+[data-reveal].reveal-right { transform: translateX(48px); }
+[data-reveal].reveal-zoom  { transform: scale(0.94) translateY(16px); }
+[data-reveal].reveal-pop.revealed,
+[data-reveal].reveal-left.revealed,
+[data-reveal].reveal-right.revealed,
+[data-reveal].reveal-zoom.revealed { transform: none; }
 
-/* ── Dot-grid texture (dark sections) ──────────────────────── */
-.dot-grid {
-  background-image: radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px);
-  background-size: 26px 26px;
+/* ── Marquee (specialty ticker) ────────────────────────────── */
+
+@keyframes marqueeScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }
 
-/* ── Section fade dividers ─────────────────────────────────── */
-/* Use these divs at the TOP of a light section that follows a dark one */
-.divide-dark-to-light {
-  height: 80px;
-  background: linear-gradient(to bottom, var(--navy), white);
-  pointer-events: none;
+.marquee {
+  display: flex;
+  width: max-content;
+  animation: marqueeScroll 36s linear infinite;
+}
+.marquee-mask {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
 }
 
-.divide-light-to-dark {
-  height: 80px;
-  background: linear-gradient(to bottom, white, var(--navy));
-  pointer-events: none;
+/* ── Scroll-driven parallax (progressive enhancement) ──────── */
+
+@supports (animation-timeline: view()) {
+  @keyframes parallaxRise {
+    from { transform: translateY(90px); }
+    to   { transform: translateY(-90px); }
+  }
+  .parallax {
+    animation: parallaxRise linear both;
+    animation-timeline: view();
+    animation-range: entry 0% exit 100%;
+  }
+  @keyframes parallaxRiseSoft {
+    from { transform: translateY(40px); }
+    to   { transform: translateY(-40px); }
+  }
+  .parallax-soft {
+    animation: parallaxRiseSoft linear both;
+    animation-timeline: view();
+    animation-range: entry 0% exit 100%;
+  }
+}
+
+/* ── Set pieces ────────────────────────────────────────────── */
+
+/* Soft sky halo at the top of a light section */
+.halo {
+  background: radial-gradient(ellipse 75% 55% at 50% -12%, rgba(33, 86, 232, 0.10), transparent 70%);
+}
+
+/* Blue glow inside navy sections */
+.night-glow {
+  background: radial-gradient(ellipse 70% 60% at 50% -10%, rgba(64, 116, 245, 0.22), transparent 70%);
+}
+
+/* ── Smooth hover system ───────────────────────────────────────
+   One slow, eased motion for every hoverable surface: a gentle
+   lift + a soft blue light. Unlayered, so it wins over utilities. */
+
+.card,
+.card-night,
+.hover-glow {
+  transition:
+    transform        0.55s cubic-bezier(.22, 1, .36, 1),
+    box-shadow       0.55s cubic-bezier(.22, 1, .36, 1),
+    border-color     0.55s cubic-bezier(.22, 1, .36, 1),
+    background-color 0.55s cubic-bezier(.22, 1, .36, 1);
+}
+
+/* Premium card on light backgrounds */
+.card {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 1.25rem;
+  box-shadow:
+    0 1px 2px rgba(12, 27, 56, 0.04),
+    0 12px 32px -16px rgba(12, 27, 56, 0.10);
+}
+.card:hover,
+.hover-glow:hover {
+  transform: translateY(-5px);
+  border-color: rgba(33, 86, 232, 0.28);
+  box-shadow:
+    0 1px 2px rgba(12, 27, 56, 0.04),
+    0 18px 44px -18px rgba(12, 27, 56, 0.14),
+    0 0 0 4px rgba(33, 86, 232, 0.05),
+    0 8px 40px -8px rgba(33, 86, 232, 0.25);
+}
+
+/* Card on navy backgrounds */
+.card-night {
+  background: rgba(233, 240, 252, 0.05);
+  border: 1px solid var(--line-dark);
+  border-radius: 1.25rem;
+}
+.card-night:hover {
+  transform: translateY(-5px);
+  border-color: rgba(127, 166, 248, 0.4);
+  background: rgba(233, 240, 252, 0.08);
+  box-shadow: 0 10px 44px -10px rgba(64, 116, 245, 0.35);
+}
+
+/* Primary pill button */
+.btn-primary {
+  border-radius: 9999px;
+  background: linear-gradient(180deg, #2e63f0, #1d4fd8);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 10px 24px -10px rgba(33, 86, 232, 0.55);
+  transition: all 0.45s cubic-bezier(.22, 1, .36, 1);
+}
+.btn-primary:hover {
+  background: linear-gradient(180deg, #3a6cf2, #2156e8);
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 16px 36px -10px rgba(33, 86, 232, 0.65),
+    0 0 24px rgba(33, 86, 232, 0.3);
+}
+
+/* Hairline rules */
+.rule {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--line), transparent);
+}
+.rule-blue {
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(33, 86, 232, 0.35), transparent);
+}
+
+/* Faint dotted texture for navy sections */
+.dot-grid-dark {
+  background-image: radial-gradient(circle, rgba(233, 240, 252, 0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
 }

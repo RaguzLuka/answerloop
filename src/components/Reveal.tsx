@@ -22,7 +22,9 @@ export default function Reveal() {
       const vh = window.innerHeight;
       pending = pending.filter((el) => {
         const r = el.getBoundingClientRect();
-        const inView = r.top < vh - 40 && r.bottom > 0;
+        // Reveal anything in view OR already scrolled past (anchor jumps,
+        // fast scrolling) so sections are never left invisible above you.
+        const inView = r.top < vh - 40;
         if (inView) el.classList.add("revealed");
         return !inView;
       });

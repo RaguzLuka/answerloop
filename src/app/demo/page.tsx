@@ -10,57 +10,58 @@ export const metadata = {
 
 export default function DemoPage() {
   return (
-    <main className="pt-16">
+    <main className="bg-paper pt-16 text-ink">
 
       {/* Hero + the demo itself — no scrolling needed to start */}
-      <section className="relative overflow-hidden px-6 pt-20 pb-24">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-5%,_#dbeafe,_transparent)]" />
-        <div className="animate-aurora pointer-events-none absolute -top-40 left-1/2 h-[420px] w-[760px] rounded-full bg-blue-300/25 blur-3xl" />
+      <section className="relative overflow-hidden px-6 pt-24 pb-28">
+        <div className="halo pointer-events-none absolute inset-0" />
+        <div className="halo-drift pointer-events-none absolute -top-40 left-1/2 h-[420px] w-[760px] rounded-full bg-blue/10 blur-3xl" />
 
         <div className="relative mx-auto max-w-3xl text-center">
-          <div className="mb-8 inline-flex items-center gap-2.5 rounded-full border border-blue-200/70 bg-blue-50/80 px-4 py-1.5 text-xs font-semibold text-blue-700 shadow-sm backdrop-blur-sm">
+          <p className="mb-8 inline-flex items-center gap-2.5 rounded-full border border-blue/15 bg-white/70 px-4 py-1.5 text-xs font-semibold text-blue shadow-sm backdrop-blur-sm">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-60" />
-              <span className="relative h-2 w-2 rounded-full bg-blue-600" />
+              <span className="ring-pulse absolute inline-flex h-full w-full rounded-full bg-blue" />
+              <span className="relative h-2 w-2 rounded-full bg-blue" />
             </span>
             Live interactive demo — free, no sign-up
-          </div>
+          </p>
 
-          <h1 className="mb-5 text-5xl font-bold leading-[1.08] tracking-tight md:text-6xl">
+          <h1 className="font-display mb-6 text-5xl leading-[1.05] md:text-6xl">
             Don&apos;t take our word for it.<br />
-            <span className="text-blue-600">Talk to her.</span>
+            <em className="text-blue">Talk to her.</em>
           </h1>
-          <p className="mx-auto mb-12 max-w-lg text-lg text-slate-500 leading-relaxed">
-            This is the exact AI receptionist your patients would hear. Book a fictional appointment at our demo clinic — right here in your browser.
+          <p className="mx-auto mb-14 max-w-lg text-lg leading-relaxed text-ink-soft">
+            This is the exact AI receptionist your patients would hear. Book a fictional
+            appointment at our demo clinic — right here in your browser.
           </p>
 
           <LiveDemo />
 
-          <p className="mt-8 text-sm text-slate-400">
+          <p className="mt-10 text-sm text-muted">
             Works in any modern browser — just allow the microphone when asked.
           </p>
         </div>
       </section>
 
       {/* What to try — turns curiosity into a guided test drive */}
-      <section className="border-y border-slate-100 bg-[#f8faff] py-20">
+      <section className="border-y border-[var(--line)] bg-white py-24">
         <div className="mx-auto max-w-5xl px-6">
-          <div data-reveal>
-            <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Put her to the test</p>
-            <h2 className="mb-12 text-center text-3xl font-bold tracking-tight">Three things to try.</h2>
+          <div data-reveal className="mb-14 text-center">
+            <p className="label mb-4 text-muted">Put her to the test</p>
+            <h2 className="font-display text-3xl md:text-4xl">Three things to try.</h2>
           </div>
           <div className="grid gap-4 md:grid-cols-3">
             {[
-              { icon: "globe",   title: "Switch languages", desc: "Start in Croatian, switch to English or German mid-call. She follows you without missing a beat." },
-              { icon: "message", title: "Interrupt her",    desc: "Talk over her like a real caller in a hurry would. She stops, listens, and adapts." },
-              { icon: "calendarCheck", title: "Book messy", desc: "Give her everything at once — \"I'm Marko, whitening, Friday at 3\" — and watch her sort it out." },
+              { icon: "globe",         title: "Switch languages", desc: "Start in Croatian, switch to English or German mid-call. She follows you without missing a beat." },
+              { icon: "message",       title: "Interrupt her",    desc: "Talk over her like a real caller in a hurry would. She stops, listens, and adapts." },
+              { icon: "calendarCheck", title: "Book messy",       desc: "Give her everything at once — \"I'm Marko, whitening, Friday at 3\" — and watch her sort it out." },
             ].map((t, i) => (
-              <div key={t.title} data-reveal className={`r-delay-${i + 1} rounded-2xl border border-slate-100 bg-white p-7 shadow-sm`}>
-                <span className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                  <Icon name={t.icon} className="h-5.5 w-5.5" />
+              <div key={t.title} data-reveal className={`card r-delay-${i + 1} p-7 transition-all duration-300 hover:-translate-y-1`}>
+                <span className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-sky text-blue">
+                  <Icon name={t.icon} className="h-5 w-5" />
                 </span>
-                <h3 className="mb-2 font-semibold text-slate-900">{t.title}</h3>
-                <p className="text-sm text-slate-500 leading-relaxed">{t.desc}</p>
+                <h3 className="mb-2 font-semibold">{t.title}</h3>
+                <p className="text-sm leading-relaxed text-ink-soft">{t.desc}</p>
               </div>
             ))}
           </div>
@@ -68,20 +69,21 @@ export default function DemoPage() {
       </section>
 
       {/* The bridge from demo to deal */}
-      <section className="relative overflow-hidden bg-[#050c1e] py-24 text-white text-center">
-        <div className="dot-grid absolute inset-0 pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_60%_at_50%_100%,_rgba(37,99,235,0.3),_transparent)] pointer-events-none" />
+      <section className="relative overflow-hidden bg-night py-28 text-center text-white">
+        <div className="dot-grid-dark pointer-events-none absolute inset-0" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_60%_at_50%_110%,_rgba(64,116,245,0.3),_transparent)]" />
         <div data-reveal className="relative mx-auto max-w-2xl px-6">
-          <h2 className="mb-5 text-4xl font-bold tracking-tight">Liked what you heard?</h2>
-          <p className="mb-9 text-lg text-slate-400 leading-relaxed">
-            In 24 hours, she can be answering <em>your</em> clinic&apos;s missed calls — with your name, your treatments, your doctors.
+          <h2 className="font-display mb-6 text-4xl md:text-5xl">Liked what <em className="text-[#7fa6f8]">you heard?</em></h2>
+          <p className="mb-10 text-lg leading-relaxed text-sky/60">
+            In 24 hours, she can be answering <em>your</em> clinic&apos;s missed calls —
+            with your name, your treatments, your doctors.
           </p>
-          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link href="/contact" className="btn-shine group rounded-full bg-blue-600 px-8 py-4 font-semibold text-white shadow-lg shadow-blue-900/50 hover:bg-blue-500 transition-all duration-300">
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <Link href="/contact" className="btn-primary group px-9 py-4">
               Set it up for my clinic
               <span className="ml-2 inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
             </Link>
-            <Link href="/pricing" className="rounded-full border border-white/20 px-8 py-4 font-semibold text-white hover:border-white/40 hover:bg-white/5 transition-all duration-300">
+            <Link href="/pricing" className="rounded-full border border-sky/25 px-9 py-4 font-semibold text-white transition-all duration-300 hover:border-[#7fa6f8]/60 hover:bg-white/5">
               See what&apos;s included
             </Link>
           </div>

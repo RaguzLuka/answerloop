@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Icon from "@/components/Icon";
+import CountUp from "@/components/CountUp";
 
 const faqs = [
   {
@@ -38,459 +39,521 @@ const faqJsonLd = {
   })),
 };
 
+/* The conversation that cycles inside the hero call card */
+const subtitles = [
+  { speaker: "RingLoop", text: "Good evening, Zagreb Dental. How can I help you?" },
+  { speaker: "Caller",   text: "Hi — I need a checkup, do you have anything this week?" },
+  { speaker: "RingLoop", text: "Of course. May I have your full name?" },
+  { speaker: "Caller",   text: "Marko Horvat." },
+  { speaker: "RingLoop", text: "Thank you, Marko. What day and time suit you?" },
+  { speaker: "Caller",   text: "Tomorrow at ten, if possible." },
+  { speaker: "RingLoop", text: "Booked — tomorrow at 10:00. Your SMS confirmation is on its way." },
+];
+
 export default function Home() {
   return (
-      <main className="overflow-x-hidden bg-white text-slate-900">
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
-        />
+    <main className="overflow-x-hidden bg-paper text-ink">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
 
-        {/* ── HERO ─────────────────────────────────────────── */}
-        <section className="relative min-h-[94vh] flex items-center justify-center overflow-hidden bg-[#050c1e] px-6 py-32 text-center text-white">
-          <div className="pointer-events-none absolute inset-0">
-            <div className="dot-grid absolute inset-0" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_85%_60%_at_50%_-10%,_rgba(37,99,235,0.28),_transparent_70%)]" />
-            <div className="animate-aurora absolute -top-48 left-1/2 h-[480px] w-[820px] rounded-full bg-blue-600/20 blur-3xl" />
-            <div className="aurora-2 absolute -top-20 left-2/3 h-[380px] w-[580px] rounded-full bg-violet-600/15 blur-3xl" />
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 h-px w-3/4 bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
-          </div>
+      {/* ── HERO ─────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden px-6 pt-40 pb-28 text-center">
+        <div className="halo pointer-events-none absolute inset-0" />
+        <div className="halo-drift pointer-events-none absolute -top-40 left-1/2 h-[460px] w-[820px] rounded-full bg-blue/10 blur-3xl" />
 
-          <div className="relative mx-auto max-w-4xl">
-            <div className="animate-fade-up mb-9 inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold text-blue-300 backdrop-blur-sm">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-60" />
-                <span className="relative h-2 w-2 rounded-full bg-blue-400" />
-              </span>
-              Now live for medical institutes across Europe
-            </div>
+        <div className="relative mx-auto max-w-4xl">
+          <p className="animate-fade-up mb-8 inline-flex items-center gap-2.5 rounded-full border border-blue/15 bg-white/70 px-4 py-1.5 text-xs font-semibold text-blue backdrop-blur-sm shadow-sm">
+            <span className="relative flex h-2 w-2">
+              <span className="ring-pulse absolute inline-flex h-full w-full rounded-full bg-blue" />
+              <span className="relative h-2 w-2 rounded-full bg-blue" />
+            </span>
+            Now answering calls for clinics across Europe
+          </p>
 
-            <h1 className="animate-fade-up delay-100 mb-7 text-5xl font-bold leading-[1.07] tracking-tight md:text-[4.25rem] lg:text-[5rem]">
-              Your clinic misses calls.<br />
-              <span className="text-shimmer">RingLoop answers them.</span>
-            </h1>
+          <h1 className="font-display animate-fade-up delay-100 mb-7 text-[3.1rem] leading-[1.04] md:text-[4.6rem] lg:text-[5.4rem]">
+            Your clinic misses calls.
+            <br />
+            <em className="text-blue">RingLoop answers them.</em>
+          </h1>
 
-            <p className="animate-fade-up delay-200 mx-auto mb-10 max-w-lg text-lg text-slate-400 leading-relaxed md:text-xl">
-              An AI receptionist that picks up every forwarded call, books the appointment by voice, and confirms it to the patient by SMS — automatically, 24/7.
-            </p>
+          <p className="animate-fade-up delay-200 mx-auto mb-11 max-w-xl text-lg leading-relaxed text-ink-soft md:text-xl">
+            The AI receptionist that picks up every forwarded call, books the
+            appointment by voice, and confirms it to the patient by SMS —
+            automatically, 24/7.
+          </p>
 
-            <div className="animate-fade-up delay-300 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-              <Link href="/contact" className="btn-shine group rounded-full bg-blue-600 px-8 py-3.5 font-semibold text-white shadow-lg shadow-blue-900/50 hover:bg-blue-500 hover:shadow-xl hover:-translate-y-px transition-all duration-300">
-                Book a free demo
-                <span className="ml-2 inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
-              </Link>
-              <Link href="/how-it-works" className="rounded-full border border-white/15 bg-white/5 px-8 py-3.5 font-semibold text-slate-200 hover:border-white/30 hover:text-white hover:bg-white/10 transition-all duration-300">
-                See how it works
-              </Link>
-            </div>
-
-            <p className="animate-fade-up delay-400 mt-5 text-sm text-slate-500">
-              No contract &nbsp;·&nbsp; Cancel anytime &nbsp;·&nbsp; Setup in 24h &nbsp;·&nbsp; Pricing tailored to your clinic
-            </p>
-
+          <div className="animate-fade-up delay-300 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+            <Link href="/contact" className="btn-primary group px-9 py-4">
+              Book a free demo
+              <span className="ml-2 inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
+            </Link>
             <Link
               href="/demo"
-              className="animate-fade-up delay-400 mt-7 inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-semibold text-slate-200 backdrop-blur-sm hover:border-blue-400/50 hover:text-white transition-all duration-300"
+              className="rounded-full border border-[var(--line)] bg-white px-9 py-4 font-semibold text-ink shadow-sm transition-all duration-300 hover:border-blue/30 hover:text-blue"
             >
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-white">
-                <Icon name="phone" className="h-3 w-3" />
-              </span>
-              Talk to her right now — live demo in your browser
+              Talk to the AI right now
             </Link>
+          </div>
 
-            {/* Phone call mockup */}
-            <div className="animate-fade-up delay-500 animate-float mx-auto mt-16 w-full max-w-[330px] overflow-hidden rounded-[26px] border border-white/10 bg-white shadow-2xl shadow-blue-950/60 text-left">
-              <div className="flex items-center gap-3 bg-[#1a1a2e] px-4 py-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white"><Icon name="phone" className="h-4 w-4" /></div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-white truncate">Zagreb Dental Clinic</p>
-                  <p className="text-xs text-blue-400">AI receptionist · live call</p>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-4 items-center gap-[3px]">
-                    {[10, 16, 7, 13, 9].map((h, i) => (
-                      <span
-                        key={i}
-                        className="wave-bar w-[3px] rounded-full bg-blue-400"
-                        style={{ height: `${h}px`, animationDelay: `${i * 0.13}s` }}
-                      />
-                    ))}
-                  </div>
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-60" />
-                    <span className="relative h-2 w-2 rounded-full bg-green-400" />
+          <p className="animate-fade-up delay-400 mt-7 text-sm text-muted">
+            No contract &nbsp;·&nbsp; Cancel anytime &nbsp;·&nbsp; Setup in 24h &nbsp;·&nbsp; Pricing tailored to your clinic
+          </p>
+
+          {/* The live call card */}
+          <div className="animate-fade-up delay-500 mx-auto mt-20 w-full max-w-2xl">
+          <div className="animate-float card relative overflow-hidden text-left">
+            {/* Card head */}
+            <div className="flex items-center justify-between border-b border-[var(--line)] px-6 py-4">
+              <div className="flex items-center gap-3.5">
+                <div className="relative flex h-10 w-10 items-center justify-center">
+                  <span className="ring-pulse absolute inset-0 rounded-full bg-blue/20" />
+                  <span className="relative flex h-10 w-10 items-center justify-center rounded-full bg-blue text-white">
+                    <Icon name="phone" className="h-4 w-4" />
                   </span>
                 </div>
+                <div>
+                  <p className="text-sm font-semibold">Zagreb Dental Clinic</p>
+                  <p className="text-xs text-blue">AI receptionist · live call</p>
+                </div>
               </div>
-              <div className="bg-slate-50 px-4 py-4 space-y-3">
-                {[
-                  { from: "ai",     text: "Hello! Thank you for calling Zagreb Dental. What treatment are you looking for?" },
-                  { from: "client", text: "Hi, I need a dental checkup." },
-                  { from: "ai",     text: "Of course! May I have your full name?" },
-                  { from: "client", text: "Marko Horvat." },
-                  { from: "ai",     text: "Thanks Marko! What date and time works for you?" },
-                  { from: "client", text: "Tomorrow at 10am." },
-                  { from: "ai",     text: "✅ Booked! Dental checkup tomorrow at 10:00. You'll get an SMS confirmation right away. See you then!" },
-                ].map((msg, i) => (
-                  <div
+              <div className="flex h-5 items-center gap-[3px]">
+                {[10, 16, 7, 13, 9, 15, 8].map((h, i) => (
+                  <span
                     key={i}
-                    className={`bubble-in flex ${msg.from === "client" ? "justify-end" : "justify-start"}`}
-                    style={{ animationDelay: `${1.2 + i * 0.55}s` }}
-                  >
-                    <div className={`max-w-[82%] rounded-2xl px-3.5 py-2 text-[12px] leading-relaxed shadow-sm ${
-                      msg.from === "ai"
-                        ? "rounded-tl-sm bg-white text-slate-800 border border-slate-100"
-                        : "rounded-tr-sm bg-blue-600 text-white"
-                    }`}>
-                      {msg.text}
-                    </div>
-                  </div>
+                    className="wave-bar w-[3px] rounded-full bg-blue/70"
+                    style={{ height: `${h}px`, animationDelay: `${i * 0.12}s` }}
+                  />
                 ))}
               </div>
             </div>
+
+            {/* The conversation, one line at a time */}
+            <div className="relative flex h-36 items-center justify-center bg-gradient-to-b from-sky/40 to-white px-8">
+              {subtitles.map((line, i) => (
+                <p
+                  key={i}
+                  className="subtitle-line absolute inset-x-8 text-center text-[15px] leading-relaxed text-ink-soft md:text-base"
+                  style={{ animationDelay: `${i * 3.5}s` }}
+                >
+                  <span className={`label mr-2.5 ${line.speaker === "RingLoop" ? "text-blue" : "text-muted"}`}>
+                    {line.speaker}
+                  </span>
+                  &ldquo;{line.text}&rdquo;
+                </p>
+              ))}
+            </div>
+
+            {/* Card foot */}
+            <div className="flex items-center justify-between border-t border-[var(--line)] px-6 py-3.5">
+              <p className="text-xs font-medium text-muted">Answered in under 5 seconds</p>
+              <Link href="/demo" className="text-xs font-semibold text-blue transition-colors hover:text-blue-deep">
+                Try it yourself →
+              </Link>
+            </div>
           </div>
-        </section>
+          </div>
+        </div>
+      </section>
 
-        {/* Divider */}
-        <div className="divide-dark-to-light" />
+      {/* ── STATS (live counters) ────────────────────────────── */}
+      <section className="border-y border-[var(--line)] bg-white py-16">
+        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-y-10 px-6 md:grid-cols-4">
+          {[
+            { number: <CountUp end={62} suffix="%" />,           label: "of missed calls never call back" },
+            { number: <CountUp end={5} prefix="< " suffix="s" />, label: "RingLoop picks up the call" },
+            { number: "24/7",                                     label: "always available" },
+            { number: <CountUp end={3} suffix="×" />,             label: "more bookings per month" },
+          ].map((stat, i) => (
+            <div key={stat.label} data-reveal className={`reveal-pop r-delay-${(i % 3) + 1} text-center`}>
+              <p className="font-display mb-2 text-[2.7rem] leading-none text-blue">{stat.number}</p>
+              <p className="mx-auto max-w-[180px] text-sm leading-snug text-ink-soft">{stat.label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
-        {/* ── STATS ────────────────────────────────────────── */}
-        <section className="border-b border-slate-100 bg-[#f8faff] py-14">
-          <div className="mx-auto grid max-w-5xl grid-cols-2 gap-y-8 px-6 md:grid-cols-4">
+      {/* ── SPECIALTY TICKER ─────────────────────────────────── */}
+      <div className="marquee-mask border-b border-[var(--line)] bg-white py-5">
+        <div className="marquee items-center gap-12 pr-12">
+          {[0, 1].map((copy) => (
+            <div key={copy} aria-hidden={copy === 1} className="flex shrink-0 items-center gap-12">
+              {[
+                "Dental clinics", "Aesthetic clinics", "General practices", "Ophthalmology",
+                "Physiotherapy", "Psychiatry & therapy", "Cardiology", "Dermatology", "Pediatrics",
+              ].map((s) => (
+                <span key={s} className="flex items-center gap-12 whitespace-nowrap text-sm font-medium text-muted">
+                  {s}
+                  <span className="h-1 w-1 rounded-full bg-blue/40" />
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── PROBLEM ──────────────────────────────────────────── */}
+      <section className="mx-auto max-w-5xl px-6 py-32">
+        <div className="grid items-center gap-16 md:grid-cols-2">
+          <div data-reveal className="reveal-left">
+            <p className="label mb-4 text-muted">The cost of a missed call</p>
+            <h2 className="font-display mb-6 text-4xl leading-[1.1] md:text-5xl">
+              Every unanswered ring is a patient <em className="text-blue">walking away.</em>
+            </h2>
+            <p className="mb-10 leading-relaxed text-ink-soft">
+              When a patient calls and nobody answers, they don&apos;t wait. They call
+              the next clinic on Google. That&apos;s a lost patient — and lost
+              revenue — every single time.
+            </p>
+            <ul className="space-y-5">
+              {[
+                "62% of missed calls never call back",
+                "The average clinic misses 15–30 calls per month",
+                "Each missed call = €50–500 in lost treatment",
+                "Voicemail has less than 20% callback rate",
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-3.5 text-[15px] text-ink-soft">
+                  <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-blue" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Loss ledger */}
+          <div data-reveal className="card reveal-right r-delay-1 p-9">
+            <p className="label mb-1.5 text-blue">Monthly loss calculator</p>
+            <p className="mb-8 text-sm text-muted">For a clinic missing 20 calls a month</p>
+            <div>
+              {[
+                { label: "Missed calls / month",         value: "20 calls", hi: false },
+                { label: "Average treatment value",      value: "€150",     hi: false },
+                { label: "Patients who don't call back", value: "62% = 12", hi: false },
+                { label: "Monthly revenue lost",         value: "€1,800",   hi: true  },
+                { label: "Annual revenue lost",          value: "€21,600",  hi: true  },
+              ].map((row) => (
+                <div
+                  key={row.label}
+                  className={`flex items-center justify-between border-b border-[var(--line)] py-4 text-sm last:border-0 ${row.hi ? "font-semibold" : ""}`}
+                >
+                  <span className="text-ink-soft">{row.label}</span>
+                  <span className={row.hi ? "text-blue" : "text-ink"}>{row.value}</span>
+                </div>
+              ))}
+            </div>
+            <p className="mt-6 text-xs text-muted">RingLoop pays for itself in the first recovered booking.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── NIGHT SHIFT (solution, navy) ─────────────────────── */}
+      <section className="relative overflow-hidden bg-night py-32 text-white">
+        <div className="dot-grid-dark pointer-events-none absolute inset-0" />
+        <div className="night-glow pointer-events-none absolute inset-0" />
+        <div className="parallax pointer-events-none absolute -top-20 left-1/4 h-[380px] w-[380px] rounded-full bg-[#4074f5]/15 blur-3xl" />
+        <div className="parallax-soft pointer-events-none absolute bottom-0 right-1/5 h-[300px] w-[300px] rounded-full bg-[#7fa6f8]/10 blur-3xl" />
+
+        <div className="relative mx-auto max-w-5xl px-6">
+          <div data-reveal className="mb-20 text-center">
+            <p className="label mb-4 text-sky/60">While your front desk sleeps</p>
+            <h2 className="font-display text-4xl leading-[1.1] md:text-5xl">
+              RingLoop answers every call.
+              <br />
+              <em className="text-[#7fa6f8]">Even when you can&apos;t.</em>
+            </h2>
+            <p className="mx-auto mt-6 max-w-xl leading-relaxed text-sky/60">
+              Your clinic forwards unanswered calls to RingLoop. The AI picks up, has
+              a natural voice conversation, and books the appointment — then confirms
+              it to the patient by SMS.
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-4">
             {[
-              { number: "62%",   label: "of missed calls never call back" },
-              { number: "< 5s",  label: "AI picks up the call" },
-              { number: "24/7",  label: "always available" },
-              { number: "3×",    label: "more bookings per month" },
-            ].map((stat, i) => (
-              <div key={stat.label} data-reveal className={`reveal-pop r-delay-${i % 4 === 0 ? 1 : i % 4} text-center`}>
-                <p className="mb-1.5 text-[2.4rem] font-bold tracking-tight text-blue-600 leading-none">{stat.number}</p>
-                <p className="text-sm text-slate-500 leading-snug">{stat.label}</p>
+              { icon: "phone",         step: "01", title: "Patient calls, no answer",    desc: "The call forwards to RingLoop in seconds." },
+              { icon: "bot",           step: "02", title: "The AI picks up and talks",   desc: "A natural voice conversation — warm, not robotic." },
+              { icon: "calendarCheck", step: "03", title: "Appointment booked by voice", desc: "Name, treatment, doctor and time — all collected." },
+              { icon: "message",       step: "04", title: "SMS confirmation, instantly", desc: "The booking lands in the patient's pocket." },
+            ].map((s, i) => (
+              <div
+                key={s.title}
+                data-reveal
+                className={`card-night reveal-zoom r-delay-${(i % 3) + 1} p-7 transition-colors duration-300 hover:border-[#7fa6f8]/30 hover:-translate-y-1`}
+              >
+                <div className="mb-6 flex items-center justify-between">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#7fa6f8]/12 text-[#7fa6f8]">
+                    <Icon name={s.icon} className="h-4.5 w-4.5" />
+                  </span>
+                  <span className="font-display text-2xl text-sky/25">{s.step}</span>
+                </div>
+                <p className="mb-1.5 font-semibold text-white">{s.title}</p>
+                <p className="text-sm leading-relaxed text-sky/55">{s.desc}</p>
               </div>
             ))}
           </div>
-        </section>
 
-        {/* ── PROBLEM ──────────────────────────────────────── */}
-        <section className="mx-auto max-w-5xl px-6 py-32">
-          <div className="grid items-center gap-16 md:grid-cols-2">
-            <div data-reveal>
-              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-red-500">The problem</p>
-              <h2 className="mb-5 text-4xl font-bold leading-[1.15] tracking-tight">Your clinic is losing patients every single day.</h2>
-              <p className="mb-8 text-slate-500 leading-relaxed text-[1.05rem]">
-                When a patient calls and nobody answers, they don&apos;t wait. They call the next clinic on Google. That&apos;s a lost patient — and lost revenue — every single time.
-              </p>
-              <ul className="space-y-4">
-                {[
-                  "62% of missed calls never call back",
-                  "The average clinic misses 15–30 calls per month",
-                  "Each missed call = €50–500 in lost treatment",
-                  "Voicemail has less than 20% callback rate",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-3 text-sm text-slate-600">
-                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-100 text-[10px] font-bold text-red-500">✕</span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div data-reveal className="r-delay-1 rounded-2xl border border-red-100/80 bg-red-50/50 p-8">
-              <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-red-500">Monthly loss calculator</p>
-              <p className="mb-6 text-sm text-slate-500">For a clinic missing 20 calls/month</p>
-              <div className="space-y-2">
-                {[
-                  { label: "Missed calls/month",            value: "20 calls", hi: false },
-                  { label: "Average treatment value",       value: "€150",     hi: false },
-                  { label: "Patients who don't call back",  value: "62% = 12", hi: false },
-                  { label: "Monthly revenue lost",          value: "€1,800",   hi: true  },
-                  { label: "Annual revenue lost",           value: "€21,600",  hi: true  },
-                ].map((row) => (
-                  <div key={row.label} className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm ${row.hi ? "bg-red-100/70 font-semibold" : "bg-white/70"}`}>
-                    <span className="text-slate-600">{row.label}</span>
-                    <span className={row.hi ? "text-red-600" : "font-medium text-slate-900"}>{row.value}</span>
-                  </div>
-                ))}
-              </div>
-              <p className="mt-5 text-xs text-slate-400">RingLoop pays for itself in the first recovered booking.</p>
-            </div>
+          <div data-reveal className="mt-14 text-center">
+            <Link
+              href="/how-it-works"
+              className="group inline-flex items-center gap-2 rounded-full border border-sky/20 px-8 py-3.5 font-semibold text-white transition-all duration-300 hover:border-[#7fa6f8]/60 hover:bg-white/5"
+            >
+              See exactly how it works
+              <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
+            </Link>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Divider */}
-        <div className="divide-light-to-dark" />
+      {/* ── WHAT TO EXPECT ───────────────────────────────────── */}
+      <section className="relative overflow-hidden py-32">
+        <div className="halo pointer-events-none absolute inset-0" />
+        <div className="relative mx-auto max-w-5xl px-6">
+          <div data-reveal className="mb-16 text-center">
+            <p className="label mb-4 text-muted">From the very first forwarded call</p>
+            <h2 className="font-display text-4xl md:text-5xl">What your clinic can <em className="text-blue">expect.</em></h2>
+          </div>
 
-        {/* ── SOLUTION ─────────────────────────────────────── */}
-        <section className="relative overflow-hidden bg-[#050c1e] py-32 text-white">
-          <div className="dot-grid absolute inset-0 pointer-events-none" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_0%,_rgba(37,99,235,0.22),_transparent)] pointer-events-none" />
-          <div className="relative mx-auto max-w-5xl px-6">
-            <div className="grid items-center gap-16 md:grid-cols-2">
-              <div data-reveal>
-                <p className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-blue-400">The solution</p>
-                <h2 className="mb-5 text-4xl font-bold leading-[1.15] tracking-tight">RingLoop answers every call. Even when you can&apos;t.</h2>
-                <p className="mb-8 text-slate-400 leading-relaxed text-[1.05rem]">
-                  Clinic forwards calls to RingLoop. Our AI picks up, has a natural voice conversation, and books the appointment. The patient instantly receives an SMS confirmation with all the details.
+          <div className="grid gap-5 md:grid-cols-3">
+            {[
+              {
+                icon: "phone",
+                metric: "Every call",
+                metricLabel: "answered, 24/7",
+                desc: "Forwarded calls are picked up within seconds — evenings, weekends, and while your team is with patients. Nobody hits voicemail again.",
+              },
+              {
+                icon: "calendarCheck",
+                metric: "Bookings",
+                metricLabel: "captured while you work",
+                desc: "The AI collects the treatment, name, doctor preference, and time, then confirms the appointment and sends your team a full summary.",
+              },
+              {
+                icon: "message",
+                metric: "Every booking",
+                metricLabel: "confirmed by SMS",
+                desc: "Patients instantly receive their appointment details by SMS — and bookings can land straight in your Google Calendar.",
+              },
+            ].map((c, i) => (
+              <div
+                key={c.metric + c.metricLabel}
+                data-reveal
+                className={`card reveal-zoom r-delay-${i + 1} flex flex-col gap-5 p-8 transition-all duration-300 hover:-translate-y-1`}
+              >
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky text-blue">
+                  <Icon name={c.icon} className="h-5 w-5" />
+                </span>
+                <p className="font-display text-2xl leading-tight">
+                  <em className="text-blue">{c.metric}</em> {c.metricLabel}
                 </p>
-                <Link href="/how-it-works" className="group inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-6 py-3 font-semibold text-white hover:bg-white/20 hover:border-white/30 transition-all duration-300">
-                  See exactly how it works
-                  <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
-                </Link>
+                <p className="text-sm leading-relaxed text-ink-soft">{c.desc}</p>
               </div>
-              <div className="space-y-3">
-                {[
-                  { icon: "phone",         title: "Patient calls, no answer",       desc: "Call forwards to RingLoop in seconds" },
-                  { icon: "bot",           title: "AI picks up and talks",          desc: "Natural voice conversation — sounds like a real receptionist" },
-                  { icon: "calendarCheck", title: "Appointment booked by voice",    desc: "Collects name, treatment, doctor, and time" },
-                  { icon: "message",       title: "SMS confirmation sent instantly",   desc: "Patient immediately receives the booking details in their pocket" },
-                ].map((step, i) => (
-                  <div key={step.title} data-reveal className={`r-delay-${(i % 3) + 1} flex items-start gap-4 rounded-2xl border border-white/10 bg-white/5 p-5 hover:bg-white/10 hover:border-white/20 transition-all duration-300`}>
-                    <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-500/15 text-blue-400">
-                      <Icon name={step.icon} className="h-5 w-5" />
-                    </span>
-                    <div>
-                      <p className="font-semibold text-white">{step.title}</p>
-                      <p className="text-sm text-slate-400 mt-0.5">{step.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
-        </section>
 
-        {/* Divider */}
-        <div className="divide-dark-to-light" />
+          <p data-reveal className="mt-12 text-center text-sm text-muted">
+            Want to hear it for yourself?{" "}
+            <Link href="/contact" className="font-semibold text-blue underline underline-offset-4 transition-colors hover:text-blue-deep">
+              Book a free demo
+            </Link>{" "}
+            and we&apos;ll call you live.
+          </p>
+        </div>
+      </section>
 
-        {/* ── COMPARISON ───────────────────────────────────── */}
-        <section className="mx-auto max-w-5xl px-6 pt-20 pb-32">
-          <div data-reveal>
-            <p className="mb-4 text-center text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Comparison</p>
-            <h2 className="mb-5 text-center text-4xl font-bold tracking-tight">Why RingLoop?</h2>
-            <p className="mb-16 text-center text-slate-500 text-[1.05rem]">See how RingLoop compares to traditional solutions.</p>
+      {/* ── COMPARISON ───────────────────────────────────────── */}
+      <section className="border-y border-[var(--line)] bg-white py-32">
+        <div className="mx-auto max-w-5xl px-6">
+          <div data-reveal className="mb-16 text-center">
+            <p className="label mb-4 text-muted">Comparison</p>
+            <h2 className="font-display text-4xl md:text-5xl">Why <em className="text-blue">RingLoop?</em></h2>
+            <p className="mt-4 text-ink-soft">How it compares to the alternatives.</p>
           </div>
-          <div data-reveal className="overflow-hidden rounded-2xl border border-slate-100 shadow-sm shadow-slate-100">
-            <table className="w-full">
+
+          <div data-reveal className="overflow-x-auto rounded-2xl border border-[var(--line)] shadow-sm">
+            <table className="w-full min-w-[560px]">
               <thead>
-                <tr className="border-b border-slate-100 bg-slate-50/80">
-                  <th className="px-6 py-5 text-left text-sm font-semibold text-slate-400">Feature</th>
-                  <th className="px-6 py-5 text-center text-sm font-bold text-blue-600 bg-blue-50/60">RingLoop</th>
-                  <th className="px-6 py-5 text-center text-sm font-semibold text-slate-400">Receptionist</th>
-                  <th className="px-6 py-5 text-center text-sm font-semibold text-slate-400">Voicemail</th>
+                <tr className="border-b border-[var(--line)] bg-paper">
+                  <th className="label px-6 py-5 text-left text-muted">Feature</th>
+                  <th className="label border-x border-blue/10 bg-sky/60 px-6 py-5 text-center text-blue">RingLoop</th>
+                  <th className="label px-6 py-5 text-center text-muted">Receptionist</th>
+                  <th className="label px-6 py-5 text-center text-muted">Voicemail</th>
                 </tr>
               </thead>
               <tbody>
                 {[
-                  { feature: "Available 24/7",                    rl: true,   rec: false, vm: true  },
-                  { feature: "Answers calls instantly",           rl: true,   rec: false, vm: true  },
-                  { feature: "Books appointments automatically",  rl: true,   rec: true,  vm: false },
-                  { feature: "Confirms bookings by SMS",          rl: true,   rec: false, vm: false },
-                  { feature: "Google Calendar integration",       rl: true,   rec: true,  vm: false },
-                  { feature: "Multi-language support",            rl: true,   rec: false, vm: false },
-                  { feature: "No salary or sick days",            rl: true,   rec: false, vm: true  },
-                  { feature: "Monthly cost",                      rl: "Tailored", rec: "€1,500+", vm: "€0" },
-                ].map((row, i) => (
-                  <tr key={row.feature} className={`transition-colors duration-200 hover:bg-blue-50/20 ${i % 2 === 0 ? "bg-white" : "bg-slate-50/40"}`}>
-                    <td className="px-6 py-5 text-sm font-medium text-slate-700">{row.feature}</td>
-                    <td className="px-6 py-5 text-center bg-blue-50/30">
-                      {typeof row.rl === "boolean" ? <Check ok={row.rl} /> : <span className="font-bold text-blue-600 text-sm">{row.rl}</span>}
+                  { feature: "Available 24/7",                   rl: true,       rec: false,     vm: true  },
+                  { feature: "Answers calls instantly",          rl: true,       rec: false,     vm: true  },
+                  { feature: "Books appointments automatically", rl: true,       rec: true,      vm: false },
+                  { feature: "Confirms bookings by SMS",         rl: true,       rec: false,     vm: false },
+                  { feature: "Google Calendar integration",      rl: true,       rec: true,      vm: false },
+                  { feature: "Multi-language support",           rl: true,       rec: false,     vm: false },
+                  { feature: "No salary or sick days",           rl: true,       rec: false,     vm: true  },
+                  { feature: "Monthly cost",                     rl: "Tailored", rec: "€1,500+", vm: "€0" },
+                ].map((row) => (
+                  <tr key={row.feature} className="border-b border-[var(--line)] bg-white last:border-0">
+                    <td className="px-6 py-4 text-sm font-medium text-ink-soft">{row.feature}</td>
+                    <td className="border-x border-blue/10 bg-sky/40 px-6 py-4 text-center">
+                      {typeof row.rl === "boolean" ? <Check ok={row.rl} /> : <span className="text-sm font-bold text-blue">{row.rl}</span>}
                     </td>
-                    <td className="px-6 py-5 text-center">
-                      {typeof row.rec === "boolean" ? <Check ok={row.rec} /> : <span className="text-sm text-slate-500">{row.rec}</span>}
+                    <td className="px-6 py-4 text-center">
+                      {typeof row.rec === "boolean" ? <Check ok={row.rec} /> : <span className="text-sm text-muted">{row.rec}</span>}
                     </td>
-                    <td className="px-6 py-5 text-center">
-                      {typeof row.vm === "boolean" ? <Check ok={row.vm} /> : <span className="text-sm text-slate-500">{row.vm}</span>}
+                    <td className="px-6 py-4 text-center">
+                      {typeof row.vm === "boolean" ? <Check ok={row.vm} /> : <span className="text-sm text-muted">{row.vm}</span>}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Divider */}
-        <div className="divide-light-to-dark" />
+      {/* ── FEATURES ─────────────────────────────────────────── */}
+      <section id="features" className="mx-auto max-w-5xl px-6 py-32">
+        <div data-reveal className="mb-16 text-center">
+          <p className="label mb-4 text-muted">Features</p>
+          <h2 className="font-display text-4xl md:text-5xl">Everything your clinic <em className="text-blue">needs.</em></h2>
+          <p className="mt-4 text-ink-soft">Built specifically for medical institutes.</p>
+        </div>
 
-        {/* ── FEATURES ─────────────────────────────────────── */}
-        <section id="features" className="relative overflow-hidden bg-[#050c1e] py-32 text-white">
-          <div className="dot-grid absolute inset-0 pointer-events-none" />
-          <div className="relative mx-auto max-w-5xl px-6">
-            <div data-reveal>
-              <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Features</p>
-              <h2 className="mb-4 text-center text-4xl font-bold tracking-tight">Everything your clinic needs.</h2>
-              <p className="mb-14 text-center text-slate-400 text-[1.05rem]">Built specifically for medical institutes.</p>
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+          {[
+            { icon: "phone",         title: "AI voice receptionist", desc: "Answers every forwarded call and has a natural booking conversation." },
+            { icon: "sparkles",      title: "Advanced AI",           desc: "Understands any language, any phrasing, any medical request." },
+            { icon: "calendarCheck", title: "Auto booking",          desc: "Collects all booking details and confirms the appointment by voice." },
+            { icon: "message",       title: "SMS confirmations",     desc: "Every patient instantly receives their booking details by SMS." },
+            { icon: "clinic",        title: "Custom AI persona",     desc: "The AI introduces itself as your clinic — not as RingLoop." },
+            { icon: "globe",         title: "Multi-language",        desc: "Croatian, English, German — whatever the patient speaks." },
+            { icon: "user",          title: "Doctor preference",     desc: "Asks if the patient has a preferred doctor before booking." },
+            { icon: "clipboard",     title: "Patient summaries",     desc: "After every booking, your team gets a full patient summary." },
+            { icon: "sync",          title: "Calendar integration",  desc: "Google Calendar integration available — bookings land straight in your clinic's calendar." },
+          ].map((f, i) => (
+            <div
+              key={f.title}
+              data-reveal
+              className={`card r-delay-${(i % 3) + 1} p-7 transition-all duration-300 hover:-translate-y-1`}
+            >
+              <span className="mb-5 flex h-10 w-10 items-center justify-center rounded-xl bg-sky text-blue">
+                <Icon name={f.icon} className="h-4.5 w-4.5" />
+              </span>
+              <h3 className="mb-1.5 font-semibold">{f.title}</h3>
+              <p className="text-sm leading-relaxed text-ink-soft">{f.desc}</p>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
-              {[
-                { icon: "phone",         title: "AI voice receptionist",  desc: "Answers every forwarded call and has a natural booking conversation." },
-                { icon: "sparkles",      title: "Advanced AI",            desc: "Understands any language, any phrasing, any medical request." },
-                { icon: "calendarCheck", title: "Auto booking",           desc: "Collects all booking details and confirms the appointment by voice." },
-                { icon: "message",       title: "SMS confirmations",      desc: "Every patient instantly receives their booking details by SMS." },
-                { icon: "clinic",        title: "Custom AI persona",      desc: "The AI introduces itself as your clinic — not as RingLoop." },
-                { icon: "globe",         title: "Multi-language",         desc: "Croatian, English, German — whatever the patient speaks." },
-                { icon: "user",          title: "Doctor preference",      desc: "Asks if the patient has a preferred doctor before booking." },
-                { icon: "clipboard",     title: "Patient summaries",      desc: "After every booking, your team gets a full patient summary." },
-                { icon: "sync",          title: "Calendar integration",   desc: "Google Calendar integration available — bookings land straight in your clinic's calendar." },
-              ].map((f, i) => (
-                <div key={f.title} data-reveal className={`r-delay-${(i % 3) + 1} rounded-2xl border border-white/10 bg-white/5 p-6 hover:border-blue-500/25 hover:bg-white/8 transition-all duration-300`}>
-                  <span className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/15 text-blue-400">
-                    <Icon name={f.icon} className="h-5 w-5" />
-                  </span>
-                  <h3 className="mb-1.5 font-semibold text-white">{f.title}</h3>
-                  <p className="text-sm text-slate-400 leading-relaxed">{f.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+          ))}
+        </div>
+      </section>
 
-        {/* Divider */}
-        <div className="divide-dark-to-light" />
-
-        {/* ── INDUSTRIES ───────────────────────────────────── */}
-        <section id="industries" className="mx-auto max-w-5xl px-6 pt-20 pb-32">
-          <div data-reveal>
-            <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Industries</p>
-            <h2 className="mb-4 text-center text-4xl font-bold tracking-tight">Built for every medical institute.</h2>
-            <p className="mb-14 text-center text-slate-500">If your clinic takes appointments, RingLoop works for you.</p>
+      {/* ── INDUSTRIES ───────────────────────────────────────── */}
+      <section id="industries" className="border-y border-[var(--line)] bg-white py-32">
+        <div className="mx-auto max-w-5xl px-6">
+          <div data-reveal className="mb-16 text-center">
+            <p className="label mb-4 text-muted">Specialties</p>
+            <h2 className="font-display text-4xl md:text-5xl">Built for every <em className="text-blue">medical institute.</em></h2>
+            <p className="mt-4 text-ink-soft">If your clinic takes appointments, RingLoop works for you.</p>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
             {[
-              { icon: "tooth",       name: "Dental Clinics",        desc: "Cleanings, checkups, whitening, implants" },
-              { icon: "syringe",     name: "Aesthetic Clinics",     desc: "Botox, fillers, skin treatments, laser" },
-              { icon: "stethoscope", name: "General Practices",     desc: "GP visits, specialist referrals, checkups" },
-              { icon: "eye",         name: "Ophthalmology",         desc: "Eye exams, vision correction, surgery" },
-              { icon: "bone",        name: "Physiotherapy",         desc: "Rehab, injury treatment, sports medicine" },
-              { icon: "smile",       name: "Psychiatry & Therapy",  desc: "Mental health, counseling, psychotherapy" },
-              { icon: "heartPulse",  name: "Cardiology",            desc: "Heart checkups, ECG, consultations" },
-              { icon: "droplet",     name: "Dermatology",           desc: "Skin conditions, mole checks, cosmetic" },
-              { icon: "baby",        name: "Pediatrics",            desc: "Child health, vaccinations, development" },
+              { icon: "tooth",       name: "Dental Clinics",       desc: "Cleanings, checkups, whitening, implants" },
+              { icon: "syringe",     name: "Aesthetic Clinics",    desc: "Botox, fillers, skin treatments, laser" },
+              { icon: "stethoscope", name: "General Practices",    desc: "GP visits, specialist referrals, checkups" },
+              { icon: "eye",         name: "Ophthalmology",        desc: "Eye exams, vision correction, surgery" },
+              { icon: "bone",        name: "Physiotherapy",        desc: "Rehab, injury treatment, sports medicine" },
+              { icon: "smile",       name: "Psychiatry & Therapy", desc: "Mental health, counseling, psychotherapy" },
+              { icon: "heartPulse",  name: "Cardiology",           desc: "Heart checkups, ECG, consultations" },
+              { icon: "droplet",     name: "Dermatology",          desc: "Skin conditions, mole checks, cosmetic" },
+              { icon: "baby",        name: "Pediatrics",           desc: "Child health, vaccinations, development" },
             ].map((ind, i) => (
-              <div key={ind.name} data-reveal className={`r-delay-${(i % 3) + 1} rounded-2xl border border-slate-100 p-5 hover:border-blue-200 hover:bg-blue-50/40 hover:-translate-y-0.5 transition-all duration-300`}>
-                <span className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                  <Icon name={ind.icon} className="h-5.5 w-5.5" />
+              <div
+                key={ind.name}
+                data-reveal
+                className={`hover-glow r-delay-${(i % 3) + 1} rounded-2xl border border-[var(--line)] bg-paper p-6 hover:bg-sky/40`}
+              >
+                <span className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-white text-blue shadow-sm">
+                  <Icon name={ind.icon} className="h-4.5 w-4.5" />
                 </span>
-                <h3 className="mb-1 font-semibold text-slate-900">{ind.name}</h3>
-                <p className="text-sm text-slate-500 leading-relaxed">{ind.desc}</p>
+                <h3 className="mb-1 font-semibold">{ind.name}</h3>
+                <p className="text-sm leading-relaxed text-ink-soft">{ind.desc}</p>
               </div>
             ))}
           </div>
-          <p className="mt-10 text-center text-sm text-slate-400">
+
+          <p className="mt-12 text-center text-sm text-muted">
             Not in the list?{" "}
-            <Link href="/contact" className="text-blue-600 underline underline-offset-2 hover:text-blue-700 transition-colors">Contact us</Link>
-            {" "}— RingLoop works for any appointment-based business.
+            <Link href="/contact" className="font-semibold text-blue underline underline-offset-4 transition-colors hover:text-blue-deep">
+              Contact us
+            </Link>{" "}
+            — RingLoop works for any appointment-based business.
           </p>
-        </section>
+        </div>
+      </section>
 
-        {/* ── WHAT CLINICS CAN EXPECT ──────────────────────── */}
-        <section className="bg-[#f8faff] border-y border-slate-100/80 py-32">
-          <div className="mx-auto max-w-5xl px-6">
-            <div data-reveal>
-              <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">What to expect</p>
-              <h2 className="mb-4 text-center text-4xl font-bold tracking-tight">What clinics can expect.</h2>
-              <p className="mb-14 text-center text-slate-500 text-[1.05rem]">From the very first forwarded call.</p>
-            </div>
-            <div className="grid gap-5 md:grid-cols-3">
-              {[
-                {
-                  icon: "phone",
-                  metric: "Every call",
-                  metricLabel: "answered, 24/7",
-                  desc: "Forwarded calls are picked up within seconds — evenings, weekends, and while your team is with patients. Nobody hits voicemail again.",
-                },
-                {
-                  icon: "calendarCheck",
-                  metric: "Bookings",
-                  metricLabel: "captured while you work",
-                  desc: "The AI collects the treatment, name, doctor preference, and time, then confirms the appointment and sends your team a full summary.",
-                },
-                {
-                  icon: "message",
-                  metric: "Every booking",
-                  metricLabel: "confirmed by SMS",
-                  desc: "Patients instantly receive their appointment details by SMS — and bookings can land straight in your Google Calendar.",
-                },
-              ].map((c, i) => (
-                <div
-                  key={c.metric + c.metricLabel}
-                  data-reveal
-                  className={`r-delay-${i + 1} flex flex-col gap-4 rounded-2xl border border-slate-100 bg-white p-7 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300`}
-                >
-                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                    <Icon name={c.icon} className="h-5.5 w-5.5" />
-                  </span>
-                  <p className="text-2xl font-bold tracking-tight leading-tight">
-                    <span className="text-blue-600">{c.metric}</span> {c.metricLabel}
-                  </p>
-                  <p className="text-sm text-slate-500 leading-relaxed">{c.desc}</p>
-                </div>
-              ))}
-            </div>
-            <p data-reveal className="mt-10 text-center text-sm text-slate-400">
-              Want to hear it for yourself?{" "}
-              <Link href="/contact" className="text-blue-600 underline underline-offset-2 hover:text-blue-700 transition-colors">Book a free demo</Link>
-              {" "}and we&apos;ll call you live.
-            </p>
+      {/* ── FAQ ──────────────────────────────────────────────── */}
+      <section className="mx-auto max-w-3xl px-6 py-32">
+        <div data-reveal className="mb-14 text-center">
+          <p className="label mb-4 text-muted">FAQ</p>
+          <h2 className="font-display text-4xl md:text-5xl">Common questions</h2>
+        </div>
+        <div data-reveal className="card divide-y divide-[var(--line)] px-8 py-2">
+          {faqs.map(({ q, a }) => (
+            <details key={q} className="group cursor-pointer py-6">
+              <summary className="flex list-none select-none items-center justify-between gap-4 font-semibold [&::-webkit-details-marker]:hidden">
+                {q}
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sky text-blue transition-transform duration-300 group-open:rotate-45">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M6 1V11M1 6H11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                  </svg>
+                </span>
+              </summary>
+              <p className="mt-3 pr-8 text-sm leading-relaxed text-ink-soft">{a}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      {/* ── CTA ──────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden bg-night py-36 text-center text-white">
+        <div className="dot-grid-dark pointer-events-none absolute inset-0" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_70%_at_50%_115%,_rgba(64,116,245,0.3),_transparent)]" />
+
+        <div data-reveal className="relative mx-auto max-w-2xl px-6">
+          <p className="label mb-5 text-sky/60">The next missed call could be tonight</p>
+          <h2 className="font-display mb-6 text-4xl leading-[1.08] md:text-6xl">
+            Ready to stop <em className="text-[#7fa6f8]">losing patients?</em>
+          </h2>
+          <p className="mx-auto mb-12 max-w-lg text-lg leading-relaxed text-sky/60">
+            Book a free 20-minute demo and hear your AI receptionist answer a live call.
+          </p>
+          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+            <Link href="/contact" className="btn-primary group px-9 py-4">
+              Book a free demo
+              <span className="ml-2 inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
+            </Link>
+            <Link
+              href="/pricing"
+              className="rounded-full border border-sky/25 px-9 py-4 font-semibold text-white transition-all duration-300 hover:border-[#7fa6f8]/60 hover:bg-white/5"
+            >
+              See pricing
+            </Link>
           </div>
-        </section>
-
-        {/* ── FAQ ──────────────────────────────────────────── */}
-        <section className="mx-auto max-w-3xl px-6 py-32">
-          <div data-reveal>
-            <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">FAQ</p>
-            <h2 className="mb-14 text-center text-4xl font-bold tracking-tight">Common questions</h2>
-          </div>
-          <div data-reveal className="divide-y divide-slate-100">
-            {faqs.map(({ q, a }) => (
-              <details key={q} className="group py-6 cursor-pointer">
-                <summary className="flex items-center justify-between gap-4 text-base font-semibold text-slate-900 list-none [&::-webkit-details-marker]:hidden select-none">
-                  {q}
-                  <span className="shrink-0 flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-transform duration-300 group-open:rotate-45">
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                      <path d="M6 1V11M1 6H11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-                    </svg>
-                  </span>
-                </summary>
-                <p className="mt-3 text-sm text-slate-500 leading-relaxed pr-8">{a}</p>
-              </details>
-            ))}
-          </div>
-        </section>
-
-        {/* Divider */}
-        <div className="divide-light-to-dark" />
-
-        {/* ── CTA ──────────────────────────────────────────── */}
-        <section className="relative overflow-hidden bg-[#050c1e] py-32 text-white text-center">
-          <div className="dot-grid absolute inset-0 pointer-events-none" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_70%_at_50%_110%,_rgba(37,99,235,0.28),_transparent)] pointer-events-none" />
-          <div className="animate-aurora pointer-events-none absolute -bottom-48 left-1/2 h-[420px] w-[760px] rounded-full bg-blue-500/15 blur-3xl" />
-          <div data-reveal className="relative mx-auto max-w-2xl px-6">
-            <h2 className="mb-5 text-4xl font-bold tracking-tight md:text-5xl">Ready to stop losing patients?</h2>
-            <p className="mb-10 text-lg text-slate-400 leading-relaxed">Book a free 20-minute demo and hear your AI receptionist answer a live call.</p>
-            <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-              <Link href="/contact" className="btn-shine group rounded-full bg-blue-600 px-8 py-4 font-semibold text-white shadow-lg shadow-blue-900/50 hover:bg-blue-500 hover:shadow-xl hover:-translate-y-px transition-all duration-300">
-                Book a free demo
-                <span className="ml-2 inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
-              </Link>
-              <Link href="/pricing" className="rounded-full border border-white/20 px-8 py-4 font-semibold text-white hover:border-white/40 hover:bg-white/5 transition-all duration-300">
-                See pricing
-              </Link>
-            </div>
-            <p className="mt-6 text-sm text-slate-500">No contract &nbsp;·&nbsp; Cancel anytime &nbsp;·&nbsp; Setup in 24h</p>
-            <p className="mt-3 text-sm text-slate-500">
-              Or{" "}
-              <Link href="/demo" className="font-semibold text-blue-400 hover:text-blue-300 transition-colors">talk to her right now</Link>
-              {" "}— live in your browser.
-            </p>
-          </div>
-        </section>
-
-      </main>
+          <p className="mt-8 text-sm text-sky/40">No contract &nbsp;·&nbsp; Cancel anytime &nbsp;·&nbsp; Setup in 24h</p>
+          <p className="mt-3 text-sm text-sky/40">
+            Or{" "}
+            <Link href="/demo" className="font-semibold text-[#7fa6f8] transition-colors hover:text-white">
+              talk to her right now
+            </Link>{" "}
+            — live in your browser.
+          </p>
+        </div>
+      </section>
+    </main>
   );
 }
 
 function Check({ ok }: { ok: boolean }) {
   return ok
-    ? <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 text-[10px] font-bold text-emerald-600">✓</span>
-    : <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-100 text-[10px] font-bold text-red-500">✕</span>;
+    ? <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-sky text-[10px] font-bold text-blue">✓</span>
+    : <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-paper text-[10px] font-bold text-muted">✕</span>;
 }

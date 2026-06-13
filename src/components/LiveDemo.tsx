@@ -99,10 +99,11 @@ export default function LiveDemo() {
           <button
             onClick={start}
             disabled={status === "connecting"}
-            className="group relative mx-auto flex h-40 w-40 items-center justify-center rounded-full bg-blue-600 text-white shadow-2xl shadow-blue-300/60 transition-all duration-300 hover:bg-blue-500 hover:scale-105 disabled:opacity-70 disabled:hover:scale-100"
+            className="group relative mx-auto flex h-40 w-40 items-center justify-center rounded-full bg-blue text-white shadow-2xl shadow-blue/30 transition-all duration-300 hover:bg-blue-deep hover:scale-105 disabled:opacity-70 disabled:hover:scale-100"
             aria-label="Start the live demo"
           >
-            <span className="absolute inset-0 rounded-full bg-blue-500/30 animate-ping [animation-duration:2.2s]" />
+            <span className="ring-pulse absolute inset-0 rounded-full bg-blue/25" />
+            <span className="ring-pulse-2 absolute inset-0 rounded-full bg-blue/15" />
             <span className="relative flex flex-col items-center gap-2">
               <Icon name="phone" className="h-9 w-9" />
               <span className="text-sm font-semibold">
@@ -110,31 +111,31 @@ export default function LiveDemo() {
               </span>
             </span>
           </button>
-          <p className="mt-6 text-sm text-slate-500">
+          <p className="mt-7 text-sm text-ink-soft">
             {status === "connecting"
               ? "Setting up your private demo call…"
               : "One click. Allow your microphone. She answers."}
           </p>
           {status === "error" && (
-            <p className="mx-auto mt-4 max-w-sm rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>
+            <p className="mx-auto mt-4 max-w-sm rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>
           )}
         </div>
       )}
 
       {/* ── Live call ── */}
       {status === "live" && (
-        <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-2xl shadow-blue-100/50">
-          <div className="flex items-center gap-3 bg-[#1a1a2e] px-5 py-4">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-600 text-white">
+        <div className="card overflow-hidden">
+          <div className="flex items-center gap-3 bg-night px-5 py-4">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue text-white">
               <Icon name="phone" className="h-4 w-4" />
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 text-left">
               <p className="text-sm font-semibold text-white">Klinika Adria (demo)</p>
-              <p className="text-xs text-blue-400">AI receptionist · live · {mmss}</p>
+              <p className="text-xs text-[#7fa6f8]">AI receptionist · live · {mmss}</p>
             </div>
             <div className="flex h-4 items-center gap-[3px]">
               {[10, 16, 7, 13, 9].map((h, i) => (
-                <span key={i} className="wave-bar w-[3px] rounded-full bg-blue-400" style={{ height: `${h}px`, animationDelay: `${i * 0.13}s` }} />
+                <span key={i} className="wave-bar w-[3px] rounded-full bg-[#7fa6f8]" style={{ height: `${h}px`, animationDelay: `${i * 0.13}s` }} />
               ))}
             </div>
             <button
@@ -146,11 +147,11 @@ export default function LiveDemo() {
           </div>
 
           {/* Live call visual — no transcript, just talk and listen */}
-          <div className="flex h-80 flex-col items-center justify-center gap-7 bg-gradient-to-b from-slate-50 to-white px-6">
+          <div className="flex h-80 flex-col items-center justify-center gap-8 bg-gradient-to-b from-sky/40 to-white px-6">
             <div className="relative flex h-32 w-32 items-center justify-center">
-              <span className="absolute inset-0 rounded-full bg-blue-500/20 animate-ping [animation-duration:2.4s]" />
-              <span className="absolute inset-3 rounded-full bg-blue-500/15 animate-ping [animation-duration:2.4s] [animation-delay:0.4s]" />
-              <span className="relative flex h-20 w-20 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg shadow-blue-300">
+              <span className="ring-pulse absolute inset-0 rounded-full bg-blue/20" />
+              <span className="ring-pulse-2 absolute inset-3 rounded-full bg-blue/15" />
+              <span className="relative flex h-20 w-20 items-center justify-center rounded-full bg-blue text-white shadow-lg shadow-blue/30">
                 <Icon name="phone" className="h-8 w-8" />
               </span>
             </div>
@@ -160,13 +161,13 @@ export default function LiveDemo() {
               {[14, 22, 12, 26, 16, 24, 13].map((h, i) => (
                 <span
                   key={i}
-                  className="wave-bar w-1 rounded-full bg-blue-500"
+                  className="wave-bar w-1 rounded-full bg-blue"
                   style={{ height: `${h}px`, animationDelay: `${i * 0.11}s` }}
                 />
               ))}
             </div>
 
-            <p className="text-sm font-medium text-slate-500">
+            <p className="text-sm font-medium text-ink-soft">
               Just talk — she&apos;s listening. Speak naturally, in any language.
             </p>
           </div>
@@ -175,20 +176,20 @@ export default function LiveDemo() {
 
       {/* ── Demo over: the sell ── */}
       {status === "ended" && (
-        <div className="rounded-3xl border border-slate-100 bg-white p-10 text-center shadow-xl shadow-blue-100/40">
-          <span className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+        <div className="card p-10 text-center">
+          <span className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-sky text-blue">
             <Icon name="sparkles" className="h-7 w-7" />
           </span>
-          <h3 className="mb-3 text-2xl font-bold tracking-tight">That was RingLoop.</h3>
-          <p className="mx-auto mb-8 max-w-sm text-slate-500 leading-relaxed">
+          <h3 className="font-display mb-3 text-3xl">That was <em className="text-blue">RingLoop.</em></h3>
+          <p className="mx-auto mb-9 max-w-sm leading-relaxed text-ink-soft">
             Exactly this answers your clinic&apos;s missed calls — 24/7, in your patients&apos; language, booked and confirmed. Setup takes one day.
           </p>
-          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link href="/contact" className="group rounded-full bg-blue-600 px-7 py-3.5 font-semibold text-white shadow-lg shadow-blue-200 hover:bg-blue-500 transition-all duration-300">
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <Link href="/contact" className="btn-primary group px-8 py-3.5">
               Get this for my clinic
               <span className="ml-2 inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
             </Link>
-            <button onClick={start} className="rounded-full border border-slate-200 px-7 py-3.5 font-semibold text-slate-600 hover:border-slate-300 hover:text-slate-900 transition-all duration-300">
+            <button onClick={start} className="rounded-full border border-[var(--line)] bg-white px-8 py-3.5 font-semibold text-ink-soft transition-all duration-300 hover:border-blue/30 hover:text-blue">
               Talk to her again
             </button>
           </div>
