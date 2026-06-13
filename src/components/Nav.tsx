@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
+import LogoMark from "@/components/LogoMark";
 
 /* All pages live flat in the top bar (Privacy stays in the footer) */
 const links = [
@@ -45,9 +46,12 @@ export default function Nav() {
     }`}>
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
 
-        {/* Wordmark */}
-        <Link href="/" className="font-display text-[1.3rem] tracking-tight text-ink select-none transition-opacity duration-300 hover:opacity-80">
-          Ring<em>Loop</em>
+        {/* Logo + wordmark */}
+        <Link href="/" className="flex items-center gap-2.5 select-none transition-opacity duration-300 hover:opacity-80">
+          <LogoMark size={32} />
+          <span className="font-display text-[1.3rem] tracking-tight text-ink">
+            Ring<em>Loop</em>
+          </span>
         </Link>
 
         {/* All links inline in the top bar — collapses to a menu only on phones */}

@@ -1,7 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <rect width="32" height="32" rx="7.5" fill="#2563EB"/>
-  <!-- 270° clockwise arc from top (16,5.5) to left (5.5,16) -->
-  <path d="M16 5.5A10.5 10.5 0 1 1 5.5 16" stroke="white" stroke-width="2.6" stroke-linecap="round"/>
-  <!-- Arrowhead at (5.5,16) pointing upward -->
-  <path d="M3 19L5.5 16L8 19" stroke="white" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" fill="none">
+  <defs>
+    <linearGradient id="ic-tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a6cf2"/>
+      <stop offset="1" stop-color="#1741c9"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="232" fill="url(#ic-tile)"/>
+  <path d="M447.7 688.7 A188 188 0 1 1 576.3 688.7" fill="none" stroke="#ffffff" stroke-width="56" stroke-linecap="round"/>
+  <g fill="#ffffff">
+    <rect x="409" y="452" width="38" height="120" rx="19"/>
+    <rect x="465" y="407" width="38" height="210" rx="19"/>
+    <rect x="521" y="432" width="38" height="160" rx="19"/>
+    <rect x="577" y="464" width="38" height="96"  rx="19"/>
+  </g>
 </svg>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import LogoMark from "@/components/LogoMark";
 
 export default function Footer() {
   return (
@@ -10,9 +11,12 @@ export default function Footer() {
 
           {/* Brand */}
           <div className="col-span-1">
-            <p className="font-display mb-4 text-[1.35rem] tracking-tight text-white">
-              Ring<em className="text-[#7fa6f8]">Loop</em>
-            </p>
+            <div className="mb-4 flex items-center gap-2.5">
+              <LogoMark size={30} />
+              <p className="font-display text-[1.35rem] tracking-tight text-white">
+                Ring<em className="text-[#7fa6f8]">Loop</em>
+              </p>
+            </div>
             <p className="text-sm leading-relaxed text-sky/45">
               The AI voice receptionist for medical clinics. Answers every missed call, books the appointment, and confirms it by SMS — 24/7.
             </p>
