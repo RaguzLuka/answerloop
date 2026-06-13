@@ -69,7 +69,7 @@ export default function Home() {
               <span className="ring-pulse absolute inline-flex h-full w-full rounded-full bg-blue" />
               <span className="relative h-2 w-2 rounded-full bg-blue" />
             </span>
-            Now answering calls for clinics across Europe
+            Now answering calls for clinics in Europe &amp; the US
           </p>
 
           <h1 className="font-display animate-fade-up delay-100 mb-7 text-[3.1rem] leading-[1.04] md:text-[4.6rem] lg:text-[5.4rem]">
@@ -192,6 +192,27 @@ export default function Home() {
           ))}
         </div>
       </div>
+
+      {/* ── TRUST BAND ───────────────────────────────────────── */}
+      <section className="border-b border-[var(--line)] bg-white py-8">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-x-8 gap-y-4 px-6 text-sm font-medium text-ink-soft">
+          {[
+            { icon: "shield",        label: "GDPR-ready & secure" },
+            { icon: "globe",         label: "For clinics in Europe & the US" },
+            { icon: "clock",         label: "Answers in under 5 seconds" },
+            { icon: "phone",         label: "24/7, every single call" },
+            { icon: "calendarCheck", label: "No contract · cancel anytime" },
+          ].map((b, i) => (
+            <div key={b.label} className="flex items-center gap-2.5">
+              {i > 0 && <span className="hidden h-4 w-px bg-[var(--line)] sm:block sm:-ml-4 sm:mr-1.5" />}
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky text-blue">
+                <Icon name={b.icon} className="h-4 w-4" />
+              </span>
+              {b.label}
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* ── PROBLEM ──────────────────────────────────────────── */}
       <section className="mx-auto max-w-5xl px-6 py-32">
@@ -361,6 +382,80 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── EXAMPLE CALLS ────────────────────────────────────── */}
+      <section className="border-t border-[var(--line)] bg-white py-32">
+        <div className="mx-auto max-w-5xl px-6">
+          <div data-reveal className="mb-4 text-center">
+            <p className="label mb-4 text-muted">Hear how it sounds</p>
+            <h2 className="font-display text-4xl md:text-5xl">Real conversations, <em className="text-blue">handled.</em></h2>
+          </div>
+          <p data-reveal className="mx-auto mb-14 max-w-xl text-center text-sm text-muted">
+            Example calls that show exactly how RingLoop talks to your patients.
+            Want the real thing?{" "}
+            <Link href="/demo" className="font-semibold text-blue underline underline-offset-4 hover:text-blue-deep">
+              Talk to the AI live →
+            </Link>
+          </p>
+
+          <div className="grid gap-5 md:grid-cols-3">
+            {[
+              {
+                tag: "After-hours booking",
+                turns: [
+                  { who: "ai",  text: "Good evening, you've reached the clinic. How can I help?" },
+                  { who: "pt",  text: "I need a checkup this week." },
+                  { who: "ai",  text: "Of course — Thursday at 10:00 works. May I have your name?" },
+                  { who: "pt",  text: "Marko Horvat." },
+                  { who: "ai",  text: "Booked, Marko. Confirmation is on its way by SMS." },
+                ],
+              },
+              {
+                tag: "Switches language",
+                turns: [
+                  { who: "pt",  text: "Dobar dan, trebam termin za čišćenje." },
+                  { who: "ai",  text: "Naravno! Imamo slobodno u petak u 14:00." },
+                  { who: "pt",  text: "Actually — can we do this in English?" },
+                  { who: "ai",  text: "Absolutely. Friday at 2 PM — shall I book it?" },
+                  { who: "pt",  text: "Yes, perfect." },
+                ],
+              },
+              {
+                tag: "Reschedule",
+                turns: [
+                  { who: "pt",  text: "I need to move my appointment to next week." },
+                  { who: "ai",  text: "No problem. I have Tuesday 9:00 or Wednesday 16:30." },
+                  { who: "pt",  text: "Wednesday afternoon." },
+                  { who: "ai",  text: "Done — moved to Wednesday 16:30. You'll get a new SMS." },
+                ],
+              },
+            ].map((c, i) => (
+              <div key={c.tag} data-reveal className={`card reveal-zoom r-delay-${i + 1} overflow-hidden`}>
+                <div className="flex items-center justify-between border-b border-[var(--line)] px-5 py-3">
+                  <span className="flex items-center gap-2 text-xs font-semibold text-blue">
+                    <Icon name="phone" className="h-3.5 w-3.5" />
+                    {c.tag}
+                  </span>
+                  <span className="rounded-full bg-sky px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-blue">Example</span>
+                </div>
+                <div className="space-y-2 bg-gradient-to-b from-sky/30 to-white p-5">
+                  {c.turns.map((t, j) => (
+                    <div key={j} className={`flex ${t.who === "pt" ? "justify-end" : ""}`}>
+                      <div className={`max-w-[85%] px-3.5 py-2 text-[13px] leading-snug ${
+                        t.who === "ai"
+                          ? "rounded-2xl rounded-tl-md border border-[var(--line)] bg-white text-ink-soft shadow-sm"
+                          : "rounded-2xl rounded-tr-md bg-blue text-white"
+                      }`}>
+                        {t.text}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── COMPARISON ───────────────────────────────────────── */}
       <section className="border-y border-[var(--line)] bg-white py-32">
         <div className="mx-auto max-w-5xl px-6">
@@ -510,6 +605,36 @@ export default function Home() {
               <p className="mt-3 pr-8 text-sm leading-relaxed text-ink-soft">{a}</p>
             </details>
           ))}
+        </div>
+      </section>
+
+      {/* ── FOUNDING CLINIC ──────────────────────────────────── */}
+      <section className="mx-auto max-w-5xl px-6 py-24">
+        <div data-reveal className="card reveal-zoom relative overflow-hidden p-10 text-center md:p-14">
+          <div className="halo pointer-events-none absolute inset-0" />
+          <div className="relative">
+            <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue/20 bg-sky px-4 py-1.5 text-xs font-semibold text-blue">
+              <Icon name="star" className="h-3.5 w-3.5" />
+              Founding clinics — limited spots
+            </span>
+            <h2 className="font-display mx-auto mb-4 max-w-2xl text-3xl leading-tight md:text-4xl">
+              Be one of our <em className="text-blue">first clinics</em> in Europe &amp; the US.
+            </h2>
+            <p className="mx-auto mb-9 max-w-xl leading-relaxed text-ink-soft">
+              We&apos;re onboarding a small group of founding clinics now. Get
+              priority setup, a direct line to our team, and founding pricing
+              locked in for as long as you stay.
+            </p>
+            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <Link href="/contact" className="btn-primary group px-9 py-4">
+                Claim a founding spot
+                <span className="ml-2 inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
+              </Link>
+              <Link href="/demo" className="rounded-full border border-[var(--line)] bg-white px-9 py-4 font-semibold text-ink shadow-sm transition-all duration-300 hover:border-blue/30 hover:text-blue">
+                Try the live demo first
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 

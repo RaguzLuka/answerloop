@@ -57,7 +57,7 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="mt-14 border-t border-[var(--line-dark)] pt-7 flex flex-col items-center justify-between gap-3 sm:flex-row">
           <p className="text-xs text-sky/35">© {new Date().getFullYear()} RingLoop. All rights reserved.</p>
-          <p className="text-xs text-sky/35">Built for medical institutes across Europe</p>
+          <p className="text-xs text-sky/35">Built for medical institutes across Europe &amp; the US</p>
         </div>
       </div>
     </footer>
