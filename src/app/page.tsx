@@ -386,9 +386,9 @@ export default function Home() {
       <section className="mx-auto max-w-5xl px-6 py-32">
         <div data-reveal className="mb-16 text-center">
           <p className="label mb-4 text-muted">Every channel</p>
-          <h2 className="font-display text-4xl md:text-5xl">One AI, across <em className="text-blue">voice, SMS &amp; WhatsApp.</em></h2>
+          <h2 className="font-display text-4xl md:text-5xl">Book by <em className="text-blue">voice, SMS &amp; WhatsApp.</em></h2>
           <p className="mx-auto mt-4 max-w-xl text-ink-soft">
-            RingLoop answers the call and follows up wherever your patients are.
+            However a patient reaches your clinic, RingLoop takes the booking and confirms it.
           </p>
         </div>
 
@@ -396,20 +396,20 @@ export default function Home() {
           {[
             {
               icon: "phone",
-              title: "Voice call",
-              desc: "Answers every forwarded call and books the appointment in a natural conversation.",
+              title: "Voice booking",
+              desc: "Answers every forwarded call and books the appointment in a natural conversation — then confirms by SMS.",
               status: "live",
             },
             {
               icon: "message",
-              title: "SMS confirmation",
-              desc: "The moment a call ends, the patient gets their appointment details by text.",
+              title: "SMS booking",
+              desc: "Patients can book and reschedule entirely by text — a two-way conversation, in their own words.",
               status: "live",
             },
             {
               icon: "chat",
-              title: "WhatsApp reminders",
-              desc: "Appointment reminders and quick replies on WhatsApp — cutting no-shows.",
+              title: "WhatsApp booking",
+              desc: "Book, reschedule, and get reminders over WhatsApp — wherever your patients already chat.",
               status: "soon",
             },
           ].map((c, i) => (
