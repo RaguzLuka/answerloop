@@ -50,8 +50,8 @@ export default function Nav() {
           Ring<em>Loop</em>
         </Link>
 
-        {/* Desktop links — only on wide screens; everything narrower gets the menu button */}
-        <div className="hidden items-center gap-8 text-sm font-medium lg:flex">
+        {/* All links inline in the top bar — collapses to a menu only on phones */}
+        <div className="hidden items-center gap-5 text-sm font-medium md:flex lg:gap-7">
           {links.map(({ href, label }) => {
             const active = pathname === href;
             return (
@@ -70,7 +70,7 @@ export default function Nav() {
         </div>
 
         {/* Desktop CTA */}
-        <Link href="/contact" className="btn-primary hidden px-5 py-2 text-sm lg:block">
+        <Link href="/contact" className="btn-primary hidden px-4 py-2 text-sm md:block lg:px-5">
           Book a demo
         </Link>
 
@@ -79,7 +79,7 @@ export default function Nav() {
           onClick={() => setOpen(!open)}
           aria-label="Toggle menu"
           aria-expanded={open}
-          className="flex lg:hidden h-9 w-9 items-center justify-center rounded-xl border border-[var(--line)] bg-white text-ink-soft transition-colors duration-200 hover:text-ink"
+          className="flex md:hidden h-9 w-9 items-center justify-center rounded-xl border border-[var(--line)] bg-white text-ink-soft transition-colors duration-200 hover:text-ink"
         >
           {open ? (
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -93,8 +93,8 @@ export default function Nav() {
         </button>
       </div>
 
-      {/* Slide-down menu panel for narrow screens */}
-      <div className={`lg:hidden overflow-hidden transition-all duration-300 ease-out border-t border-[var(--line)] bg-white/95 backdrop-blur-2xl ${open ? "max-h-[34rem] opacity-100" : "max-h-0 opacity-0"}`}>
+      {/* Slide-down menu panel — phones only */}
+      <div className={`md:hidden overflow-hidden transition-all duration-300 ease-out border-t border-[var(--line)] bg-white/95 backdrop-blur-2xl ${open ? "max-h-[34rem] opacity-100" : "max-h-0 opacity-0"}`}>
         <div className="px-6 py-5 flex flex-col gap-1">
           {links.map(({ href, label }) => {
             const active = pathname === href;

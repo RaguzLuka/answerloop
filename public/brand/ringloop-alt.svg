@@ -1,0 +1,23 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="RingLoop logo alternative">
+  <defs>
+    <linearGradient id="tileBs" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a6cf2"/>
+      <stop offset="1" stop-color="#1741c9"/>
+    </linearGradient>
+    <radialGradient id="sheenBs" cx="0.5" cy="0.12" r="0.9">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="0.55" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1024" height="1024" rx="232" fill="url(#tileBs)"/>
+  <rect width="1024" height="1024" rx="232" fill="url(#sheenBs)"/>
+
+  <g fill="none" stroke="#ffffff" stroke-linecap="round">
+    <circle cx="512" cy="512" r="62" fill="#ffffff" stroke="none"/>
+    <path d="M620 404 A153 153 0 0 1 620 620" stroke-width="46"/>
+    <path d="M404 620 A153 153 0 0 1 404 404" stroke-width="46"/>
+    <path d="M694 330 A258 258 0 0 1 694 694" stroke-width="46" opacity="0.6"/>
+    <path d="M330 694 A258 258 0 0 1 330 330" stroke-width="46" opacity="0.6"/>
+  </g>
+</svg>
