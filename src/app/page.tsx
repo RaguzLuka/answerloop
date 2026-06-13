@@ -382,6 +382,60 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── CHANNELS ─────────────────────────────────────────── */}
+      <section className="mx-auto max-w-5xl px-6 py-32">
+        <div data-reveal className="mb-16 text-center">
+          <p className="label mb-4 text-muted">Every channel</p>
+          <h2 className="font-display text-4xl md:text-5xl">One AI, across <em className="text-blue">voice, SMS &amp; WhatsApp.</em></h2>
+          <p className="mx-auto mt-4 max-w-xl text-ink-soft">
+            RingLoop answers the call and follows up wherever your patients are.
+          </p>
+        </div>
+
+        <div className="grid gap-5 md:grid-cols-3">
+          {[
+            {
+              icon: "phone",
+              title: "Voice call",
+              desc: "Answers every forwarded call and books the appointment in a natural conversation.",
+              status: "live",
+            },
+            {
+              icon: "message",
+              title: "SMS confirmation",
+              desc: "The moment a call ends, the patient gets their appointment details by text.",
+              status: "live",
+            },
+            {
+              icon: "chat",
+              title: "WhatsApp reminders",
+              desc: "Appointment reminders and quick replies on WhatsApp — cutting no-shows.",
+              status: "soon",
+            },
+          ].map((c, i) => (
+            <div key={c.title} data-reveal className={`card reveal-zoom r-delay-${i + 1} p-8`}>
+              <div className="mb-5 flex items-center justify-between">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky text-blue">
+                  <Icon name={c.icon} className="h-5 w-5" />
+                </span>
+                {c.status === "live" ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-600">
+                    <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                    Live
+                  </span>
+                ) : (
+                  <span className="rounded-full bg-sky px-2.5 py-1 text-[11px] font-semibold text-blue">
+                    Coming soon
+                  </span>
+                )}
+              </div>
+              <h3 className="mb-2 font-semibold">{c.title}</h3>
+              <p className="text-sm leading-relaxed text-ink-soft">{c.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* ── EXAMPLE CALLS ────────────────────────────────────── */}
       <section className="border-t border-[var(--line)] bg-white py-32">
         <div className="mx-auto max-w-5xl px-6">

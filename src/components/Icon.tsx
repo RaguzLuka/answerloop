@@ -124,6 +124,12 @@ const paths: Record<string, React.ReactNode> = {
   quote: (
     <path d="M10 11H6a1 1 0 0 1-1-1V7a3 3 0 0 1 3-3 1 1 0 0 0 0-2 5 5 0 0 0-5 5v9a2 2 0 0 0 2 2h5a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1zm10 0h-4a1 1 0 0 1-1-1V7a3 3 0 0 1 3-3 1 1 0 0 0 0-2 5 5 0 0 0-5 5v9a2 2 0 0 0 2 2h5a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1z" />
   ),
+  chat: (
+    <>
+      <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z" />
+      <path d="M8 12h.01" /><path d="M12 12h.01" /><path d="M16 12h.01" />
+    </>
+  ),
 };
 
 export type IconName = keyof typeof paths;
