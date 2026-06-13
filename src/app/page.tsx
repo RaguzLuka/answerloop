@@ -669,19 +669,19 @@ export default function Home() {
           <div className="relative">
             <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue/20 bg-sky px-4 py-1.5 text-xs font-semibold text-blue">
               <Icon name="star" className="h-3.5 w-3.5" />
-              Founding clinics — limited spots
+              Founding partners — limited spots
             </span>
             <h2 className="font-display mx-auto mb-4 max-w-2xl text-3xl leading-tight md:text-4xl">
-              Be one of our <em className="text-blue">first clinics</em> in Europe &amp; the US.
+              Become one of our <em className="text-blue">founding partners</em> in Europe &amp; the US.
             </h2>
             <p className="mx-auto mb-9 max-w-xl leading-relaxed text-ink-soft">
-              We&apos;re onboarding a small group of founding clinics now. Get
+              We&apos;re partnering with a small group of clinics now. Get
               priority setup, a direct line to our team, and founding pricing
               locked in for as long as you stay.
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link href="/contact" className="btn-primary group px-9 py-4">
-                Claim a founding spot
+                Become a partner
                 <span className="ml-2 inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
               </Link>
               <Link href="/demo" className="rounded-full border border-[var(--line)] bg-white px-9 py-4 font-semibold text-ink shadow-sm transition-all duration-300 hover:border-blue/30 hover:text-blue">
