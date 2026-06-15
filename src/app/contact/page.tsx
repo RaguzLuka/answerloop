@@ -42,12 +42,15 @@ export default function Contact() {
               </p>
               <div className="space-y-3">
                 {[
-                  { label: "Email us",  value: "hello@ringloop.net",       href: "mailto:hello@ringloop.net" },
-                  { label: "Live demo", value: "Talk to the AI right now", href: "/demo" },
+                  { label: "Email us",   value: "hello@ringloop.net",       href: "mailto:hello@ringloop.net" },
+                  { label: "Instagram",  value: "@ringloop.io",             href: "https://instagram.com/ringloop.io" },
+                  { label: "Live demo",  value: "Talk to the AI right now", href: "/demo" },
                 ].map((item) => (
                   <a
                     key={item.label}
                     href={item.href}
+                    target={item.href.startsWith("http") ? "_blank" : undefined}
+                    rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
                     className="flex items-center gap-4 rounded-2xl bg-white/5 border border-[var(--line-dark)] p-4 transition-colors hover:bg-white/10"
                   >
                     <div>

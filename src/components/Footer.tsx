@@ -1,5 +1,8 @@
 import Link from "next/link";
 import LogoMark from "@/components/LogoMark";
+import Icon from "@/components/Icon";
+
+const INSTAGRAM_URL = "https://instagram.com/ringloop.io";
 
 export default function Footer() {
   return (
@@ -48,16 +51,32 @@ export default function Footer() {
             <p className="label mb-5 text-sky/35">Get in touch</p>
             <ul className="space-y-3 text-sm">
               <li><a href="mailto:hello@ringloop.net" className="hover:text-white transition-colors">hello@ringloop.net</a></li>
-              <li><Link href="/demo" className="hover:text-white transition-colors">Try the live demo</Link></li>
+              <li>
+                <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:text-white transition-colors">
+                  <Icon name="instagram" className="h-4 w-4" />
+                  @ringloop.io
+                </a>
+              </li>
               <li><Link href="/contact" className="hover:text-white transition-colors">Book a demo</Link></li>
             </ul>
           </div>
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-14 border-t border-[var(--line-dark)] pt-7 flex flex-col items-center justify-between gap-3 sm:flex-row">
+        <div className="mt-14 border-t border-[var(--line-dark)] pt-7 flex flex-col items-center justify-between gap-4 sm:flex-row">
           <p className="text-xs text-sky/35">© {new Date().getFullYear()} RingLoop. All rights reserved.</p>
-          <p className="text-xs text-sky/35">Built for medical institutes across Europe &amp; the US</p>
+          <div className="flex items-center gap-5">
+            <a
+              href={INSTAGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="RingLoop on Instagram"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--line-dark)] text-sky/55 transition-colors hover:border-[#7fa6f8]/50 hover:text-white"
+            >
+              <Icon name="instagram" className="h-4.5 w-4.5" />
+            </a>
+            <p className="text-xs text-sky/35">Built for medical institutes across Europe &amp; the US</p>
+          </div>
         </div>
       </div>
     </footer>
