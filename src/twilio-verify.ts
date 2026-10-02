@@ -6,7 +6,8 @@ import crypto from "crypto";
  * https://www.twilio.com/docs/usage/security#validating-requests
  *
  * Returns the parsed body params when the signature is valid, null when not.
- * If TWILIO_AUTH_TOKEN is unset (local dev), validation is skipped.
+ * Fails closed: if TWILIO_AUTH_TOKEN is unset, every request is rejected
+ * (for local testing, set the real token and tunnel Twilio to localhost).
  */
 export async function verifiedTwilioParams(
   request: Request
@@ -18,7 +19,10 @@ export async function verifiedTwilioParams(
   }
 
   const token = process.env.TWILIO_AUTH_TOKEN;
-  if (!token) return params;
+  if (!token) {
+    console.error("[TWILIO-VERIFY] TWILIO_AUTH_TOKEN is not set — rejecting request");
+    return null;
+  }
 
   const signature = request.headers.get("x-twilio-signature");
   if (!signature) return null;
@@ -44,6 +48,7 @@ export async function verifiedTwilioParams(
   } catch {
     // length mismatch — fall through to reject
   }
-  console.warn(`[TWILIO-VERIFY] Rejected request to ${url} — invalid signature`);
+  // Path only — a GET query string carries the caller's number
+  console.warn(`[TWILIO-VERIFY] Rejected request to ${u.pathname} — invalid signature`);
   return null;
 }

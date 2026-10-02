@@ -1,5 +1,4 @@
-import { getClinic } from "@/clinics";
-import { sendWhatsApp } from "@/whatsapp";
+import { maskPhone } from "@/mask-phone";
 import { verifiedTwilioParams } from "@/twilio-verify";
 
 export async function POST(request: Request) {
@@ -11,9 +10,7 @@ export async function POST(request: Request) {
   const to = body.To ?? "";
   const callStatus = body.CallStatus ?? "";
 
-  console.log(`[CALL-COMPLETE] From: ${from} | To: ${to} | Status: ${callStatus}`);
-
-  const clinic = getClinic(to);
+  console.log(`[CALL-COMPLETE] From: ${maskPhone(from)} | To: ${to} | Status: ${callStatus}`);
 
   // WhatsApp is only used for 24h appointment reminders (see /api/cron/reminders).
   // No automatic messages are sent on call completion.

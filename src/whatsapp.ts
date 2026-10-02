@@ -1,4 +1,6 @@
-const WHATSAPP_FROM = process.env.WHATSAPP_FROM ?? "whatsapp:+14155238886";
+import { maskPhone } from "@/mask-phone";
+
+const WHATSAPP_FROM =process.env.WHATSAPP_FROM ?? "whatsapp:+14155238886";
 const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID ?? "";
 const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN ?? "";
 
@@ -23,9 +25,9 @@ export async function sendWhatsApp(to: string, message: string) {
 
   const data = await res.json();
   if (data.error_message) {
-    console.error(`[WHATSAPP] Error sending to ${to}: ${data.error_message}`);
+    console.error(`[WHATSAPP] Error sending to ${maskPhone(to)}: ${data.error_message}`);
   } else {
-    console.log(`[WHATSAPP] Sent to ${to} | SID: ${data.sid}`);
+    console.log(`[WHATSAPP] Sent to ${maskPhone(to)} | SID: ${data.sid}`);
   }
   return data;
 }

@@ -1,6 +1,11 @@
+const crypto = require("crypto");
 const express = require("express");
 const http = require("http");
 const { WebSocketServer, WebSocket } = require("ws");
+// Clinic config shared with the Next.js app (src/clinics.ts). Looked up from
+// the signed stream token's `to` — never taken from stream parameters.
+const CLINICS = require("./src/clinics.json");
+const DEFAULT_CLINIC = { name: "the clinic", treatments: "general consultation" };
 
 // === µ-law ↔ PCM16 24kHz audio conversion helpers ===
 // Twilio uses g711 µ-law 8kHz. Preferred mode is NATIVE µ-law passthrough
@@ -76,7 +81,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 const server = http.createServer(app);
-const wss = new WebSocketServer({ server, path: "/media-stream" });
+// Twilio frames are tiny (~20 ms of audio); cap what an unauthenticated
+// client can make us buffer (ws defaults to 100 MiB).
+const wss = new WebSocketServer({ server, path: "/media-stream", maxPayload: 64 * 1024 });
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
@@ -87,6 +94,50 @@ const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
 const SMS_FROM = process.env.SMS_FROM ?? "RingLoop";
 // Admin phone: reuses the old ADMIN_WHATSAPP_NUMBER env var if ADMIN_PHONE_NUMBER isn't set.
 const ADMIN_PHONE = (process.env.ADMIN_PHONE_NUMBER ?? process.env.ADMIN_WHATSAPP_NUMBER ?? "").replace("whatsapp:", "");
+// Shared with Vercel: /api/voice signs a short-lived token per call
+// (src/stream-token.ts) and passes it as a <Stream> parameter. Streams
+// without a valid one are dropped. Unset = every stream is rejected.
+const VOICE_STREAM_SECRET = process.env.VOICE_STREAM_SECRET;
+if (!VOICE_STREAM_SECRET) {
+  console.error("[SERVER] VOICE_STREAM_SECRET is not set — all media streams will be rejected");
+}
+// Kill switch: no OpenAI usage unless AI_ENABLED=true is set explicitly
+const AI_ENABLED = process.env.AI_ENABLED === "true";
+if (!AI_ENABLED) {
+  console.warn("[SERVER] AI is disabled (AI_ENABLED is not \"true\") — all media streams will be refused");
+}
+// Wait this long for a valid "start" event before dropping the socket
+const STREAM_AUTH_TIMEOUT_MS = 10_000;
+
+// Returns the token's claims ({ callSid, to, from }) when the signature is
+// valid and it hasn't expired, otherwise null. Mirrors mintStreamToken().
+function verifyStreamToken(token) {
+  if (!VOICE_STREAM_SECRET || typeof token !== "string") return null;
+  const parts = token.split(".");
+  if (parts.length !== 2) return null;
+  const [payload, signature] = parts;
+  const expected = crypto.createHmac("sha256", VOICE_STREAM_SECRET).update(payload).digest();
+  const given = Buffer.from(signature, "base64url");
+  if (given.length !== expected.length || !crypto.timingSafeEqual(given, expected)) return null;
+  let claims;
+  try {
+    claims = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+  } catch {
+    return null;
+  }
+  if (!claims || typeof claims.exp !== "number" || claims.exp < Date.now() / 1000) return null;
+  if (typeof claims.callSid !== "string" || typeof claims.to !== "string" || typeof claims.from !== "string") return null;
+  return claims;
+}
+
+// Phone numbers never go into logs in full: "+385911234471" → "+385 91 ••• 4471"
+// (same as src/mask-phone.ts)
+function maskPhone(phone) {
+  const digits = String(phone ?? "").replace(/\D/g, "");
+  if (digits.length < 8) return "•••";
+  const head = digits.slice(0, -7);
+  return `+${[head.slice(0, 3), head.slice(3)].filter(Boolean).join(" ")} ••• ${digits.slice(-4)}`;
+}
 
 // Supported languages — extend as needed
 // The AI auto-detects the caller's language and responds in kind.
@@ -167,11 +218,15 @@ async function sendTwilioMessage(from, to, message) {
     body: params.toString(),
   });
   const data = await res.json();
-  console.log(`[SMS] Sent to ${to} | SID: ${data.sid} | Error: ${data.error_message ?? "none"}`);
+  console.log(`[SMS] Sent to ${maskPhone(to)} | SID: ${data.sid} | Error: ${data.error_message ?? "none"}`);
 }
 
 wss.on("connection", (twilioWs) => {
   console.log("[VOICE] New Twilio media stream connection");
+  if (!AI_ENABLED) {
+    twilioWs.close(1013, "AI disabled");
+    return;
+  }
 
   let openaiWs = null;
   let streamSid = null;
@@ -193,6 +248,16 @@ wss.on("connection", (twilioWs) => {
   // Falls back to "pcm" (legacy transcode pipeline) if the API rejects it.
   let audioMode = "ulaw";
   let nativeConfirmed = false;
+  let authenticated = false;
+
+  // Twilio sends "connected" then "start" immediately — a socket that hasn't
+  // presented a valid stream token by now isn't a Twilio call.
+  const authTimer = setTimeout(() => {
+    if (!authenticated) {
+      console.warn("[VOICE] No valid start event in time — closing media stream");
+      twilioWs.close(1008, "Unauthorized");
+    }
+  }, STREAM_AUTH_TIMEOUT_MS);
 
   function sessionConfig() {
     if (audioMode === "ulaw") {
@@ -238,137 +303,133 @@ wss.on("connection", (twilioWs) => {
     };
   }
 
-  // Connect to OpenAI Realtime API
-  openaiWs = new WebSocket(
-    "wss://api.openai.com/v1/realtime?model=gpt-realtime-2",
-    {
-      headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-      },
-    }
-  );
-
-  openaiWs.on("open", () => {
-    console.log("[OPENAI] Connected to Realtime API");
-    sessionReady = false;
-    openaiWs.send(JSON.stringify({ type: "session.update", session: sessionConfig() }));
-  });
-
-  openaiWs.on("message", (data) => {
-    let msg;
-    try {
-      msg = JSON.parse(data.toString());
-    } catch {
-      console.error("[OPENAI] Ignoring malformed message");
-      return;
-    }
-
-    // Log all non-audio events for debugging
-    if (msg.type !== "response.audio.delta" && msg.type !== "response.output_audio.delta" && msg.type !== "response.output_audio_transcript.delta") {
-      console.log(`[OPENAI EVT] ${msg.type}`);
-    }
-
-    // Session ready ONLY once our session.update is applied (session.updated).
-    // Greeting or audio before that would run against the default PCM16 config
-    // and come out as static in µ-law mode.
-    if (msg.type === "session.updated") {
-      nativeConfirmed = audioMode === "ulaw";
-      console.log(`[OPENAI] Session configured | audio mode: ${audioMode}`);
-      sessionReady = true;
-      if (pendingGreeting) {
-        pendingGreeting = false;
-        triggerGreeting();
+  // Connect to OpenAI Realtime API — only once the stream has authenticated,
+  // so unauthenticated sockets never open (or bill) an OpenAI session.
+  function connectOpenAI() {
+    openaiWs = new WebSocket(
+      "wss://api.openai.com/v1/realtime?model=gpt-realtime-2",
+      {
+        headers: {
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
+        },
       }
-    }
+    );
 
-    // Caller interrupted the AI — flush Twilio's buffered audio so she stops
-    // talking instead of finishing the queued sentence. DEBOUNCED: noise bursts
-    // (traffic, wind) also trigger speech_started, so we only flush if the
-    // "speech" is still going after 300ms. A real interruption barely notices
-    // the delay; a noise blip (speech_stopped arrives quickly) never flushes.
-    if (msg.type === "input_audio_buffer.speech_started" && streamSid) {
-      if (pendingClearTimer) clearTimeout(pendingClearTimer);
-      pendingClearTimer = setTimeout(() => {
+    openaiWs.on("open", () => {
+      console.log("[OPENAI] Connected to Realtime API");
+      sessionReady = false;
+      openaiWs.send(JSON.stringify({ type: "session.update", session: sessionConfig() }));
+    });
+
+    openaiWs.on("message", (data) => {
+      let msg;
+      try {
+        msg = JSON.parse(data.toString());
+      } catch {
+        console.error("[OPENAI] Ignoring malformed message");
+        return;
+      }
+
+      // Log all non-audio events for debugging
+      if (msg.type !== "response.audio.delta" && msg.type !== "response.output_audio.delta" && msg.type !== "response.output_audio_transcript.delta") {
+        console.log(`[OPENAI EVT] ${msg.type}`);
+      }
+
+      // Session ready ONLY once our session.update is applied (session.updated).
+      // Greeting or audio before that would run against the default PCM16 config
+      // and come out as static in µ-law mode.
+      if (msg.type === "session.updated") {
+        nativeConfirmed = audioMode === "ulaw";
+        console.log(`[OPENAI] Session configured | audio mode: ${audioMode}`);
+        sessionReady = true;
+        if (pendingGreeting) {
+          pendingGreeting = false;
+          triggerGreeting();
+        }
+      }
+
+      // Caller interrupted the AI — flush Twilio's buffered audio so she stops
+      // talking instead of finishing the queued sentence. DEBOUNCED: noise bursts
+      // (traffic, wind) also trigger speech_started, so we only flush if the
+      // "speech" is still going after 300ms. A real interruption barely notices
+      // the delay; a noise blip (speech_stopped arrives quickly) never flushes.
+      if (msg.type === "input_audio_buffer.speech_started" && streamSid) {
+        if (pendingClearTimer) clearTimeout(pendingClearTimer);
+        pendingClearTimer = setTimeout(() => {
+          pendingClearTimer = null;
+          if (twilioWs.readyState === WebSocket.OPEN && streamSid) {
+            twilioWs.send(JSON.stringify({ event: "clear", streamSid }));
+          }
+        }, 300);
+      }
+      if (msg.type === "input_audio_buffer.speech_stopped" && pendingClearTimer) {
+        // Speech ended within the debounce window — treat it as noise, keep talking
+        clearTimeout(pendingClearTimer);
         pendingClearTimer = null;
-        if (twilioWs.readyState === WebSocket.OPEN && streamSid) {
-          twilioWs.send(JSON.stringify({ event: "clear", streamSid }));
-        }
-      }, 300);
-    }
-    if (msg.type === "input_audio_buffer.speech_stopped" && pendingClearTimer) {
-      // Speech ended within the debounce window — treat it as noise, keep talking
-      clearTimeout(pendingClearTimer);
-      pendingClearTimer = null;
-    }
-
-    // Stream AI audio back to Twilio (native µ-law passthrough, or PCM→µ-law in fallback mode)
-    if ((msg.type === "response.audio.delta" || msg.type === "response.output_audio.delta") && streamSid && msg.delta) {
-      const ulawPayload = audioMode === "ulaw" ? msg.delta : pcm24kB64ToUlawB64(msg.delta);
-      twilioWs.send(JSON.stringify({
-        event: "media",
-        streamSid,
-        media: { payload: ulawPayload },
-      }));
-    }
-
-    // Accumulate AI transcript for the current response turn
-    if (msg.type === "response.audio_transcript.delta" || msg.type === "response.output_audio_transcript.delta") {
-      currentTurnTranscript += msg.delta;
-    }
-
-    // Also capture text output for booking detection
-    if (msg.type === "response.text.delta") {
-      currentTurnTranscript += msg.delta;
-    }
-
-    // Response turn complete — check for booking and reset transcript
-    if (msg.type === "response.done") {
-      console.log(`[AI] ${currentTurnTranscript}`);
-
-      if (!bookingHandled && currentTurnTranscript.includes("BOOKING_CONFIRMED:")) {
-        bookingHandled = true;
-        const line = currentTurnTranscript.split("\n").find((l) => l.trim().startsWith("BOOKING_CONFIRMED:"));
-        if (line) {
-          console.log(`[BOOKING] ${line.trim()}`);
-          handleBooking(line.trim(), clinicName, callerPhone, smsSender).catch(console.error);
-        }
       }
 
-      currentTurnTranscript = ""; // reset after each turn
-    }
-
-    // Log user speech transcription
-    if (msg.type === "conversation.item.input_audio_transcription.completed") {
-      console.log(`[CALLER] ${msg.transcript}`);
-    }
-
-    if (msg.type === "error") {
-      console.error("[OPENAI ERROR]", JSON.stringify(msg.error));
-      // If the native µ-law session config was rejected, fall back to the
-      // legacy PCM transcode pipeline so the call still works.
-      if (audioMode === "ulaw" && !nativeConfirmed) {
-        console.warn("[OPENAI] Native µ-law config rejected — falling back to PCM transcode mode");
-        audioMode = "pcm";
-        openaiWs.send(JSON.stringify({ type: "input_audio_buffer.clear" }));
-        openaiWs.send(JSON.stringify({ type: "session.update", session: sessionConfig() }));
+      // Stream AI audio back to Twilio (native µ-law passthrough, or PCM→µ-law in fallback mode)
+      if ((msg.type === "response.audio.delta" || msg.type === "response.output_audio.delta") && streamSid && msg.delta) {
+        const ulawPayload = audioMode === "ulaw" ? msg.delta : pcm24kB64ToUlawB64(msg.delta);
+        twilioWs.send(JSON.stringify({
+          event: "media",
+          streamSid,
+          media: { payload: ulawPayload },
+        }));
       }
-    }
-  });
 
-  openaiWs.on("close", (code, reason) => {
-    console.log(`[OPENAI] Disconnected — code: ${code} reason: ${reason?.toString()}`);
-    // OpenAI dropped while the caller is still on the line → don't leave them
-    // in dead air; apologise and hang up via Twilio's REST API.
-    if (!callEnded && callSid) {
-      failCallGracefully(callSid);
-    }
-  });
-  openaiWs.on("error", (err) => {
-    console.error("[OPENAI] Error:", err.message);
-    if (!callEnded && callSid) {
-      failCallGracefully(callSid);
-    }
-  });
+      // Accumulate AI transcript for the current response turn
+      if (msg.type === "response.audio_transcript.delta" || msg.type === "response.output_audio_transcript.delta") {
+        currentTurnTranscript += msg.delta;
+      }
+
+      // Also capture text output for booking detection
+      if (msg.type === "response.text.delta") {
+        currentTurnTranscript += msg.delta;
+      }
+
+      // Response turn complete — check for booking and reset transcript
+      // (Transcripts are never logged — they hold names, numbers and health details.)
+      if (msg.type === "response.done") {
+        if (!bookingHandled && currentTurnTranscript.includes("BOOKING_CONFIRMED:")) {
+          bookingHandled = true;
+          const line = currentTurnTranscript.split("\n").find((l) => l.trim().startsWith("BOOKING_CONFIRMED:"));
+          if (line) {
+            handleBooking(line.trim(), clinicName, callerPhone, smsSender).catch(console.error);
+          }
+        }
+
+        currentTurnTranscript = ""; // reset after each turn
+      }
+
+      if (msg.type === "error") {
+        console.error("[OPENAI ERROR]", JSON.stringify(msg.error));
+        // If the native µ-law session config was rejected, fall back to the
+        // legacy PCM transcode pipeline so the call still works.
+        if (audioMode === "ulaw" && !nativeConfirmed) {
+          console.warn("[OPENAI] Native µ-law config rejected — falling back to PCM transcode mode");
+          audioMode = "pcm";
+          openaiWs.send(JSON.stringify({ type: "input_audio_buffer.clear" }));
+          openaiWs.send(JSON.stringify({ type: "session.update", session: sessionConfig() }));
+        }
+      }
+    });
+
+    openaiWs.on("close", (code, reason) => {
+      console.log(`[OPENAI] Disconnected — code: ${code} reason: ${reason?.toString()}`);
+      // OpenAI dropped while the caller is still on the line → don't leave them
+      // in dead air; apologise and hang up via Twilio's REST API.
+      if (!callEnded && callSid) {
+        failCallGracefully(callSid);
+      }
+    });
+    openaiWs.on("error", (err) => {
+      console.error("[OPENAI] Error:", err.message);
+      if (!callEnded && callSid) {
+        failCallGracefully(callSid);
+      }
+    });
+  }
 
   function failCallGracefully(sid) {
     callEnded = true; // prevent double-fire from close following error
@@ -422,25 +483,38 @@ wss.on("connection", (twilioWs) => {
     }
 
     if (msg.event === "start") {
-      streamSid = msg.start.streamSid;
-      callSid = msg.start.callSid ?? null;
-      const params = msg.start.customParameters ?? {};
-      clinicName = params.clinicName ?? clinicName;
-      treatments = params.treatments ?? treatments;
-      staff = params.staff ?? staff;
-      hours = params.hours ?? hours;
-      durations = params.durations ?? durations;
-      smsSender = params.smsSender ?? smsSender;
-      callerPhone = params.callerPhone ?? callerPhone;
-      console.log(`[VOICE] Stream started | Clinic: ${clinicName} | Caller: ${callerPhone}`);
-
-      if (sessionReady) {
-        triggerGreeting();
-      } else {
-        // Session not ready yet — flag so we greet once it is
-        pendingGreeting = true;
+      if (authenticated) return; // one start per stream
+      // The token must be signed by /api/voice and bound to this exact call
+      const claims = verifyStreamToken(msg.start?.customParameters?.token);
+      if (!claims || claims.callSid !== msg.start?.callSid) {
+        console.warn("[VOICE] Rejected media stream — missing or invalid stream token");
+        twilioWs.close(1008, "Unauthorized");
+        return;
       }
+      authenticated = true;
+      clearTimeout(authTimer);
+
+      streamSid = msg.start.streamSid;
+      callSid = claims.callSid;
+      // Tenant config is derived here from the signed `to`, never from the stream
+      const clinic = CLINICS[claims.to] ?? DEFAULT_CLINIC;
+      clinicName = clinic.name;
+      treatments = clinic.treatments;
+      staff = clinic.staff ?? "";
+      hours = clinic.hours ?? "";
+      durations = clinic.durations ?? "";
+      smsSender = clinic.smsSender ?? "";
+      callerPhone = claims.from || "unknown";
+      console.log(`[VOICE] Stream started | Clinic: ${clinicName} | Caller: ${maskPhone(callerPhone)}`);
+
+      // The OpenAI session is opened only now — greet once it's configured
+      pendingGreeting = true;
+      connectOpenAI();
+      return;
     }
+
+    // Nothing else is processed until the stream has authenticated
+    if (!authenticated) return;
 
     // Drop audio frames until the µ-law session config is confirmed — appending
     // µ-law into the default PCM16 buffer would feed the model garbage. The
@@ -466,6 +540,7 @@ wss.on("connection", (twilioWs) => {
 
   twilioWs.on("close", () => {
     console.log("[VOICE] Twilio disconnected");
+    clearTimeout(authTimer);
     callEnded = true;
     if (pendingClearTimer) { clearTimeout(pendingClearTimer); pendingClearTimer = null; }
     openaiWs?.close();
@@ -491,7 +566,8 @@ async function handleBooking(line, clinicName, callerPhone, smsSender = "") {
   const tagPhone = get("phone");
   const confirmedPhone = (tagPhone.replace(/\D/g, "").length >= 6 ? tagPhone : "") || callerPhone;
 
-  console.log(`[BOOKING] Confirmed: ${name} | ${treatment} | ${doctor} | ${time} | ${confirmedPhone}`);
+  // No name/treatment/doctor in logs — they're patient (health) data
+  console.log(`[BOOKING] Confirmed at ${clinicName} | ${time} | Contact: ${maskPhone(confirmedPhone)}`);
 
   // Sender priority: per-clinic name → clinic name trimmed to the 11-char
   // sender-ID limit → "RingLoop" only when no clinic context exists at all.
@@ -516,7 +592,7 @@ async function handleBooking(line, clinicName, callerPhone, smsSender = "") {
       `Vidimo se!`
     ).catch((err) => console.error("[SMS] Patient confirmation failed:", err.message));
   } else {
-    console.warn(`[SMS] Skipping patient confirmation — invalid phone: ${confirmedPhone}`);
+    console.warn(`[SMS] Skipping patient confirmation — invalid phone: ${maskPhone(confirmedPhone)}`);
   }
 
   // Notification to the clinic/admin

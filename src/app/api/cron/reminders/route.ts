@@ -1,11 +1,14 @@
 import { getBookingsDue24hReminder, markReminderSent } from "@/bookings";
+import { maskPhone } from "@/mask-phone";
 import { sendWhatsApp } from "@/whatsapp";
 
 // Called by Vercel Cron every hour (configured in vercel.json).
 // Sends a WhatsApp reminder to patients with appointments in ~24 hours.
 export async function GET(request: Request) {
+  // Fail closed: with CRON_SECRET unset, "Bearer undefined" would otherwise pass
+  const secret = process.env.CRON_SECRET;
   const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!secret || authHeader !== `Bearer ${secret}`) {
     return new Response("Unauthorized", { status: 401 });
   }
 
@@ -24,7 +27,7 @@ export async function GET(request: Request) {
 
       await sendWhatsApp(booking.phone, message);
       await markReminderSent(booking.id);
-      console.log(`[CRON] Reminder sent to ${booking.name} (${booking.phone})`);
+      console.log(`[CRON] Reminder sent for booking ${booking.id} (${maskPhone(booking.phone)})`);
     })
   );
 

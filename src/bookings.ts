@@ -23,7 +23,7 @@ export async function saveBooking(data: Omit<Booking, "id" | "createdAt" | "remi
     reminderSent: false,
   };
   bookings.push(booking);
-  console.log(`[BOOKINGS] Saved: ${JSON.stringify(booking)}`);
+  console.log(`[BOOKINGS] Saved ${booking.id} for ${booking.clinicName}`);
   return booking;
 }
 
