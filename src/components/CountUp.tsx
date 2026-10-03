@@ -1,47 +1,45 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import useReducedMotion from "@/components/useReducedMotion";
 
 /**
  * Animates a number from 0 to `end` the first time it scrolls into view.
- * Falls back to the final value immediately for reduced-motion users.
+ * Shows the final value immediately for reduced-motion visitors.
  */
 export default function CountUp({
   end, prefix = "", suffix = "", duration = 1400,
 }: {
   end: number; prefix?: string; suffix?: string; duration?: number;
 }) {
+  const reduced = useReducedMotion();
   const ref = useRef<HTMLSpanElement>(null);
   const [value, setValue] = useState(0);
-  const started = useRef(false);
 
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    if (!el || reduced) return;
 
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setValue(end);
-      return;
-    }
-
+    let frame = 0;
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (!entry.isIntersecting || started.current) return;
-        started.current = true;
+        if (!entry.isIntersecting) return;
+        io.disconnect();
         const t0 = performance.now();
         const tick = (t: number) => {
           const p = Math.min((t - t0) / duration, 1);
-          const eased = 1 - Math.pow(1 - p, 3); // ease-out cubic
-          setValue(Math.round(eased * end));
-          if (p < 1) requestAnimationFrame(tick);
+          setValue(Math.round((1 - Math.pow(1 - p, 3)) * end)); // ease-out cubic
+          if (p < 1) frame = requestAnimationFrame(tick);
         };
-        requestAnimationFrame(tick);
-        io.disconnect();
+        frame = requestAnimationFrame(tick);
       },
       { threshold: 0.5 }
     );
     io.observe(el);
-    return () => io.disconnect();
-  }, [end, duration]);
+    return () => {
+      io.disconnect();
+      cancelAnimationFrame(frame);
+    };
+  }, [end, duration, reduced]);
 
-  return <span ref={ref}>{prefix}{value}{suffix}</span>;
+  return <span ref={ref}>{prefix}{reduced ? end : value}{suffix}</span>;
 }

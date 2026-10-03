@@ -5,47 +5,67 @@ import Link from "next/link";
 
 const STORAGE_KEY = "ringloop_cookie_consent";
 
+/** Fired by the footer's "Cookie settings" button to reopen the banner */
+export const COOKIE_SETTINGS_EVENT = "ringloop:cookie-settings";
+
+function readConsent() {
+  try {
+    return localStorage.getItem(STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function saveConsent(value: "accepted" | "declined") {
+  try {
+    localStorage.setItem(STORAGE_KEY, value);
+  } catch {
+    // Storage blocked (private mode) — the choice just won't persist
+  }
+}
+
 export default function CookieBanner() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const consent = localStorage.getItem(STORAGE_KEY);
-    if (!consent) setVisible(true);
+    // Let the page settle before asking
+    const id = setTimeout(() => {
+      if (!readConsent()) setVisible(true);
+    }, 1200);
+    const reopen = () => setVisible(true);
+    window.addEventListener(COOKIE_SETTINGS_EVENT, reopen);
+    return () => {
+      clearTimeout(id);
+      window.removeEventListener(COOKIE_SETTINGS_EVENT, reopen);
+    };
   }, []);
 
-  function accept() {
-    localStorage.setItem(STORAGE_KEY, "accepted");
-    setVisible(false);
-  }
-
-  function decline() {
-    localStorage.setItem(STORAGE_KEY, "declined");
+  function choose(value: "accepted" | "declined") {
+    saveConsent(value);
     setVisible(false);
   }
 
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-2xl">
-      <div className="rounded-2xl border border-[var(--line)] bg-white/95 backdrop-blur-xl shadow-2xl shadow-[rgba(12,27,56,0.12)] px-6 py-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-ink-soft leading-relaxed">
-          We use cookies to understand how visitors use our site. Essential cookies are always active.{" "}
-          <Link href="/privacy#cookies" className="text-blue hover:underline">
+    <div role="dialog" aria-label="Cookie preferences" className="animate-fade-up fixed inset-x-4 bottom-4 z-50 sm:inset-x-auto sm:left-5 sm:max-w-sm">
+      <div className="flex flex-col gap-4 rounded-2xl border border-line bg-white/95 p-5 shadow-2xl shadow-[rgba(12,27,56,0.14)] backdrop-blur-xl">
+        <p className="text-sm leading-relaxed text-ink-soft">
+          We use essential cookies to run this site, and optional ones only with your consent.{" "}
+          <Link href="/privacy#cookies" className="font-medium text-blue hover:underline">
             Learn more
           </Link>
         </p>
-        <div className="flex shrink-0 gap-3">
+        <div className="flex gap-2.5">
           <button
-            onClick={decline}
-            className="rounded-full border border-[var(--line)] px-5 py-2 text-sm font-medium text-ink-soft hover:border-blue/30 hover:text-ink transition-colors"
+            type="button"
+            onClick={() => choose("declined")}
+            className="flex-1 rounded-full border border-line px-4 py-2 text-sm font-medium text-ink-soft transition-colors hover:border-blue/30 hover:text-ink"
           >
             Decline
           </button>
-          <button
-            onClick={accept}
-            className="btn-primary px-5 py-2 text-sm"
-          >
-            Accept all
+          <button type="button" onClick={() => choose("accepted")} className="btn-primary flex-1 px-4 py-2 text-sm">
+            Accept
           </button>
         </div>
       </div>

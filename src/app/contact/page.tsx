@@ -1,113 +1,117 @@
+import Link from "next/link";
+import Icon from "@/components/Icon";
 import LeadForm from "@/components/LeadForm";
+import { Eyebrow, CheckDot } from "@/components/Section";
 
 export const metadata = {
-  title: "Contact — RingLoop",
-  description: "Book a free demo or get in touch with the RingLoop team.",
+  title: "Book a demo",
+  description:
+    "Book a free 20-minute demo: see RingLoop text back a missed call and book the customer in by SMS — set up with your business name.",
 };
+
+const benefits = [
+  "A live text-back set up with your business name",
+  "A walkthrough of booking, confirmations and reminders",
+  "Your exact monthly price — the same day",
+  "Honest answers, zero pressure",
+];
+
+const next = [
+  { title: "We reply within a few hours", desc: "To pick a time that suits you." },
+  { title: "20-minute demo",              desc: "Tailored to your business and how you take bookings." },
+  { title: "Live within 24 hours",        desc: "If you like it — no contract, cancel anytime." },
+];
+
+const channels = [
+  { icon: "mail",        label: "Email us",  value: "hello@ringloop.net",  href: "mailto:hello@ringloop.net" },
+  { icon: "instagram",   label: "Instagram", value: "@ringloop.io",        href: "https://instagram.com/ringloop.io" },
+  { icon: "messageText", label: "Live demo", value: "Text the AI now",     href: "/demo" },
+];
 
 export default function Contact() {
   return (
-    <main className="bg-paper pt-16 text-ink">
-
-      {/* Hero */}
-      <section className="relative overflow-hidden px-6 py-28 text-center">
+    <main className="overflow-x-clip bg-paper text-ink">
+      <section className="relative px-6 pb-24 pt-32 md:pt-40">
+        <div className="grid-bg pointer-events-none absolute inset-0" />
         <div className="halo pointer-events-none absolute inset-0" />
-        <div className="relative mx-auto max-w-3xl">
-          <p className="label mb-4 text-blue">Contact</p>
-          <h1 className="font-display mb-6 text-5xl leading-[1.05] md:text-6xl">
-            Let&apos;s <em className="text-blue">talk.</em>
-          </h1>
-          <p className="text-lg leading-relaxed text-ink-soft">
-            Book a free demo or reach out with any questions. We typically respond within a few hours.
-          </p>
-        </div>
-      </section>
 
-      {/* Lead form */}
-      <section className="mx-auto max-w-2xl px-6 pb-8">
-        <LeadForm />
-      </section>
-
-      {/* Contact options */}
-      <section className="mx-auto max-w-4xl px-6 py-16">
-        <div className="grid gap-6 md:grid-cols-2">
-
-          {/* Book a demo */}
-          <div className="relative overflow-hidden rounded-3xl bg-night p-10 text-white shadow-xl shadow-blue/10">
-            <div className="night-glow pointer-events-none absolute inset-0" />
-            <div className="relative">
-              <p className="font-display mb-3 text-3xl">Book a <em className="text-[#7fa6f8]">free demo</em></p>
-              <p className="mb-8 text-sm leading-relaxed text-sky/60">
-                See RingLoop working live with your clinic&apos;s details. 20 minutes, no commitment required.
-              </p>
-              <div className="space-y-3">
-                {[
-                  { label: "Email us",   value: "hello@ringloop.net",       href: "mailto:hello@ringloop.net" },
-                  { label: "Instagram",  value: "@ringloop.io",             href: "https://instagram.com/ringloop.io" },
-                  { label: "Live demo",  value: "Talk to the AI right now", href: "/demo" },
-                ].map((item) => (
-                  <a
-                    key={item.label}
-                    href={item.href}
-                    target={item.href.startsWith("http") ? "_blank" : undefined}
-                    rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                    className="flex items-center gap-4 rounded-2xl bg-white/5 border border-[var(--line-dark)] p-4 transition-colors hover:bg-white/10"
-                  >
-                    <div>
-                      <p className="text-xs text-sky/45">{item.label}</p>
-                      <p className="font-semibold">{item.value}</p>
-                    </div>
-                  </a>
-                ))}
-              </div>
+        {/* Phones: pitch → form → details. Desktop: pitch + details left, sticky form right. */}
+        <div className="relative mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-x-16 lg:gap-y-0">
+          <div className="lg:col-start-1 lg:row-start-1">
+            <div className="animate-fade-up">
+              <Eyebrow icon="calendarCheck">Book a demo</Eyebrow>
             </div>
+            <h1 className="font-display animate-fade-up anim-d1 mt-6 text-[2.75rem] leading-[1.04] md:text-[3.6rem]">
+              See RingLoop <em>book your customers.</em>
+            </h1>
+            <p className="animate-fade-up anim-d2 mt-6 max-w-lg text-lg leading-relaxed text-ink-soft">
+              A 20-minute call. We&apos;ll set RingLoop up with your business name and show you a real
+              missed-call text-back — live.
+            </p>
           </div>
 
-          {/* Info panels */}
-          <div className="space-y-5">
-            <div className="card p-7">
-              <h3 className="font-display mb-4 text-xl">What happens in a demo?</h3>
-              <ul className="space-y-3.5">
-                {[
-                  "We show you RingLoop working live",
-                  "We configure it with your clinic's name",
-                  "You hear a real booking conversation",
-                  "We answer all your questions",
-                  "You decide if it's right for you — no pressure",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-3 text-sm text-ink-soft">
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sky text-[10px] font-bold text-blue">✓</span>
-                    {item}
+          <div className="animate-fade-up anim-d2 lg:sticky lg:top-24 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start">
+            <LeadForm />
+          </div>
+
+          <div className="lg:col-start-1 lg:row-start-2 lg:mt-10">
+            <ul className="animate-fade-up anim-d3 space-y-3.5">
+              {benefits.map((b) => (
+                <li key={b} className="flex items-start gap-3 text-[15px] text-ink">
+                  <CheckDot />
+                  {b}
+                </li>
+              ))}
+            </ul>
+
+            <div className="animate-fade-up anim-d4 mt-12">
+              <p className="label mb-5 text-muted">What happens next</p>
+              <ol className="space-y-5">
+                {next.map((n, i) => (
+                  <li key={n.title} className="relative flex gap-4">
+                    {i < next.length - 1 && <span className="absolute left-4 top-10 -bottom-3 w-px bg-line" />}
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue text-sm font-bold text-white shadow-md shadow-blue/20">
+                      {i + 1}
+                    </span>
+                    <div className="pt-1">
+                      <p className="font-semibold text-ink">{n.title}</p>
+                      <p className="text-sm text-ink-soft">{n.desc}</p>
+                    </div>
                   </li>
                 ))}
-              </ul>
+              </ol>
             </div>
 
-            <div className="card p-7">
-              <h3 className="font-display mb-4 text-xl">Response time</h3>
-              <div className="space-y-3">
-                {[
-                  { channel: "Email",     time: "Usually within a few hours" },
-                  { channel: "Demo form", time: "Same day" },
-                ].map((item) => (
-                  <div key={item.channel} className="flex justify-between text-sm">
-                    <span className="text-ink-soft">{item.channel}</span>
-                    <span className="font-medium text-blue">{item.time}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-[var(--line)] bg-white/60 p-7">
-              <h3 className="mb-1.5 font-display text-xl">Based in Croatia 🇭🇷</h3>
-              <p className="text-sm leading-relaxed text-ink-soft">
-                We serve medical institutes across Croatia and Europe. Available in Croatian, English, and more.
-              </p>
+            <div className="animate-fade-up anim-d5 mt-12 grid gap-3 sm:grid-cols-3">
+              {channels.map((c) => {
+                const className = "lift group flex flex-col gap-2 rounded-2xl border border-line bg-white p-4 text-sm";
+                const inner = (
+                  <>
+                    <Icon name={c.icon} className="h-4.5 w-4.5 text-blue" />
+                    <span className="text-xs text-muted">{c.label}</span>
+                    <span className="font-semibold text-ink group-hover:text-blue">{c.value}</span>
+                  </>
+                );
+                if (c.href.startsWith("/")) {
+                  return <Link key={c.label} href={c.href} className={className}>{inner}</Link>;
+                }
+                const external = c.href.startsWith("http");
+                return (
+                  <a
+                    key={c.label}
+                    href={c.href}
+                    target={external ? "_blank" : undefined}
+                    rel={external ? "noopener noreferrer" : undefined}
+                    className={className}
+                  >
+                    {inner}
+                  </a>
+                );
+              })}
             </div>
           </div>
         </div>
       </section>
-
     </main>
   );
 }

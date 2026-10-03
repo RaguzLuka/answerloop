@@ -1,6 +1,7 @@
 /**
- * RingLoop logo mark — "voice loop": an open ring (the call) wrapping a
- * voice equalizer (the AI speaking). Sapphire tile, white mark.
+ * RingLoop logo mark — "message loop": the open ring (the missed call)
+ * wrapped around a typing indicator (the text that loops back).
+ * Sapphire tile, white mark.
  */
 export default function LogoMark({ size = 32 }: { size?: number }) {
   return (
@@ -30,10 +31,9 @@ export default function LogoMark({ size = 32 }: { size?: number }) {
       />
 
       <g fill="#ffffff">
-        <rect x="409" y="452" width="38" height="120" rx="19" />
-        <rect x="465" y="407" width="38" height="210" rx="19" />
-        <rect x="521" y="432" width="38" height="160" rx="19" />
-        <rect x="577" y="464" width="38" height="96" rx="19" />
+        <circle cx="432" cy="512" r="36" />
+        <circle cx="512" cy="512" r="36" />
+        <circle cx="592" cy="512" r="36" />
       </g>
     </svg>
   );

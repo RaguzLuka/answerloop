@@ -1,737 +1,649 @@
 import Link from "next/link";
 import Icon from "@/components/Icon";
-import CountUp from "@/components/CountUp";
+import LogoMark from "@/components/LogoMark";
+import HeroChat from "@/components/HeroChat";
+import RoiCalculator from "@/components/RoiCalculator";
+import CtaBand from "@/components/CtaBand";
+import Faq, { faqJsonLd, type FaqItem } from "@/components/Faq";
+import { Eyebrow, SectionHeading, CheckDot } from "@/components/Section";
+import { TextBackVisual, BookingVisual, ReminderVisual } from "@/components/FeatureVisuals";
+import Industries from "@/components/Industries";
+import Halo from "@/components/Halo";
 
-const faqs = [
+const industries = [
+  { icon: "scissors",    name: "Hair salons" },
+  { icon: "barberPole",  name: "Barbershops" },
+  { icon: "nailPolish",  name: "Nail studios" },
+  { icon: "utensils",    name: "Restaurants" },
+  { icon: "sparkles",    name: "Beauty & spa" },
+  { icon: "tooth",       name: "Dental clinics" },
+  { icon: "stethoscope", name: "Medical practices" },
+  { icon: "bone",        name: "Physiotherapy" },
+  { icon: "dumbbell",    name: "Fitness studios" },
+  { icon: "leaf",        name: "Massage & wellness" },
+  { icon: "wrench",      name: "Car services" },
+  { icon: "pawPrint",    name: "Pet grooming" },
+];
+
+const withoutUs = [
+  { time: "18:41", icon: "phone",       text: "The phone rings while you're with a customer" },
+  { time: "18:42", icon: "phoneMissed", text: "Nobody can answer — it goes to voicemail" },
+  { time: "18:42", icon: "x",           text: "The caller hangs up without a message" },
+  { time: "18:49", icon: "store",       text: "They book with a competitor down the street" },
+];
+
+const withUs = [
+  { time: "18:41", icon: "phone",         text: "The phone rings while you're with a customer" },
+  { time: "18:41", icon: "messageText",   text: "Halo texts the caller within seconds" },
+  { time: "18:44", icon: "calendarCheck", text: "They book Friday 14:30 just by replying" },
+  { time: "Thu",   icon: "bell",          text: "Reminded the day before — and they show up" },
+];
+
+const steps = [
   {
-    q: "Do I need a new phone number?",
-    a: "No. You keep your existing clinic number and set up call forwarding — takes about 2 minutes. When a call goes unanswered after a few rings, it forwards to RingLoop's AI. Your patients dial the same number as always.",
+    icon: "phoneMissed",
+    title: "A call goes unanswered",
+    desc: "Busy, closed or mid-service — calls you can't take are caught by RingLoop through simple call forwarding on your existing number.",
   },
   {
-    q: "How long does setup take?",
-    a: "Most clinics are live within 24 hours. We handle the AI configuration, voice persona, SMS confirmations, and optional calendar integration. You just flip the call forwarding switch.",
+    icon: "messageText",
+    title: "Halo texts back in seconds",
+    desc: "The caller gets a friendly SMS from your business name, inviting them to book by reply — before they dial anyone else.",
   },
   {
-    q: "Does the AI really sound natural on the phone?",
-    a: "Yes. RingLoop uses advanced AI voices that sound warm and professional — not robotic. Most patients don't realise they're talking to an AI.",
-  },
-  {
-    q: "What languages does the AI speak?",
-    a: "Any language your patients speak. Croatian, English, German, Italian, Slovenian — the AI responds in whatever language the caller uses, automatically.",
-  },
-  {
-    q: "Is it GDPR compliant?",
-    a: "Yes. RingLoop processes data under legitimate interest and contract performance (Art. 6 GDPR). All third-party processors — Twilio, OpenAI, Vercel — operate under Standard Contractual Clauses. See our Privacy Policy for full details.",
-  },
-  {
-    q: "Can I cancel anytime?",
-    a: "Yes. No contract, no minimum term. Cancel before the next billing date and you won't be charged. We're confident you'll stay because the results speak for themselves.",
+    icon: "calendarCheck",
+    title: "Halo books it",
+    desc: "A natural two-way text conversation finds the right service and time, confirms it, and lets you know.",
   },
 ];
 
-const faqJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: faqs.map(({ q, a }) => ({
-    "@type": "Question",
-    name: q,
-    acceptedAnswer: { "@type": "Answer", text: a },
-  })),
-};
+const stepPoses = ["listen", "talk", "booking"] as const;
 
-/* The conversation that cycles inside the hero call card */
-const subtitles = [
-  { speaker: "RingLoop", text: "Good evening, Zagreb Dental. How can I help you?" },
-  { speaker: "Caller",   text: "Hi — I need a checkup, do you have anything this week?" },
-  { speaker: "RingLoop", text: "Of course. May I have your full name?" },
-  { speaker: "Caller",   text: "Marko Horvat." },
-  { speaker: "RingLoop", text: "Thank you, Marko. What day and time suit you?" },
-  { speaker: "Caller",   text: "Tomorrow at ten, if possible." },
-  { speaker: "RingLoop", text: "Booked — tomorrow at 10:00. Your SMS confirmation is on its way." },
+const features = [
+  {
+    kicker: "Recover",
+    icon: "phoneMissed",
+    title: "Every missed call gets a reply in seconds.",
+    desc: "RingLoop notices the call you couldn't take and texts the caller straight away — while they're still holding the phone. No voicemail, no phone tag, no customer lost to the competitor down the street.",
+    points: [
+      "Sent within seconds, day and night",
+      "Arrives from your business name — not a random number",
+      "Works with your existing landline or mobile",
+    ],
+    visual: <TextBackVisual />,
+  },
+  {
+    kicker: "Book",
+    icon: "messages",
+    title: "A booking conversation that runs itself.",
+    desc: "The AI understands how people actually text — typos, voice dictation, any language — and books them in a natural back-and-forth. It knows your services, opening hours and team, and hands over to a person whenever it should.",
+    points: [
+      "Books, reschedules and cancels by text",
+      "You're notified the moment something's booked",
+      "Bookings can land straight in your Google Calendar",
+    ],
+    visual: <BookingVisual />,
+  },
+  {
+    kicker: "Keep",
+    icon: "bell",
+    title: "Fewer no-shows. Fuller days.",
+    desc: "Every booking gets an instant confirmation and a reminder before the visit. Customers confirm or reschedule with a one-word reply — so a cancellation becomes a slot you can fill, not an empty chair or table.",
+    points: [
+      "Instant confirmation after every booking",
+      "Day-before reminders with reply-to-confirm",
+      "Reschedules handled without a single phone call",
+    ],
+    visual: <ReminderVisual />,
+  },
+];
+
+const extras = [
+  { icon: "userCheck", title: "Human handoff",          desc: "When a customer needs a person, the conversation comes to you — with the full context." },
+  { icon: "store",     title: "Your name, your tone",   desc: "Texts arrive under your business name and sound like you — RingLoop stays invisible." },
+  { icon: "languages", title: "Speaks their language",  desc: "Croatian, English, German, Italian, Slovenian and more — replies in the customer's language." },
+  { icon: "calendar",  title: "Calendar sync",          desc: "Google Calendar integration, so bookings appear where you already look." },
+  { icon: "history",   title: "Win-back campaigns",     desc: "Bring back regulars when they're due — for a trim, a check-up or a table — automatically.", soon: true },
+  { icon: "star",      title: "Review requests",        desc: "Ask happy customers for a Google review a few hours after their visit.",                    soon: true },
+];
+
+const comparison: { feature: string; rl: string | boolean; vm: string | boolean; rec: string | boolean }[] = [
+  { feature: "Replies to every missed call",       rl: true,       vm: false, rec: false     },
+  { feature: "Works evenings & weekends",          rl: true,       vm: true,  rec: false     },
+  { feature: "Takes bookings",                     rl: true,       vm: false, rec: true      },
+  { feature: "Confirmations & reminders",          rl: true,       vm: false, rec: "Manual"  },
+  { feature: "Speaks your customers' languages",   rl: true,       vm: false, rec: "Some"    },
+  { feature: "Monthly cost",                       rl: "From €59", vm: "€0",  rec: "€1,500+" },
+];
+
+const trust = [
+  { icon: "shieldCheck", title: "GDPR-ready",             desc: "EU-based, with a Data Processing Agreement for every business and data kept to the minimum." },
+  { icon: "lock",        title: "Secure by default",      desc: "Encrypted in transit, strict access controls — and customer data is never sold." },
+  { icon: "userCheck",   title: "Honest with customers",  desc: "The assistant never pretends to be human, and hands over the moment it should." },
+  { icon: "shield",      title: "Knows its limits",       desc: "It books and answers questions about your business. Anything else — like medical advice — goes to you." },
+];
+
+const faqs: FaqItem[] = [
+  {
+    q: "What kinds of businesses is RingLoop for?",
+    a: "Any business that takes bookings by phone: hair salons, barbershops, nail and beauty studios, restaurants, dental and medical practices, physiotherapists, fitness studios, spas, car services and more. If people call you to book, RingLoop can text them back.",
+  },
+  {
+    q: "Do I need a new phone number?",
+    a: "No. Customers keep calling the number they already know. You switch on call forwarding for unanswered calls once — it takes about two minutes — and RingLoop takes it from there.",
+  },
+  {
+    q: "What exactly happens when I miss a call?",
+    a: "RingLoop catches the unanswered call and, within seconds, texts the caller from your business name inviting them to book by reply. The AI handles the conversation, confirms the booking, and you're notified the moment it's done.",
+  },
+  {
+    q: "Will customers know they're texting an automated assistant?",
+    a: "RingLoop writes as your business's text assistant and never pretends to be a person. If someone asks, it says so honestly — and you can take over any conversation at any time.",
+  },
+  {
+    q: "What languages does it speak?",
+    a: "Croatian, English, German, Italian, Slovenian and many more. It replies in whatever language the customer writes in, automatically.",
+  },
+  {
+    q: "Does it work with my calendar or booking system?",
+    a: "Bookings can land straight in your Google Calendar. Already using a booking system? Tell us which one in the demo and we'll work out the right setup with you.",
+  },
+  {
+    q: "Is it GDPR compliant?",
+    a: "Yes. We're an EU-based company, we process customer data only on your behalf under a Data Processing Agreement, and our processors operate under EU Standard Contractual Clauses. See our Privacy Policy for details.",
+  },
+  {
+    q: "How long does setup take?",
+    a: "Most businesses are live within 24 hours. We configure everything — your services, hours, team and message templates. You just switch on call forwarding.",
+  },
+  {
+    q: "Can I cancel anytime?",
+    a: "Yes. No contract and no minimum term — cancel before your next billing date and you won't be charged again.",
+  },
 ];
 
 export default function Home() {
   return (
-    <main className="overflow-x-hidden bg-paper text-ink">
+    <main className="overflow-x-clip bg-paper text-ink">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(faqs)) }}
       />
 
       {/* ── HERO ─────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden px-6 pt-40 pb-28 text-center">
+      <section className="relative px-6 pb-20 pt-32 md:pt-40 lg:pb-28">
+        <div className="grid-bg pointer-events-none absolute inset-0" />
         <div className="halo pointer-events-none absolute inset-0" />
         <div className="halo-drift pointer-events-none absolute -top-40 left-1/2 h-[460px] w-[820px] rounded-full bg-blue/10 blur-3xl" />
 
-        <div className="relative mx-auto max-w-4xl">
-          <p className="animate-fade-up mb-8 inline-flex items-center gap-2.5 rounded-full border border-blue/15 bg-white/70 px-4 py-1.5 text-xs font-semibold text-blue backdrop-blur-sm shadow-sm">
-            <span className="relative flex h-2 w-2">
-              <span className="ring-pulse absolute inline-flex h-full w-full rounded-full bg-blue" />
-              <span className="relative h-2 w-2 rounded-full bg-blue" />
-            </span>
-            Now answering calls for clinics in Europe &amp; the US
-          </p>
-
-          <h1 className="font-display animate-fade-up delay-100 mb-7 text-[3.1rem] leading-[1.04] md:text-[4.6rem] lg:text-[5.4rem]">
-            Your clinic misses calls.
-            <br />
-            <em className="text-blue">RingLoop answers them.</em>
-          </h1>
-
-          <p className="animate-fade-up delay-200 mx-auto mb-11 max-w-xl text-lg leading-relaxed text-ink-soft md:text-xl">
-            The AI receptionist that picks up every forwarded call, books the
-            appointment by voice, and confirms it to the patient by SMS —
-            automatically, 24/7.
-          </p>
-
-          <div className="animate-fade-up delay-300 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-            <Link href="/contact" className="btn-primary group px-9 py-4">
-              Book a free demo
-              <span className="ml-2 inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
-            </Link>
+        <div className="relative mx-auto grid max-w-6xl items-center gap-16 lg:grid-cols-[1.08fr_0.92fr] lg:gap-8">
+          <div className="text-center lg:text-left">
             <Link
               href="/demo"
-              className="rounded-full border border-[var(--line)] bg-white px-9 py-4 font-semibold text-ink shadow-sm transition-all duration-300 hover:border-blue/30 hover:text-blue"
+              className="animate-fade-up group inline-flex items-center gap-2.5 rounded-full border border-blue/15 bg-white/80 py-1 pl-1 pr-3.5 text-xs font-semibold text-ink-soft shadow-sm backdrop-blur transition-colors hover:border-blue/30 hover:text-ink"
             >
-              Talk to the AI right now
+              <span className="flex items-center gap-1.5 rounded-full bg-blue py-0.5 pl-0.5 pr-2 text-[10px] font-bold uppercase tracking-wider text-white">
+                <Halo pose="avatar" size={18} decorative className="h-[18px] w-[18px] rounded-full bg-white" />
+                Live
+              </span>
+              Text Halo, our AI receptionist<span className="hidden sm:inline">, right now</span>
+              <span className="arrow text-blue">→</span>
             </Link>
-          </div>
 
-          <p className="animate-fade-up delay-400 mt-7 text-sm text-muted">
-            No contract &nbsp;·&nbsp; Cancel anytime &nbsp;·&nbsp; Setup in 24h &nbsp;·&nbsp; Pricing tailored to your clinic
-          </p>
+            <h1 className="font-display animate-fade-up anim-d1 mt-7 text-[2.85rem] leading-[1.03] sm:text-6xl lg:text-[3.75rem] xl:text-[4.35rem]">
+              Turn missed calls into <em>booked customers.</em>
+            </h1>
 
-          {/* The live call card */}
-          <div className="animate-fade-up delay-500 mx-auto mt-20 w-full max-w-2xl">
-          <div className="animate-float card relative overflow-hidden text-left">
-            {/* Card head */}
-            <div className="flex items-center justify-between border-b border-[var(--line)] px-6 py-4">
-              <div className="flex items-center gap-3.5">
-                <div className="relative flex h-10 w-10 items-center justify-center">
-                  <span className="ring-pulse absolute inset-0 rounded-full bg-blue/20" />
-                  <span className="relative flex h-10 w-10 items-center justify-center rounded-full bg-blue text-white">
-                    <Icon name="phone" className="h-4 w-4" />
-                  </span>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">Zagreb Dental Clinic</p>
-                  <p className="text-xs text-blue">AI receptionist · live call</p>
-                </div>
-              </div>
-              <div className="flex h-5 items-center gap-[3px]">
-                {[10, 16, 7, 13, 9, 15, 8].map((h, i) => (
-                  <span
-                    key={i}
-                    className="wave-bar w-[3px] rounded-full bg-blue/70"
-                    style={{ height: `${h}px`, animationDelay: `${i * 0.12}s` }}
-                  />
-                ))}
-              </div>
-            </div>
+            <p className="animate-fade-up anim-d2 mx-auto mt-7 max-w-xl text-lg leading-relaxed text-ink-soft md:text-xl lg:mx-0">
+              Busy with a client, closed, or mid-service? RingLoop texts every missed caller back
+              within seconds, books them in a friendly two-way SMS chat, and sends reminders that
+              cut no-shows — 24/7, under your business name.
+            </p>
 
-            {/* The conversation, one line at a time */}
-            <div className="relative flex h-36 items-center justify-center bg-gradient-to-b from-sky/40 to-white px-8">
-              {subtitles.map((line, i) => (
-                <p
-                  key={i}
-                  className="subtitle-line absolute inset-x-8 text-center text-[15px] leading-relaxed text-ink-soft md:text-base"
-                  style={{ animationDelay: `${i * 3.5}s` }}
-                >
-                  <span className={`label mr-2.5 ${line.speaker === "RingLoop" ? "text-blue" : "text-muted"}`}>
-                    {line.speaker}
-                  </span>
-                  &ldquo;{line.text}&rdquo;
-                </p>
-              ))}
-            </div>
-
-            {/* Card foot */}
-            <div className="flex items-center justify-between border-t border-[var(--line)] px-6 py-3.5">
-              <p className="text-xs font-medium text-muted">Answered in under 5 seconds</p>
-              <Link href="/demo" className="text-xs font-semibold text-blue transition-colors hover:text-blue-deep">
-                Try it yourself →
+            <div className="animate-fade-up anim-d3 mt-10 flex flex-col items-center gap-3.5 sm:flex-row sm:justify-center lg:justify-start">
+              <Link href="/contact" className="btn-primary group w-full px-8 py-4 sm:w-auto">
+                Book a free demo <span className="arrow">→</span>
+              </Link>
+              <Link href="/demo" className="btn-secondary w-full px-8 py-4 sm:w-auto">
+                <Icon name="messageText" className="h-4.5 w-4.5 text-blue" />
+                Try the live demo
               </Link>
             </div>
-          </div>
-          </div>
-        </div>
-      </section>
 
-      {/* ── STATS (live counters) ────────────────────────────── */}
-      <section className="border-y border-[var(--line)] bg-white py-16">
-        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-y-10 px-6 md:grid-cols-4">
-          {[
-            { number: <CountUp end={62} suffix="%" />,           label: "of missed calls never call back" },
-            { number: <CountUp end={5} prefix="< " suffix="s" />, label: "RingLoop picks up the call" },
-            { number: "24/7",                                     label: "always available" },
-            { number: <CountUp end={3} suffix="×" />,             label: "more bookings per month" },
-          ].map((stat, i) => (
-            <div key={stat.label} data-reveal className={`reveal-pop r-delay-${(i % 3) + 1} text-center`}>
-              <p className="font-display mb-2 text-[2.7rem] leading-none text-blue">{stat.number}</p>
-              <p className="mx-auto max-w-[180px] text-sm leading-snug text-ink-soft">{stat.label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── SPECIALTY TICKER ─────────────────────────────────── */}
-      <div className="marquee-mask border-b border-[var(--line)] bg-white py-5">
-        <div className="marquee items-center gap-12 pr-12">
-          {[0, 1].map((copy) => (
-            <div key={copy} aria-hidden={copy === 1} className="flex shrink-0 items-center gap-12">
-              {[
-                "Dental clinics", "Aesthetic clinics", "General practices", "Ophthalmology",
-                "Physiotherapy", "Psychiatry & therapy", "Cardiology", "Dermatology", "Pediatrics",
-              ].map((s) => (
-                <span key={s} className="flex items-center gap-12 whitespace-nowrap text-sm font-medium text-muted">
-                  {s}
-                  <span className="h-1 w-1 rounded-full bg-blue/40" />
-                </span>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── TRUST BAND ───────────────────────────────────────── */}
-      <section className="border-b border-[var(--line)] bg-white py-8">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-x-8 gap-y-4 px-6 text-sm font-medium text-ink-soft">
-          {[
-            { icon: "shield",        label: "GDPR-ready & secure" },
-            { icon: "globe",         label: "For clinics in Europe & the US" },
-            { icon: "clock",         label: "Answers in under 5 seconds" },
-            { icon: "phone",         label: "24/7, every single call" },
-            { icon: "calendarCheck", label: "No contract · cancel anytime" },
-          ].map((b, i) => (
-            <div key={b.label} className="flex items-center gap-2.5">
-              {i > 0 && <span className="hidden h-4 w-px bg-[var(--line)] sm:block sm:-ml-4 sm:mr-1.5" />}
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky text-blue">
-                <Icon name={b.icon} className="h-4 w-4" />
-              </span>
-              {b.label}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── PROBLEM ──────────────────────────────────────────── */}
-      <section className="mx-auto max-w-5xl px-6 py-32">
-        <div className="grid items-center gap-16 md:grid-cols-2">
-          <div data-reveal className="reveal-left">
-            <p className="label mb-4 text-muted">The cost of a missed call</p>
-            <h2 className="font-display mb-6 text-4xl leading-[1.1] md:text-5xl">
-              Every unanswered ring is a patient <em className="text-blue">walking away.</em>
-            </h2>
-            <p className="mb-10 leading-relaxed text-ink-soft">
-              When a patient calls and nobody answers, they don&apos;t wait. They call
-              the next clinic on Google. That&apos;s a lost patient — and lost
-              revenue — every single time.
-            </p>
-            <ul className="space-y-5">
-              {[
-                "62% of missed calls never call back",
-                "The average clinic misses 15–30 calls per month",
-                "Each missed call = €50–500 in lost treatment",
-                "Voicemail has less than 20% callback rate",
-              ].map((item) => (
-                <li key={item} className="flex items-start gap-3.5 text-[15px] text-ink-soft">
-                  <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-blue" />
-                  {item}
+            <ul className="animate-fade-up anim-d4 mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2.5 text-sm text-ink-soft lg:justify-start">
+              {["Keep your number", "Live in 24 hours", "No contract"].map((t) => (
+                <li key={t} className="flex items-center gap-2">
+                  <span className="flex h-4.5 w-4.5 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                    <Icon name="check" className="h-3 w-3" strokeWidth={3} />
+                  </span>
+                  {t}
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Loss ledger */}
-          <div data-reveal className="card reveal-right r-delay-1 p-9">
-            <p className="label mb-1.5 text-blue">Monthly loss calculator</p>
-            <p className="mb-8 text-sm text-muted">For a clinic missing 20 calls a month</p>
-            <div>
-              {[
-                { label: "Missed calls / month",         value: "20 calls", hi: false },
-                { label: "Average treatment value",      value: "€150",     hi: false },
-                { label: "Patients who don't call back", value: "62% = 12", hi: false },
-                { label: "Monthly revenue lost",         value: "€1,800",   hi: true  },
-                { label: "Annual revenue lost",          value: "€21,600",  hi: true  },
-              ].map((row) => (
-                <div
-                  key={row.label}
-                  className={`flex items-center justify-between border-b border-[var(--line)] py-4 text-sm last:border-0 ${row.hi ? "font-semibold" : ""}`}
-                >
-                  <span className="text-ink-soft">{row.label}</span>
-                  <span className={row.hi ? "text-blue" : "text-ink"}>{row.value}</span>
-                </div>
-              ))}
-            </div>
-            <p className="mt-6 text-xs text-muted">RingLoop pays for itself in the first recovered booking.</p>
+          <div className="animate-fade-up anim-d3">
+            <HeroChat />
           </div>
         </div>
       </section>
 
-      {/* ── NIGHT SHIFT (solution, navy) ─────────────────────── */}
-      <section className="relative overflow-hidden bg-night py-32 text-white">
-        <div className="dot-grid-dark pointer-events-none absolute inset-0" />
-        <div className="night-glow pointer-events-none absolute inset-0" />
-        <div className="parallax pointer-events-none absolute -top-20 left-1/4 h-[380px] w-[380px] rounded-full bg-[#4074f5]/15 blur-3xl" />
-        <div className="parallax-soft pointer-events-none absolute bottom-0 right-1/5 h-[300px] w-[300px] rounded-full bg-[#7fa6f8]/10 blur-3xl" />
-
-        <div className="relative mx-auto max-w-5xl px-6">
-          <div data-reveal className="mb-20 text-center">
-            <p className="label mb-4 text-sky/60">While your front desk sleeps</p>
-            <h2 className="font-display text-4xl leading-[1.1] md:text-5xl">
-              RingLoop answers every call.
-              <br />
-              <em className="text-[#7fa6f8]">Even when you can&apos;t.</em>
-            </h2>
-            <p className="mx-auto mt-6 max-w-xl leading-relaxed text-sky/60">
-              Your clinic forwards unanswered calls to RingLoop. The AI picks up, has
-              a natural voice conversation, and books the appointment — then confirms
-              it to the patient by SMS.
-            </p>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-4">
-            {[
-              { icon: "phone",         step: "01", title: "Patient calls, no answer",    desc: "The call forwards to RingLoop in seconds." },
-              { icon: "bot",           step: "02", title: "The AI picks up and talks",   desc: "A natural voice conversation — warm, not robotic." },
-              { icon: "calendarCheck", step: "03", title: "Appointment booked by voice", desc: "Name, treatment, doctor and time — all collected." },
-              { icon: "message",       step: "04", title: "SMS confirmation, instantly", desc: "The booking lands in the patient's pocket." },
-            ].map((s, i) => (
-              <div
-                key={s.title}
-                data-reveal
-                className={`card-night reveal-zoom r-delay-${(i % 3) + 1} p-7 transition-colors duration-300 hover:border-[#7fa6f8]/30 hover:-translate-y-1`}
-              >
-                <div className="mb-6 flex items-center justify-between">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#7fa6f8]/12 text-[#7fa6f8]">
-                    <Icon name={s.icon} className="h-4.5 w-4.5" />
+      {/* ── SPECIALTY TICKER ─────────────────────────────────── */}
+      <section className="border-y border-line bg-white py-7">
+        <p className="label mb-5 text-center text-muted">Built for every business that runs on bookings</p>
+        <div className="marquee-mask">
+          <div className="marquee items-center gap-12 pr-12">
+            {[0, 1].map((copy) => (
+              <div key={copy} aria-hidden={copy === 1} className="flex shrink-0 items-center gap-12">
+                {industries.map((s) => (
+                  <span key={s.name} className="flex items-center gap-2.5 whitespace-nowrap text-[15px] font-medium text-ink-soft">
+                    <Icon name={s.icon} className="h-4.5 w-4.5 text-blue/70" />
+                    {s.name}
                   </span>
-                  <span className="font-display text-2xl text-sky/25">{s.step}</span>
-                </div>
-                <p className="mb-1.5 font-semibold text-white">{s.title}</p>
-                <p className="text-sm leading-relaxed text-sky/55">{s.desc}</p>
+                ))}
               </div>
             ))}
           </div>
+        </div>
+      </section>
 
-          <div data-reveal className="mt-14 text-center">
-            <Link
-              href="/how-it-works"
-              className="group inline-flex items-center gap-2 rounded-full border border-sky/20 px-8 py-3.5 font-semibold text-white transition-all duration-300 hover:border-[#7fa6f8]/60 hover:bg-white/5"
-            >
-              See exactly how it works
-              <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
+      {/* ── MEET HALO ────────────────────────────────────────── */}
+      <section className="relative px-6 pt-24 md:pt-32">
+        <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:gap-20">
+          <div data-reveal className="reveal-left relative mx-auto w-full max-w-[420px]">
+            <div className="halo pointer-events-none absolute inset-0" />
+            <div className="pointer-events-none absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue/15 blur-3xl" />
+            <Halo pose="wave" size={420} decorative className="animate-float relative mx-auto w-[78%] drop-shadow-[0_40px_50px_rgba(33,86,232,0.28)]" />
+            <div className="absolute right-0 top-[8%] rounded-2xl rounded-bl-md border border-line bg-white px-4 py-2.5 text-[15px] font-semibold text-ink shadow-[0_18px_40px_-20px_rgba(12,27,56,0.35)] sm:right-2">
+              Halo? 👋
+            </div>
+            <div className="absolute bottom-[10%] left-0 flex items-center gap-2.5 rounded-2xl border border-line bg-white py-2 pl-2 pr-4 shadow-[0_18px_40px_-20px_rgba(12,27,56,0.35)]">
+              <Halo pose="booking" size={40} decorative className="h-10 w-10" />
+              <span>
+                <span className="block text-[11px] font-medium text-muted">Booked while you worked</span>
+                <span className="block text-[13.5px] font-semibold text-ink">Fri 16:30 · Cut &amp; blow-dry</span>
+              </span>
+            </div>
+          </div>
+
+          <div data-reveal className="reveal-right text-center lg:text-left">
+            <Eyebrow icon="sparkles">Meet Halo</Eyebrow>
+            <h2 className="font-display mt-5 text-[2.4rem] leading-[1.08] md:text-5xl">
+              Your new receptionist <em>never misses a call.</em>
+            </h2>
+            <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-ink-soft lg:mx-0">
+              In Croatia we pick up the phone with a friendly <span className="font-semibold text-ink">&ldquo;Halo?&rdquo;</span> —
+              so that&apos;s what we named the AI inside RingLoop. Halo answers every caller you can&apos;t,
+              books them by text, and closes the loop while you get on with your day.
+            </p>
+            <ul className="mx-auto mt-8 grid max-w-xl gap-3 text-left sm:grid-cols-2 lg:mx-0">
+              {[
+                ["clock",       "Up at 3am, on Sundays, on holidays"],
+                ["languages",   "Replies in your customer's language"],
+                ["store",       "Writes under your business name"],
+                ["userCheck",   "Hands over to you when it should"],
+              ].map(([icon, text]) => (
+                <li key={text} className="flex items-center gap-3 rounded-2xl border border-line bg-white/70 px-4 py-3 text-[15px] font-medium text-ink">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sky text-blue">
+                    <Icon name={icon} className="h-4 w-4" />
+                  </span>
+                  {text}
+                </li>
+              ))}
+            </ul>
+            <Link href="/demo" className="btn-secondary group mt-9 inline-flex px-7 py-3.5">
+              <Icon name="messageText" className="h-4.5 w-4.5 text-blue" />
+              Say hi to Halo <span className="arrow">→</span>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* ── WHAT TO EXPECT ───────────────────────────────────── */}
-      <section className="relative overflow-hidden py-32">
-        <div className="halo pointer-events-none absolute inset-0" />
-        <div className="relative mx-auto max-w-5xl px-6">
-          <div data-reveal className="mb-16 text-center">
-            <p className="label mb-4 text-muted">From the very first forwarded call</p>
-            <h2 className="font-display text-4xl md:text-5xl">What your clinic can <em className="text-blue">expect.</em></h2>
+      {/* ── THE PROBLEM: BEFORE / AFTER ──────────────────────── */}
+      <section className="px-6 py-24 md:py-32">
+        <SectionHeading
+          eyebrow="The missed-call problem"
+          icon="phoneMissed"
+          title={<>Voicemail is where <em>bookings go to die.</em></>}
+          sub="You're with a client, the kitchen is slammed, or it's after hours. The phone rings out — and the caller doesn't leave a message. They just book with the next business on Google."
+        />
+
+        <div className="mx-auto mt-16 grid max-w-5xl gap-5 md:grid-cols-2">
+          <div data-reveal className="reveal-left rounded-3xl border border-line bg-white/50 p-7 md:p-9">
+            <div className="mb-8 flex items-center justify-between">
+              <p className="label text-muted">Without RingLoop</p>
+              <span className="rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-semibold text-red-500">Customer lost</span>
+            </div>
+            <Journey items={withoutUs} tone="lost" />
           </div>
 
-          <div className="grid gap-5 md:grid-cols-3">
-            {[
-              {
-                icon: "phone",
-                metric: "Every call",
-                metricLabel: "answered, 24/7",
-                desc: "Forwarded calls are picked up within seconds — evenings, weekends, and while your team is with patients. Nobody hits voicemail again.",
-              },
-              {
-                icon: "calendarCheck",
-                metric: "Bookings",
-                metricLabel: "captured while you work",
-                desc: "The AI collects the treatment, name, doctor preference, and time, then confirms the appointment and sends your team a full summary.",
-              },
-              {
-                icon: "message",
-                metric: "Every booking",
-                metricLabel: "confirmed by SMS",
-                desc: "Patients instantly receive their appointment details by SMS — and bookings can land straight in your Google Calendar.",
-              },
-            ].map((c, i) => (
-              <div
-                key={c.metric + c.metricLabel}
-                data-reveal
-                className={`card reveal-zoom r-delay-${i + 1} flex flex-col gap-5 p-8 transition-all duration-300 hover:-translate-y-1`}
-              >
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky text-blue">
-                  <Icon name={c.icon} className="h-5 w-5" />
-                </span>
-                <p className="font-display text-2xl leading-tight">
-                  <em className="text-blue">{c.metric}</em> {c.metricLabel}
+          <div
+            data-reveal
+            className="reveal-right card relative overflow-hidden p-7 ring-1 ring-blue/10 shadow-[0_30px_70px_-35px_rgba(33,86,232,0.45)] md:p-9"
+          >
+            <div className="halo pointer-events-none absolute inset-0" />
+            <div className="relative">
+              <div className="mb-8 flex items-center justify-between">
+                <p className="label flex items-center gap-2 text-blue">
+                  <Halo pose="happy" size={28} decorative className="-my-1 h-7 w-7" /> With RingLoop
                 </p>
-                <p className="text-sm leading-relaxed text-ink-soft">{c.desc}</p>
+                <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-600">Customer booked</span>
+              </div>
+              <Journey items={withUs} tone="won" />
+            </div>
+          </div>
+        </div>
+
+        <p data-reveal className="mt-10 text-center text-ink-soft">
+          Same missed call. <span className="font-semibold text-ink">A completely different outcome.</span>
+        </p>
+      </section>
+
+      {/* ── HOW IT WORKS (navy) ──────────────────────────────── */}
+      <section className="relative overflow-hidden bg-night px-6 py-24 text-white md:py-32">
+        <div className="grid-bg-dark pointer-events-none absolute inset-0" />
+        <div className="night-glow pointer-events-none absolute inset-0" />
+        <div className="parallax pointer-events-none absolute -top-20 left-1/4 h-[380px] w-[380px] rounded-full bg-[#4074f5]/15 blur-3xl" />
+
+        <div className="relative mx-auto max-w-6xl">
+          <SectionHeading
+            dark
+            eyebrow="How it works"
+            icon="zap"
+            title={<>Set up once. <em>Runs on autopilot.</em></>}
+            sub="No new number, no app for your customers, and no extra work for you or your team."
+          />
+
+          <div className="relative mt-16 grid gap-5 md:grid-cols-3">
+            <div className="pointer-events-none absolute left-[17%] right-[17%] top-[58px] hidden h-px bg-gradient-to-r from-periwinkle/0 via-periwinkle/40 to-periwinkle/0 md:block" />
+            {steps.map((s, i) => (
+              <div key={s.title} data-reveal className={`card-night lift r-delay-${i + 1} relative p-8`}>
+                <div className="mb-8 flex items-center justify-between">
+                  <Halo pose={stepPoses[i]} size={72} decorative className="-my-3 -ml-2 h-[72px] w-[72px] drop-shadow-[0_12px_24px_rgba(33,86,232,0.5)]" />
+                  <span className="font-display text-sm text-sky/35">Step {i + 1}</span>
+                </div>
+                <h3 className="mb-2.5 text-lg font-semibold">{s.title}</h3>
+                <p className="text-[15px] leading-relaxed text-sky/60">{s.desc}</p>
               </div>
             ))}
           </div>
 
-          <p data-reveal className="mt-12 text-center text-sm text-muted">
-            Want to hear it for yourself?{" "}
-            <Link href="/contact" className="font-semibold text-blue underline underline-offset-4 transition-colors hover:text-blue-deep">
-              Book a free demo
-            </Link>{" "}
-            and we&apos;ll call you live.
-          </p>
+          <div data-reveal className="mt-12 text-center">
+            <Link href="/how-it-works" className="btn-ghost group px-7 py-3.5">
+              See the full walkthrough <span className="arrow">→</span>
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* ── CHANNELS ─────────────────────────────────────────── */}
-      <section className="mx-auto max-w-5xl px-6 py-32">
-        <div data-reveal className="mb-16 text-center">
-          <p className="label mb-4 text-muted">Every channel</p>
-          <h2 className="font-display text-4xl md:text-5xl">Book by <em className="text-blue">voice, SMS &amp; WhatsApp.</em></h2>
-          <p className="mx-auto mt-4 max-w-xl text-ink-soft">
-            However a patient reaches your clinic, RingLoop takes the booking and confirms it.
-          </p>
+      {/* ── INDUSTRIES ───────────────────────────────────────── */}
+      <section id="industries" className="scroll-mt-16 px-6 pt-24 md:pt-32">
+        <div className="mx-auto max-w-6xl">
+          <SectionHeading
+            eyebrow="Industries"
+            icon="store"
+            title={<>Made for <em>your kind of business.</em></>}
+            sub="Salons, barbershops, restaurants, clinics and more — RingLoop learns your services, hours and team, and books customers the way you would."
+          />
+          <div data-reveal className="mt-12">
+            <Industries />
+          </div>
         </div>
+      </section>
 
-        <div className="grid gap-5 md:grid-cols-3">
-          {[
-            {
-              icon: "phone",
-              title: "Voice booking",
-              desc: "Answers every forwarded call and books the appointment in a natural conversation — then confirms by SMS.",
-              status: "live",
-            },
-            {
-              icon: "message",
-              title: "SMS booking",
-              desc: "Patients can book and reschedule entirely by text — a two-way conversation, in their own words.",
-              status: "live",
-            },
-            {
-              icon: "chat",
-              title: "WhatsApp booking",
-              desc: "Book, reschedule, and get reminders over WhatsApp — wherever your patients already chat.",
-              status: "soon",
-            },
-          ].map((c, i) => (
-            <div key={c.title} data-reveal className={`card reveal-zoom r-delay-${i + 1} p-8`}>
-              <div className="mb-5 flex items-center justify-between">
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky text-blue">
-                  <Icon name={c.icon} className="h-5 w-5" />
-                </span>
-                {c.status === "live" ? (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-semibold text-green-600">
-                    <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                    Live
+      {/* ── FEATURE DEEP-DIVES ───────────────────────────────── */}
+      <section id="features" className="scroll-mt-16 px-6 py-24 md:py-32">
+        <SectionHeading
+          eyebrow="Features"
+          icon="sparkles"
+          title={<>Your calendar, <em>filled by text.</em></>}
+          sub="Three automations that win back missed calls, fill your calendar — and keep it full."
+        />
+
+        <div className="mx-auto mt-20 max-w-6xl space-y-24 md:space-y-32">
+          {features.map((f, i) => (
+            <div key={f.kicker} className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
+              <div data-reveal className={i % 2 === 1 ? "reveal-right lg:order-2" : "reveal-left"}>
+                <p className="label mb-4 flex items-center gap-2 text-blue">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky">
+                    <Icon name={f.icon} className="h-4 w-4" />
                   </span>
-                ) : (
-                  <span className="rounded-full bg-sky px-2.5 py-1 text-[11px] font-semibold text-blue">
-                    Coming soon
-                  </span>
-                )}
+                  {f.kicker}
+                </p>
+                <h3 className="font-display text-[2rem] leading-[1.12] md:text-[2.6rem]">{f.title}</h3>
+                <p className="mt-5 text-lg leading-relaxed text-ink-soft">{f.desc}</p>
+                <ul className="mt-7 space-y-3.5">
+                  {f.points.map((p) => (
+                    <li key={p} className="flex items-start gap-3 text-[15px] text-ink">
+                      <CheckDot />
+                      {p}
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <h3 className="mb-2 font-semibold">{c.title}</h3>
-              <p className="text-sm leading-relaxed text-ink-soft">{c.desc}</p>
+              <div data-reveal className={i % 2 === 1 ? "reveal-left lg:order-1" : "reveal-right"}>
+                {f.visual}
+              </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── EXAMPLE CALLS ────────────────────────────────────── */}
-      <section className="border-t border-[var(--line)] bg-white py-32">
-        <div className="mx-auto max-w-5xl px-6">
-          <div data-reveal className="mb-4 text-center">
-            <p className="label mb-4 text-muted">Hear how it sounds</p>
-            <h2 className="font-display text-4xl md:text-5xl">Real conversations, <em className="text-blue">handled.</em></h2>
+      {/* ── EVERYTHING ELSE ──────────────────────────────────── */}
+      <section className="px-6 pb-24 md:pb-32">
+        <div className="mx-auto max-w-6xl">
+          <div data-reveal className="mb-10 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+            <h3 className="font-display text-3xl md:text-4xl">And everything around it.</h3>
+            <p className="max-w-md text-ink-soft">
+              The details that make customers trust the text — and you trust the system.
+            </p>
           </div>
-          <p data-reveal className="mx-auto mb-14 max-w-xl text-center text-sm text-muted">
-            Example calls that show exactly how RingLoop talks to your patients.
-            Want the real thing?{" "}
-            <Link href="/demo" className="font-semibold text-blue underline underline-offset-4 hover:text-blue-deep">
-              Talk to the AI live →
-            </Link>
-          </p>
-
-          <div className="grid gap-5 md:grid-cols-3">
-            {[
-              {
-                tag: "After-hours booking",
-                turns: [
-                  { who: "ai",  text: "Good evening, you've reached the clinic. How can I help?" },
-                  { who: "pt",  text: "I need a checkup this week." },
-                  { who: "ai",  text: "Of course — Thursday at 10:00 works. May I have your name?" },
-                  { who: "pt",  text: "Marko Horvat." },
-                  { who: "ai",  text: "Booked, Marko. Confirmation is on its way by SMS." },
-                ],
-              },
-              {
-                tag: "Switches language",
-                turns: [
-                  { who: "pt",  text: "Dobar dan, trebam termin za čišćenje." },
-                  { who: "ai",  text: "Naravno! Imamo slobodno u petak u 14:00." },
-                  { who: "pt",  text: "Actually — can we do this in English?" },
-                  { who: "ai",  text: "Absolutely. Friday at 2 PM — shall I book it?" },
-                  { who: "pt",  text: "Yes, perfect." },
-                ],
-              },
-              {
-                tag: "Reschedule",
-                turns: [
-                  { who: "pt",  text: "I need to move my appointment to next week." },
-                  { who: "ai",  text: "No problem. I have Tuesday 9:00 or Wednesday 16:30." },
-                  { who: "pt",  text: "Wednesday afternoon." },
-                  { who: "ai",  text: "Done — moved to Wednesday 16:30. You'll get a new SMS." },
-                ],
-              },
-            ].map((c, i) => (
-              <div key={c.tag} data-reveal className={`card reveal-zoom r-delay-${i + 1} overflow-hidden`}>
-                <div className="flex items-center justify-between border-b border-[var(--line)] px-5 py-3">
-                  <span className="flex items-center gap-2 text-xs font-semibold text-blue">
-                    <Icon name="phone" className="h-3.5 w-3.5" />
-                    {c.tag}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {extras.map((e, i) => (
+              <div key={e.title} data-reveal className={`card lift r-delay-${(i % 3) + 1} p-7`}>
+                <div className="mb-5 flex items-center justify-between">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky text-blue">
+                    <Icon name={e.icon} className="h-5 w-5" />
                   </span>
-                  <span className="rounded-full bg-sky px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-blue">Example</span>
+                  {e.soon && (
+                    <span className="rounded-full border border-blue/15 bg-sky/60 px-2.5 py-1 text-[11px] font-semibold text-blue">
+                      Coming soon
+                    </span>
+                  )}
                 </div>
-                <div className="space-y-2 bg-gradient-to-b from-sky/30 to-white p-5">
-                  {c.turns.map((t, j) => (
-                    <div key={j} className={`flex ${t.who === "pt" ? "justify-end" : ""}`}>
-                      <div className={`max-w-[85%] px-3.5 py-2 text-[13px] leading-snug ${
-                        t.who === "ai"
-                          ? "rounded-2xl rounded-tl-md border border-[var(--line)] bg-white text-ink-soft shadow-sm"
-                          : "rounded-2xl rounded-tr-md bg-blue text-white"
-                      }`}>
-                        {t.text}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <h4 className="mb-1.5 font-semibold text-ink">{e.title}</h4>
+                <p className="text-sm leading-relaxed text-ink-soft">{e.desc}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── ROI CALCULATOR ───────────────────────────────────── */}
+      <section className="relative overflow-hidden border-y border-line bg-white px-6 py-24 md:py-32">
+        <div className="halo pointer-events-none absolute inset-0" />
+        <div className="relative">
+          <SectionHeading
+            eyebrow="ROI calculator"
+            icon="euro"
+            title={<>What are missed calls <em>costing you?</em></>}
+            sub="Move the sliders to match your business. The math is simple — and it adds up fast."
+          />
+          <div data-reveal className="reveal-zoom mx-auto mt-14 max-w-5xl">
+            <RoiCalculator />
           </div>
         </div>
       </section>
 
       {/* ── COMPARISON ───────────────────────────────────────── */}
-      <section className="border-y border-[var(--line)] bg-white py-32">
-        <div className="mx-auto max-w-5xl px-6">
-          <div data-reveal className="mb-16 text-center">
-            <p className="label mb-4 text-muted">Comparison</p>
-            <h2 className="font-display text-4xl md:text-5xl">Why <em className="text-blue">RingLoop?</em></h2>
-            <p className="mt-4 text-ink-soft">How it compares to the alternatives.</p>
-          </div>
+      <section className="px-6 py-24 md:py-32">
+        <SectionHeading
+          eyebrow="Compare"
+          icon="sliders"
+          title={<>Voicemail loses customers. <em>RingLoop books them.</em></>}
+          sub="How RingLoop stacks up against the usual ways businesses handle the calls they miss."
+        />
 
-          <div data-reveal className="overflow-x-auto rounded-2xl border border-[var(--line)] shadow-sm">
-            <table className="w-full min-w-[560px]">
-              <thead>
-                <tr className="border-b border-[var(--line)] bg-paper">
-                  <th className="label px-6 py-5 text-left text-muted">Feature</th>
-                  <th className="label border-x border-blue/10 bg-sky/60 px-6 py-5 text-center text-blue">RingLoop</th>
-                  <th className="label px-6 py-5 text-center text-muted">Receptionist</th>
-                  <th className="label px-6 py-5 text-center text-muted">Voicemail</th>
+        <div data-reveal className="relative mx-auto mt-14 max-w-4xl overflow-x-auto rounded-3xl border border-line bg-white shadow-[0_24px_60px_-40px_rgba(12,27,56,0.35)]">
+          <table className="w-full table-fixed text-left">
+            <colgroup>
+              <col className="w-[37%] sm:w-[40%]" />
+              <col />
+              <col />
+              <col />
+            </colgroup>
+            <thead>
+              <tr className="border-b border-line">
+                <th className="px-4 py-4 text-sm font-medium text-muted sm:px-6 sm:py-5">
+                  <span className="sr-only">Feature</span>
+                </th>
+                <th className="bg-sky/60 px-1 py-4 text-center sm:px-6 sm:py-5">
+                  <span className="inline-flex flex-col items-center gap-1 font-display text-xs text-ink sm:flex-row sm:gap-2 sm:text-[15px]">
+                    <LogoMark size={20} /> RingLoop
+                  </span>
+                </th>
+                <th className="px-1 py-4 text-center text-xs font-semibold text-ink-soft sm:px-6 sm:py-5 sm:text-sm">Voicemail</th>
+                <th className="px-1 py-4 text-center text-xs font-semibold text-ink-soft sm:px-6 sm:py-5 sm:text-sm">
+                  <span className="sm:hidden">Extra staff</span>
+                  <span className="hidden sm:inline">Extra receptionist</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {comparison.map((row) => (
+                <tr key={row.feature} className="border-b border-line last:border-0">
+                  <td className="px-4 py-3.5 text-sm font-medium text-ink sm:px-6 sm:py-4 sm:text-[15px]">{row.feature}</td>
+                  <td className="bg-sky/40 px-1 py-3.5 text-center sm:px-6 sm:py-4"><Cell value={row.rl} highlight /></td>
+                  <td className="px-1 py-3.5 text-center sm:px-6 sm:py-4"><Cell value={row.vm} /></td>
+                  <td className="px-1 py-3.5 text-center sm:px-6 sm:py-4"><Cell value={row.rec} /></td>
                 </tr>
-              </thead>
-              <tbody>
-                {[
-                  { feature: "Available 24/7",                   rl: true,       rec: false,     vm: true  },
-                  { feature: "Answers calls instantly",          rl: true,       rec: false,     vm: true  },
-                  { feature: "Books appointments automatically", rl: true,       rec: true,      vm: false },
-                  { feature: "Confirms bookings by SMS",         rl: true,       rec: false,     vm: false },
-                  { feature: "Google Calendar integration",      rl: true,       rec: true,      vm: false },
-                  { feature: "Multi-language support",           rl: true,       rec: false,     vm: false },
-                  { feature: "No salary or sick days",           rl: true,       rec: false,     vm: true  },
-                  { feature: "Monthly cost",                     rl: "Tailored", rec: "€1,500+", vm: "€0" },
-                ].map((row) => (
-                  <tr key={row.feature} className="border-b border-[var(--line)] bg-white last:border-0">
-                    <td className="px-6 py-4 text-sm font-medium text-ink-soft">{row.feature}</td>
-                    <td className="border-x border-blue/10 bg-sky/40 px-6 py-4 text-center">
-                      {typeof row.rl === "boolean" ? <Check ok={row.rl} /> : <span className="text-sm font-bold text-blue">{row.rl}</span>}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      {typeof row.rec === "boolean" ? <Check ok={row.rec} /> : <span className="text-sm text-muted">{row.rec}</span>}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      {typeof row.vm === "boolean" ? <Check ok={row.vm} /> : <span className="text-sm text-muted">{row.vm}</span>}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
       </section>
 
-      {/* ── FEATURES ─────────────────────────────────────────── */}
-      <section id="features" className="mx-auto max-w-5xl px-6 py-32">
-        <div data-reveal className="mb-16 text-center">
-          <p className="label mb-4 text-muted">Features</p>
-          <h2 className="font-display text-4xl md:text-5xl">Everything your clinic <em className="text-blue">needs.</em></h2>
-          <p className="mt-4 text-ink-soft">Built specifically for medical institutes.</p>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-          {[
-            { icon: "phone",         title: "AI voice receptionist", desc: "Answers every forwarded call and has a natural booking conversation." },
-            { icon: "sparkles",      title: "Advanced AI",           desc: "Understands any language, any phrasing, any medical request." },
-            { icon: "calendarCheck", title: "Auto booking",          desc: "Collects all booking details and confirms the appointment by voice." },
-            { icon: "message",       title: "SMS confirmations",     desc: "Every patient instantly receives their booking details by SMS." },
-            { icon: "clinic",        title: "Custom AI persona",     desc: "The AI introduces itself as your clinic — not as RingLoop." },
-            { icon: "globe",         title: "Multi-language",        desc: "Croatian, English, German — whatever the patient speaks." },
-            { icon: "user",          title: "Doctor preference",     desc: "Asks if the patient has a preferred doctor before booking." },
-            { icon: "clipboard",     title: "Patient summaries",     desc: "After every booking, your team gets a full patient summary." },
-            { icon: "sync",          title: "Calendar integration",  desc: "Google Calendar integration available — bookings land straight in your clinic's calendar." },
-          ].map((f, i) => (
-            <div
-              key={f.title}
-              data-reveal
-              className={`card r-delay-${(i % 3) + 1} p-7 transition-all duration-300 hover:-translate-y-1`}
-            >
-              <span className="mb-5 flex h-10 w-10 items-center justify-center rounded-xl bg-sky text-blue">
-                <Icon name={f.icon} className="h-4.5 w-4.5" />
-              </span>
-              <h3 className="mb-1.5 font-semibold">{f.title}</h3>
-              <p className="text-sm leading-relaxed text-ink-soft">{f.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── INDUSTRIES ───────────────────────────────────────── */}
-      <section id="industries" className="border-y border-[var(--line)] bg-white py-32">
-        <div className="mx-auto max-w-5xl px-6">
-          <div data-reveal className="mb-16 text-center">
-            <p className="label mb-4 text-muted">Specialties</p>
-            <h2 className="font-display text-4xl md:text-5xl">Built for every <em className="text-blue">medical institute.</em></h2>
-            <p className="mt-4 text-ink-soft">If your clinic takes appointments, RingLoop works for you.</p>
+      {/* ── TRUST ────────────────────────────────────────────── */}
+      <section className="border-y border-line bg-white px-6 py-24 md:py-28">
+        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-16">
+          <div data-reveal className="reveal-left">
+            <Eyebrow icon="shieldCheck">Trust &amp; privacy</Eyebrow>
+            <h2 className="font-display mt-5 text-[2.4rem] leading-[1.08] md:text-5xl">
+              Private by design. <em>GDPR-ready.</em>
+            </h2>
+            <p className="mt-5 text-lg leading-relaxed text-ink-soft">
+              Customer conversations are personal — whether it&apos;s a dental check-up or a Saturday
+              haircut. RingLoop is built in the EU, with privacy as the starting point, not an add-on.
+            </p>
+            <Link href="/privacy" className="group mt-7 inline-flex items-center gap-1.5 font-semibold text-blue">
+              Read our privacy policy <span className="arrow">→</span>
+            </Link>
           </div>
-
-          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-            {[
-              { icon: "tooth",       name: "Dental Clinics",       desc: "Cleanings, checkups, whitening, implants" },
-              { icon: "syringe",     name: "Aesthetic Clinics",    desc: "Botox, fillers, skin treatments, laser" },
-              { icon: "stethoscope", name: "General Practices",    desc: "GP visits, specialist referrals, checkups" },
-              { icon: "eye",         name: "Ophthalmology",        desc: "Eye exams, vision correction, surgery" },
-              { icon: "bone",        name: "Physiotherapy",        desc: "Rehab, injury treatment, sports medicine" },
-              { icon: "smile",       name: "Psychiatry & Therapy", desc: "Mental health, counseling, psychotherapy" },
-              { icon: "heartPulse",  name: "Cardiology",           desc: "Heart checkups, ECG, consultations" },
-              { icon: "droplet",     name: "Dermatology",          desc: "Skin conditions, mole checks, cosmetic" },
-              { icon: "baby",        name: "Pediatrics",           desc: "Child health, vaccinations, development" },
-            ].map((ind, i) => (
-              <div
-                key={ind.name}
-                data-reveal
-                className={`hover-glow r-delay-${(i % 3) + 1} rounded-2xl border border-[var(--line)] bg-paper p-6 hover:bg-sky/40`}
-              >
+          <div className="grid gap-4 sm:grid-cols-2">
+            {trust.map((t, i) => (
+              <div key={t.title} data-reveal className={`rounded-2xl border border-line bg-paper/70 p-6 r-delay-${(i % 3) + 1}`}>
                 <span className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-white text-blue shadow-sm">
-                  <Icon name={ind.icon} className="h-4.5 w-4.5" />
+                  <Icon name={t.icon} className="h-5 w-5" />
                 </span>
-                <h3 className="mb-1 font-semibold">{ind.name}</h3>
-                <p className="text-sm leading-relaxed text-ink-soft">{ind.desc}</p>
+                <h3 className="mb-1.5 font-semibold text-ink">{t.title}</h3>
+                <p className="text-sm leading-relaxed text-ink-soft">{t.desc}</p>
               </div>
             ))}
           </div>
-
-          <p className="mt-12 text-center text-sm text-muted">
-            Not in the list?{" "}
-            <Link href="/contact" className="font-semibold text-blue underline underline-offset-4 transition-colors hover:text-blue-deep">
-              Contact us
-            </Link>{" "}
-            — RingLoop works for any appointment-based business.
-          </p>
         </div>
       </section>
 
       {/* ── FAQ ──────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-3xl px-6 py-32">
-        <div data-reveal className="mb-14 text-center">
-          <p className="label mb-4 text-muted">FAQ</p>
-          <h2 className="font-display text-4xl md:text-5xl">Common questions</h2>
-        </div>
-        <div data-reveal className="card divide-y divide-[var(--line)] px-8 py-2">
-          {faqs.map(({ q, a }) => (
-            <details key={q} className="group cursor-pointer py-6">
-              <summary className="flex list-none select-none items-center justify-between gap-4 font-semibold [&::-webkit-details-marker]:hidden">
-                {q}
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sky text-blue transition-transform duration-300 group-open:rotate-45">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M6 1V11M1 6H11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
-                  </svg>
-                </span>
-              </summary>
-              <p className="mt-3 pr-8 text-sm leading-relaxed text-ink-soft">{a}</p>
-            </details>
-          ))}
-        </div>
-      </section>
-
-      {/* ── FOUNDING CLINIC ──────────────────────────────────── */}
-      <section className="mx-auto max-w-5xl px-6 py-24">
-        <div data-reveal className="card reveal-zoom relative overflow-hidden p-10 text-center md:p-14">
-          <div className="halo pointer-events-none absolute inset-0" />
-          <div className="relative">
-            <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue/20 bg-sky px-4 py-1.5 text-xs font-semibold text-blue">
-              <Icon name="star" className="h-3.5 w-3.5" />
-              Partner with RingLoop
-            </span>
-            <h2 className="font-display mx-auto mb-4 max-w-2xl text-3xl leading-tight md:text-4xl">
-              Bring RingLoop to <em className="text-blue">your clinic.</em>
+      <section className="px-6 py-24 md:py-32">
+        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
+          <div data-reveal>
+            <Eyebrow icon="chat">FAQ</Eyebrow>
+            <h2 className="font-display mt-5 text-[2.4rem] leading-[1.08] md:text-5xl">
+              Questions, <em>answered.</em>
             </h2>
-            <p className="mx-auto mb-9 max-w-xl leading-relaxed text-ink-soft">
-              Priority onboarding, a direct line to our team, and pricing locked
-              in for as long as you stay. Live in 24 hours, with no contract.
+            <p className="mt-5 leading-relaxed text-ink-soft">
+              Can&apos;t find what you&apos;re looking for?{" "}
+              <Link href="/contact" className="font-semibold text-blue underline-offset-4 hover:underline">
+                Ask us directly
+              </Link>{" "}
+              — we usually reply within a few hours.
             </p>
-            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Link href="/contact" className="btn-primary group px-9 py-4">
-                Become a partner
-                <span className="ml-2 inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
-              </Link>
-              <Link href="/demo" className="rounded-full border border-[var(--line)] bg-white px-9 py-4 font-semibold text-ink shadow-sm transition-all duration-300 hover:border-blue/30 hover:text-blue">
-                Try the live demo first
-              </Link>
-            </div>
+          </div>
+          <div data-reveal>
+            <Faq items={faqs} />
           </div>
         </div>
       </section>
 
-      {/* ── CTA ──────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-night py-36 text-center text-white">
-        <div className="dot-grid-dark pointer-events-none absolute inset-0" />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_70%_at_50%_115%,_rgba(64,116,245,0.3),_transparent)]" />
-
-        <div data-reveal className="relative mx-auto max-w-2xl px-6">
-          <p className="label mb-5 text-sky/60">The next missed call could be tonight</p>
-          <h2 className="font-display mb-6 text-4xl leading-[1.08] md:text-6xl">
-            Ready to stop <em className="text-[#7fa6f8]">losing patients?</em>
-          </h2>
-          <p className="mx-auto mb-12 max-w-lg text-lg leading-relaxed text-sky/60">
-            Book a free 20-minute demo and hear your AI receptionist answer a live call.
-          </p>
-          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-            <Link href="/contact" className="btn-primary group px-9 py-4">
-              Book a free demo
-              <span className="ml-2 inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
-            </Link>
-            <Link
-              href="/pricing"
-              className="rounded-full border border-sky/25 px-9 py-4 font-semibold text-white transition-all duration-300 hover:border-[#7fa6f8]/60 hover:bg-white/5"
-            >
-              See pricing
-            </Link>
-          </div>
-          <p className="mt-8 text-sm text-sky/40">No contract &nbsp;·&nbsp; Cancel anytime &nbsp;·&nbsp; Setup in 24h</p>
-          <p className="mt-3 text-sm text-sky/40">
-            Or{" "}
-            <Link href="/demo" className="font-semibold text-[#7fa6f8] transition-colors hover:text-white">
-              talk to her right now
-            </Link>{" "}
-            — live in your browser.
-          </p>
-        </div>
-      </section>
+      {/* ── CLOSING CTA ──────────────────────────────────────── */}
+      <CtaBand
+        eyebrow="Your next missed call could be tonight"
+        title={<>Stop sending customers <em>to voicemail.</em></>}
+        sub="Book a free 20-minute demo. We'll set RingLoop up with your business name and show you a real text-back — live."
+        secondary={{ href: "/demo", label: "Try the live demo" }}
+        halo="celebrate"
+      >
+        <ul className="mt-10 flex flex-wrap items-center justify-center gap-x-7 gap-y-3 text-sm text-sky/55">
+          {["Priority onboarding", "Direct line to our team", "Price locked in while you stay", "No contract"].map((p) => (
+            <li key={p} className="flex items-center gap-2">
+              <Icon name="check" className="h-4 w-4 text-periwinkle" strokeWidth={2.4} />
+              {p}
+            </li>
+          ))}
+        </ul>
+      </CtaBand>
     </main>
   );
 }
 
-function Check({ ok }: { ok: boolean }) {
-  return ok
-    ? <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-sky text-[10px] font-bold text-blue">✓</span>
-    : <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-paper text-[10px] font-bold text-muted">✕</span>;
+function Journey({
+  items, tone,
+}: {
+  items: { time: string; icon: string; text: string }[];
+  tone: "lost" | "won";
+}) {
+  return (
+    <ol className="space-y-6">
+      {items.map((it, i) => {
+        const last = i === items.length - 1;
+        const iconClass =
+          tone === "won"
+            ? i === 0 ? "bg-paper text-ink-soft" : "bg-blue text-white shadow-[0_8px_20px_-8px_rgba(33,86,232,0.7)]"
+            : last ? "bg-red-50 text-red-500" : "bg-paper text-muted";
+        return (
+          <li key={it.text} className="relative flex items-start gap-4">
+            {!last && (
+              <span className={`absolute left-[18px] top-11 -bottom-5 w-px ${tone === "won" ? "bg-blue/25" : "bg-line"}`} />
+            )}
+            <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${iconClass}`}>
+              <Icon name={it.icon} className="h-4 w-4" />
+            </span>
+            <div className="pt-0.5">
+              <p className="text-xs font-semibold tabular-nums text-muted">{it.time}</p>
+              <p className={`mt-0.5 text-[15px] font-medium ${tone === "lost" && last ? "text-red-500" : "text-ink"}`}>
+                {it.text}
+              </p>
+            </div>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+function Cell({ value, highlight = false }: { value: string | boolean; highlight?: boolean }) {
+  if (typeof value === "string") {
+    return <span className={`text-xs sm:text-sm ${highlight ? "font-bold text-blue" : "font-medium text-ink-soft"}`}>{value}</span>;
+  }
+  return value ? (
+    <span className={`inline-flex h-6 w-6 items-center justify-center rounded-full ${highlight ? "bg-blue text-white" : "bg-sky text-blue"}`}>
+      <Icon name="check" className="h-3.5 w-3.5" strokeWidth={3} />
+      <span className="sr-only">Yes</span>
+    </span>
+  ) : (
+    <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-paper text-muted">
+      <Icon name="x" className="h-3.5 w-3.5" strokeWidth={2.6} />
+      <span className="sr-only">No</span>
+    </span>
+  );
 }

@@ -1,160 +1,134 @@
 import Link from "next/link";
+import Icon from "@/components/Icon";
+import PageHero from "@/components/PageHero";
+import RoiCalculator from "@/components/RoiCalculator";
+import CtaBand from "@/components/CtaBand";
+import PricingPlans from "@/components/PricingPlans";
+import Faq, { faqJsonLd, type FaqItem } from "@/components/Faq";
+import { Eyebrow, SectionHeading } from "@/components/Section";
 
 export const metadata = {
-  title: "Pricing — RingLoop",
-  description: "Pricing tailored to your clinic — call volume, locations, integrations. No setup fee, no contract, cancel anytime.",
+  title: "Pricing",
+  description:
+    "Three simple plans: Start from €59/month, Pro €149/month with voice, and Business for multiple locations. 14-day free trial, no contract, cancel anytime.",
 };
+
+const always = [
+  { icon: "sparkles",    text: "14-day free trial" },
+  { icon: "check",       text: "No setup fee on Start & Pro" },
+  { icon: "x",           text: "No contract — cancel anytime" },
+  { icon: "lock",        text: "Partner price locked in while you stay" },
+];
+
+const faqs: FaqItem[] = [
+  {
+    q: "Which plan is right for me?",
+    a: "If you work alone or with one calendar, Start covers everything you need. If you have a team, a busy phone, or want Halo to also answer calls by voice, go with Pro. Several locations or a booking system to connect? Business is built for that — we'll quote it with you.",
+  },
+  {
+    q: "How does the free trial work?",
+    a: "We set Halo up with your business name, services and hours, and you use it for 14 days. If it's not for you, you simply don't continue — no charge.",
+  },
+  {
+    q: "What happens if I go over my SMS or voice minutes?",
+    a: "Nothing stops working. Extra texts are €0.08 each and extra voice minutes €0.25, billed with your next invoice. If you keep going over, we'll suggest the plan that saves you money.",
+  },
+  {
+    q: "Is there a setup fee?",
+    a: "Not on Start or Pro — we configure Halo, your message templates and your calendar for free. Business setups with several locations or custom integrations get a one-off onboarding quote.",
+  },
+  {
+    q: "How does yearly billing work?",
+    a: "Pay for the year upfront and get two months free — Start works out at €49/month and Pro at €124/month. Prices exclude VAT.",
+  },
+  {
+    q: "Can I switch plans or cancel?",
+    a: "Yes. Upgrade or downgrade anytime, and there's no contract or minimum term on monthly plans. Cancel before your next billing date and you won't be charged again.",
+  },
+];
 
 export default function Pricing() {
   return (
-    <main className="bg-paper pt-16 text-ink">
+    <main className="overflow-x-clip bg-paper text-ink">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(faqs)) }}
+      />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden px-6 py-28 text-center">
-        <div className="halo pointer-events-none absolute inset-0" />
-        <div className="relative mx-auto max-w-3xl">
-          <p className="label mb-4 text-blue">Pricing</p>
-          <h1 className="font-display mb-6 text-5xl leading-[1.05] md:text-6xl">
-            Pricing that fits <em className="text-blue">your clinic.</em>
-          </h1>
-          <p className="text-lg text-ink-soft">
-            Every clinic is different — call volume, locations, integrations. We shape the plan around yours.
+      <PageHero
+        eyebrow="Pricing"
+        icon="euro"
+        title={<>Simple plans. <em>Built to pay for itself.</em></>}
+        sub="Pick the plan that fits your business. Every plan starts with a 14-day free trial — no setup fee, no contract, cancel anytime."
+      />
+
+      {/* Plans */}
+      <section className="px-6 pb-24">
+        <div className="mx-auto max-w-6xl">
+          <PricingPlans />
+
+          <ul data-reveal className="mt-14 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-[15px] font-medium text-ink">
+            {always.map((a) => (
+              <li key={a.text} className="flex items-center gap-2.5">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-sky text-blue">
+                  <Icon name={a.icon} className="h-3.5 w-3.5" strokeWidth={2.6} />
+                </span>
+                {a.text}
+              </li>
+            ))}
+          </ul>
+          <p data-reveal className="mt-5 text-center text-sm text-muted">
+            Prices exclude VAT. Extra SMS €0.08 · extra voice minutes €0.25.
           </p>
         </div>
       </section>
 
-      {/* Pricing card */}
-      <section className="mx-auto max-w-xl px-6 pb-24">
-        <div className="relative overflow-hidden rounded-3xl bg-night p-10 text-white shadow-2xl shadow-blue/10">
-          <div className="dot-grid-dark pointer-events-none absolute inset-0" />
-          <div className="night-glow pointer-events-none absolute inset-0" />
-
-          <div className="relative">
-            <p className="label mb-2 text-center text-sky/40">RingLoop · One plan, all features</p>
-            <p className="font-display text-center text-5xl leading-[1.05] md:text-6xl">
-              Your plan,<br /><em className="text-[#7fa6f8]">your price.</em>
-            </p>
-            <p className="mt-4 text-center text-sky/60">
-              One flat monthly price per clinic — agreed upfront, shaped around your call volume.
-            </p>
-            <p className="mt-2 mb-10 text-center text-sm text-sky/40">
-              No setup fee · No contract · Cancel anytime
-            </p>
-
-            <div className="mb-10 grid gap-3 sm:grid-cols-2">
-              {[
-                "AI voice receptionist (24/7)",
-                "Answers every forwarded call",
-                "Books appointments by voice",
-                "SMS confirmation to every patient",
-                "Booking alerts to your team",
-                "Google Calendar integration",
-                "Collects name, treatment & therapist",
-                "Custom AI persona for your clinic",
-                "Multi-language AI support",
-                "Knows your team, hours & services",
-                "Priority support",
-                "Full setup & onboarding included",
-              ].map((f) => (
-                <div key={f} className="flex items-center gap-3 text-sm text-sky/75">
-                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue text-[10px] font-bold text-white">✓</span>
-                  {f}
-                </div>
-              ))}
-            </div>
-
-            <Link href="/contact" className="btn-primary group block w-full py-4 text-center">
-              Get your price — book a free demo
-              <span className="ml-1.5 inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
-            </Link>
-            <p className="mt-4 text-center text-xs text-sky/40">
-              A 20-minute call — you&apos;ll have your exact price the same day.
-            </p>
+      {/* ROI */}
+      <section className="relative overflow-hidden border-y border-line bg-white px-6 py-24 md:py-28">
+        <div className="halo pointer-events-none absolute inset-0" />
+        <div className="relative">
+          <SectionHeading
+            eyebrow="Return on investment"
+            icon="trendingUp"
+            title={<>Do the math on <em>your missed calls.</em></>}
+            sub="One extra booking a week usually covers the Start plan. See where you land."
+          />
+          <div data-reveal className="reveal-zoom mx-auto mt-14 max-w-5xl">
+            <RoiCalculator />
           </div>
         </div>
-      </section>
-
-      {/* ROI */}
-      <section className="mx-auto max-w-5xl px-6 pb-28">
-        <p className="label mb-4 text-center text-muted">What missed calls cost you</p>
-        <h2 className="font-display mb-5 text-center text-4xl md:text-5xl">RingLoop pays for itself <em className="text-blue">fast.</em></h2>
-        <p className="mb-16 text-center text-ink-soft">Here&apos;s the revenue a typical clinic leaves on the table every month.</p>
-
-        <div className="grid gap-5 md:grid-cols-3">
-          {[
-            { type: "Small clinic",  missed: "10 calls/month", recovered: "6 patients",  value: "€600",   hi: false },
-            { type: "Medium clinic", missed: "20 calls/month", recovered: "12 patients", value: "€1,800", hi: true  },
-            { type: "Busy clinic",   missed: "40 calls/month", recovered: "25 patients", value: "€3,750", hi: false },
-          ].map((row, i) => (
-            <div
-              key={row.type}
-              data-reveal
-              className={`r-delay-${(i % 3) + 1} rounded-2xl p-8 transition-all duration-300 hover:-translate-y-1 ${
-                row.hi
-                  ? "bg-blue text-white shadow-xl shadow-blue/25"
-                  : "card"
-              }`}
-            >
-              <p className={`label mb-7 ${row.hi ? "text-white/70" : "text-muted"}`}>{row.type}</p>
-              <div className="space-y-4">
-                {[
-                  { label: "Missed calls/month", value: row.missed },
-                  { label: "Patients recovered", value: row.recovered },
-                  { label: "Revenue recovered",  value: row.value },
-                ].map((item) => (
-                  <div key={item.label} className="flex justify-between text-sm">
-                    <span className={row.hi ? "text-white/70" : "text-ink-soft"}>{item.label}</span>
-                    <span className={`font-semibold ${row.hi ? "text-white" : "text-ink"}`}>{item.value}</span>
-                  </div>
-                ))}
-              </div>
-              <p className={`mt-7 text-xs leading-relaxed ${row.hi ? "text-white/60" : "text-muted"}`}>
-                Recovered revenue, every month — typically a multiple of what RingLoop costs.
-              </p>
-            </div>
-          ))}
-        </div>
-        <p className="mt-8 text-center text-xs text-muted">
-          Calculations based on 62% recovery rate and €150 average treatment value.
-        </p>
       </section>
 
       {/* FAQ */}
-      <section className="border-y border-[var(--line)] bg-white py-28">
-        <div className="mx-auto max-w-3xl px-6">
-          <h2 className="font-display mb-14 text-center text-4xl md:text-5xl">Pricing FAQ</h2>
-          <div className="divide-y divide-[var(--line)]">
-            {[
-              { q: "How is the price determined?",               a: "By what your clinic actually needs: expected call volume, number of locations, and integrations like Google Calendar. You get one flat monthly price, agreed upfront — no surprises after." },
-              { q: "Is there a setup fee?",                      a: "No. Setup and onboarding are completely free — we configure the AI, your services, your team, and your working hours." },
-              { q: "Is there a contract or minimum commitment?", a: "No contract. You can cancel anytime with no penalty. We're confident you'll stay because it works." },
-              { q: "Do I pay per call or per message?",          a: "No. Your monthly price covers unlimited calls and SMS confirmations — no usage fees, ever." },
-              { q: "How does it work for multiple locations?",   a: "Each location gets its own number and AI persona, and we price them together — multi-location clinics get a combined quote." },
-              { q: "Can I try it before paying?",                a: "Yes — talk to the AI right now on our live demo page, then book a free call and we'll set up a test with your clinic's details before you commit." },
-            ].map((item) => (
-              <div key={item.q} className="py-6">
-                <h3 className="mb-2 font-semibold">{item.q}</h3>
-                <p className="text-sm leading-relaxed text-ink-soft">{item.a}</p>
-              </div>
-            ))}
+      <section className="px-6 py-24 md:py-28">
+        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
+          <div data-reveal>
+            <Eyebrow icon="chat">Pricing FAQ</Eyebrow>
+            <h2 className="font-display mt-5 text-[2.4rem] leading-[1.08] md:text-5xl">
+              No fine print. <em>Promise.</em>
+            </h2>
+            <p className="mt-5 leading-relaxed text-ink-soft">
+              Still unsure?{" "}
+              <Link href="/contact" className="font-semibold text-blue underline-offset-4 hover:underline">
+                Ask us anything
+              </Link>{" "}
+              — you&apos;ll get a straight answer.
+            </p>
+          </div>
+          <div data-reveal>
+            <Faq items={faqs} />
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="relative overflow-hidden bg-night py-28 text-center text-white">
-        <div className="dot-grid-dark pointer-events-none absolute inset-0" />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_60%_at_50%_110%,_rgba(64,116,245,0.3),_transparent)]" />
-        <div className="relative mx-auto max-w-2xl px-6">
-          <h2 className="font-display mb-6 text-4xl md:text-5xl">Get your price in <em className="text-[#7fa6f8]">one short call.</em></h2>
-          <p className="mb-10 text-sky/60">Free demo, exact quote the same day — no payment, no commitment.</p>
-          <Link href="/contact" className="btn-primary group inline-flex items-center gap-2 px-9 py-4">
-            Book a free demo
-            <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
-          </Link>
-        </div>
-      </section>
-
+      <CtaBand
+        eyebrow="14 days free, no commitment"
+        title={<>Let Halo answer <em>your missed calls.</em></>}
+        sub="We set everything up with your business name — you're live within 24 hours."
+        primary={{ href: "/contact?plan=pro", label: "Start my free trial" }}
+        secondary={{ href: "/demo", label: "Try the live demo first" }}
+        halo="celebrate"
+      />
     </main>
   );
 }

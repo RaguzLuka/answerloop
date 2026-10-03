@@ -1,81 +1,100 @@
 import Link from "next/link";
 import LogoMark from "@/components/LogoMark";
 import Icon from "@/components/Icon";
+import CookieSettingsButton from "@/components/CookieSettingsButton";
 
 const INSTAGRAM_URL = "https://instagram.com/ringloop.io";
 
+const columns = [
+  {
+    title: "Product",
+    links: [
+      { href: "/#features",    label: "Features" },
+      { href: "/how-it-works", label: "How it works" },
+      { href: "/demo",         label: "Live demo" },
+      { href: "/pricing",      label: "Pricing" },
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      { href: "/about",   label: "About" },
+      { href: "/contact", label: "Contact" },
+      { href: "/privacy", label: "Privacy Policy" },
+    ],
+  },
+];
+
 export default function Footer() {
   return (
-    <footer className="relative bg-night text-sky/55">
+    <footer className="relative bg-night text-sky/60">
       <div className="rule-blue" />
 
-      <div className="mx-auto max-w-6xl px-6 py-16">
-        <div className="grid gap-12 md:grid-cols-4">
-
+      <div className="mx-auto max-w-6xl px-6 pb-24 pt-16 md:pb-10">
+        <div className="grid gap-12 md:grid-cols-12">
           {/* Brand */}
-          <div className="col-span-1">
+          <div className="md:col-span-5">
             <div className="mb-4 flex items-center gap-2.5">
               <LogoMark size={30} />
-              <p className="font-display text-[1.35rem] tracking-tight text-white">
-                Ring<em className="text-[#7fa6f8]">Loop</em>
+              <p className="font-display text-[1.3rem] tracking-tight text-white">
+                Ring<em>Loop</em>
               </p>
             </div>
-            <p className="text-sm leading-relaxed text-sky/45">
-              The AI voice receptionist for medical clinics. Answers every missed call, books the appointment, and confirms it by SMS — 24/7.
+            <p className="max-w-sm text-sm leading-relaxed text-sky/50">
+              SMS automation for small businesses. RingLoop texts back every missed call, books the
+              customer in by text, and sends the reminders that keep your calendar full.
             </p>
+            <Link href="/contact" className="btn-primary group mt-7 px-5 py-2.5 text-sm">
+              Book a free demo <span className="arrow">→</span>
+            </Link>
           </div>
 
-          {/* Product */}
-          <div>
-            <p className="label mb-5 text-sky/35">Product</p>
-            <ul className="space-y-3 text-sm">
-              <li><Link href="/how-it-works" className="hover:text-white transition-colors">How it works</Link></li>
-              <li><Link href="/demo"         className="hover:text-white transition-colors">Live demo</Link></li>
-              <li><Link href="/#features"    className="hover:text-white transition-colors">Features</Link></li>
-              <li><Link href="/pricing"      className="hover:text-white transition-colors">Pricing</Link></li>
-            </ul>
-          </div>
-
-          {/* Company */}
-          <div>
-            <p className="label mb-5 text-sky/35">Company</p>
-            <ul className="space-y-3 text-sm">
-              <li><Link href="/about"   className="hover:text-white transition-colors">About</Link></li>
-              <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
-              <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
-            </ul>
-          </div>
-
-          {/* Contact */}
-          <div>
-            <p className="label mb-5 text-sky/35">Get in touch</p>
-            <ul className="space-y-3 text-sm">
-              <li><a href="mailto:hello@ringloop.net" className="hover:text-white transition-colors">hello@ringloop.net</a></li>
-              <li>
-                <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:text-white transition-colors">
-                  <Icon name="instagram" className="h-4 w-4" />
-                  @ringloop.io
-                </a>
-              </li>
-              <li><Link href="/contact" className="hover:text-white transition-colors">Book a demo</Link></li>
-            </ul>
+          {/* Link columns */}
+          <div className="grid grid-cols-2 gap-10 sm:grid-cols-3 md:col-span-7">
+            {columns.map((col) => (
+              <div key={col.title}>
+                <p className="label mb-5 text-sky/35">{col.title}</p>
+                <ul className="space-y-3 text-sm">
+                  {col.links.map((l) => (
+                    <li key={l.href}>
+                      <Link href={l.href} className="transition-colors hover:text-white">{l.label}</Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+            <div>
+              <p className="label mb-5 text-sky/35">Get in touch</p>
+              <ul className="space-y-3 text-sm">
+                <li>
+                  <a href="mailto:hello@ringloop.net" className="inline-flex items-center gap-2 transition-colors hover:text-white">
+                    <Icon name="mail" className="h-4 w-4" />
+                    hello@ringloop.net
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href={INSTAGRAM_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 transition-colors hover:text-white"
+                  >
+                    <Icon name="instagram" className="h-4 w-4" />
+                    @ringloop.io
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-14 border-t border-[var(--line-dark)] pt-7 flex flex-col items-center justify-between gap-4 sm:flex-row">
-          <p className="text-xs text-sky/35">© {new Date().getFullYear()} RingLoop. All rights reserved.</p>
-          <div className="flex items-center gap-5">
-            <a
-              href={INSTAGRAM_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="RingLoop on Instagram"
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--line-dark)] text-sky/55 transition-colors hover:border-[#7fa6f8]/50 hover:text-white"
-            >
-              <Icon name="instagram" className="h-4.5 w-4.5" />
-            </a>
-            <p className="text-xs text-sky/35">Built for medical institutes across Europe &amp; the US</p>
+        <div className="mt-14 flex flex-col gap-4 border-t border-[var(--line-dark)] pt-7 text-xs text-sky/40 sm:flex-row sm:items-center sm:justify-between">
+          <p>© {new Date().getFullYear()} RingLoop · SMS automation for small businesses</p>
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            <Link href="/privacy" className="transition-colors hover:text-white">Privacy</Link>
+            <CookieSettingsButton className="transition-colors hover:text-white" />
+            <span>Made in Croatia for businesses across Europe</span>
           </div>
         </div>
       </div>

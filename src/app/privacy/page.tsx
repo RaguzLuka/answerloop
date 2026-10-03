@@ -1,41 +1,37 @@
+import PageHero from "@/components/PageHero";
+
 
 export const metadata = {
-  title: "Privacy Policy — RingLoop",
+  title: "Privacy Policy",
   description: "How RingLoop collects, uses, and protects your personal data.",
 };
 
 export default function Privacy() {
   return (
-      <main className="bg-paper pt-16 text-ink">
-        <section className="relative overflow-hidden px-6 py-24 text-center">
-          <div className="halo pointer-events-none absolute inset-0" />
-          <div className="relative mx-auto max-w-3xl">
-            <p className="label mb-4 text-blue">Legal</p>
-            <h1 className="font-display mb-5 text-5xl md:text-6xl">Privacy Policy</h1>
-            <p className="text-ink-soft">Last updated: 4 June 2025</p>
-          </div>
-        </section>
+      <main className="overflow-x-clip bg-paper text-ink">
+        <PageHero eyebrow="Legal" icon="shieldCheck" title="Privacy Policy" sub="Last updated: 1 October 2026" />
 
-        <section className="mx-auto max-w-3xl px-6 py-16">
-          <div className="max-w-none space-y-10">
+        <section className="mx-auto max-w-3xl px-6 pb-24">
+          <div className="card max-w-none space-y-10 p-8 md:p-12">
 
             <Block title="1. Who we are">
-              <p>RingLoop (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;) is a software service that provides an AI voice receptionist — answering forwarded calls, booking appointments, and sending appointment reminders — for medical institutes and appointment-based businesses. Our website is <a href="https://ringloop.net" className="text-blue hover:underline">ringloop.net</a>.</p>
+              <p>RingLoop (&ldquo;we&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo;) is a software service that provides SMS automation — texting back missed calls, booking appointments by text, and sending appointment confirmations and reminders — for appointment-based businesses such as salons, barbershops, restaurants and medical practices. Our website is <a href="https://ringloop.net" className="text-blue hover:underline">ringloop.net</a>.</p>
               <p>For questions about this policy, contact us at <a href="mailto:hello@ringloop.net" className="text-blue hover:underline">hello@ringloop.net</a>.</p>
             </Block>
 
             <Block title="2. What data we collect">
               <p>We collect personal data in two contexts:</p>
               <ul className="list-disc pl-6 space-y-2 text-ink-soft">
-                <li><strong>Website visitors:</strong> When you fill in the contact or demo request form we collect your name, clinic name, email address, and phone number (if provided).</li>
-                <li><strong>End-patients of our clinic clients:</strong> When a patient calls a clinic that uses RingLoop, our system may process their phone number and the content of their WhatsApp conversation (name, appointment request, preferred times). This data is processed on behalf of the clinic operator, who is the data controller for their patients.</li>
+                <li><strong>Website visitors:</strong> When you fill in the contact or demo request form we collect your name, business name and type, email address, and phone number (if provided).</li>
+                <li><strong>Customers of our business clients:</strong> When someone&rsquo;s call to a business that uses RingLoop goes unanswered, or when they text that business, our system may process their phone number and the content of their SMS conversation (name, booking request, preferred times). This data is processed on behalf of the business, which is the data controller for its customers.</li>
+                <li><strong>Website demo:</strong> Messages you type into the live demo on our website are sent to our AI provider to generate replies. Please don&rsquo;t enter real personal data — the demo uses fictional businesses. We don&rsquo;t store demo conversations.</li>
                 <li><strong>Analytics:</strong> We collect standard server logs and, where you consent, anonymised usage analytics via cookies.</li>
               </ul>
             </Block>
 
             <Block title="3. Legal basis for processing (GDPR)">
               <ul className="list-disc pl-6 space-y-2 text-ink-soft">
-                <li><strong>Contract performance (Art. 6(1)(b)):</strong> Processing necessary to provide the RingLoop service to clinic clients.</li>
+                <li><strong>Contract performance (Art. 6(1)(b)):</strong> Processing necessary to provide the RingLoop service to business clients.</li>
                 <li><strong>Legitimate interests (Art. 6(1)(f)):</strong> Processing enquiry data to respond to demo requests.</li>
                 <li><strong>Consent (Art. 6(1)(a)):</strong> Non-essential cookies and analytics, collected only when you accept via the cookie banner.</li>
               </ul>
@@ -44,8 +40,8 @@ export default function Privacy() {
             <Block title="4. How we use your data">
               <ul className="list-disc pl-6 space-y-2 text-ink-soft">
                 <li>To respond to demo requests and sales enquiries.</li>
-                <li>To operate the AI missed-call recovery service for clinic clients.</li>
-                <li>To send appointment confirmation messages via WhatsApp on behalf of clinic clients.</li>
+                <li>To operate the missed-call text-back and SMS booking service for business clients.</li>
+                <li>To send booking confirmations and reminders by SMS on behalf of business clients.</li>
                 <li>To improve our product using aggregated, anonymised analytics.</li>
               </ul>
               <p>We do not sell your data to any third party.</p>
@@ -64,9 +60,10 @@ export default function Privacy() {
                   </thead>
                   <tbody className="divide-y divide-[var(--line)]">
                     {[
-                      ["Twilio Inc.", "SMS & WhatsApp messaging", "USA (SCCs)"],
-                      ["Anthropic PBC", "AI conversation processing", "USA (SCCs)"],
+                      ["Twilio Inc.", "SMS messaging & call forwarding", "USA (SCCs)"],
+                      ["OpenAI, L.L.C.", "AI conversation processing", "USA (SCCs)"],
                       ["Vercel Inc.", "Website & API hosting", "USA (SCCs)"],
+                      ["Resend, Inc.", "Email delivery for enquiries", "USA (SCCs)"],
                     ].map(([name, purpose, location]) => (
                       <tr key={name}>
                         <td className="py-2 pr-4 font-medium">{name}</td>
@@ -83,7 +80,7 @@ export default function Privacy() {
             <Block title="6. Data retention">
               <ul className="list-disc pl-6 space-y-2 text-ink-soft">
                 <li><strong>Lead/enquiry data:</strong> Retained for 12 months after last contact, then deleted.</li>
-                <li><strong>WhatsApp conversation data:</strong> Retained for the duration of the clinic's subscription plus 30 days, then deleted.</li>
+                <li><strong>SMS conversation data:</strong> Retained for the duration of the business client&rsquo;s subscription plus 30 days, then deleted.</li>
                 <li><strong>Server logs:</strong> Retained for 90 days.</li>
               </ul>
             </Block>
@@ -102,13 +99,13 @@ export default function Privacy() {
               <p>To exercise any of these rights, email <a href="mailto:hello@ringloop.net" className="text-blue hover:underline">hello@ringloop.net</a> with the subject &ldquo;Data Rights Request&rdquo;. We will respond within 30 days.</p>
             </Block>
 
-            <Block title="8. Cookies">
+            <Block title="8. Cookies" id="cookies">
               <p>We use the following types of cookies:</p>
               <ul className="list-disc pl-6 space-y-2 text-ink-soft">
                 <li><strong>Essential cookies:</strong> Required for the website to function. No consent needed.</li>
                 <li><strong>Analytics cookies:</strong> Anonymised data to understand how visitors use the site. Only set with your consent.</li>
               </ul>
-              <p>You can update your cookie preferences at any time by clearing your browser&rsquo;s cookies or clicking &ldquo;Cookie Settings&rdquo; in the footer.</p>
+              <p>You can update your cookie preferences at any time by clicking &ldquo;Cookie settings&rdquo; in the footer.</p>
             </Block>
 
             <Block title="9. Security">
@@ -125,9 +122,9 @@ export default function Privacy() {
   );
 }
 
-function Block({ title, children }: { title: string; children: React.ReactNode }) {
+function Block({ title, id, children }: { title: string; id?: string; children: React.ReactNode }) {
   return (
-    <div>
+    <div id={id} className="scroll-mt-24">
       <h2 className="font-display mb-4 text-2xl text-ink">{title}</h2>
       <div className="space-y-3 text-ink-soft leading-relaxed">{children}</div>
     </div>

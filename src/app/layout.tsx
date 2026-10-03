@@ -4,7 +4,7 @@ import "./globals.css";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import CookieBanner from "@/components/CookieBanner";
-import WhatsAppButton from "@/components/WhatsAppButton";
+import FloatingDemoButton from "@/components/FloatingDemoButton";
 import BackToTop from "@/components/BackToTop";
 import Reveal from "@/components/Reveal";
 
@@ -16,18 +16,33 @@ const jakarta = Plus_Jakarta_Sans({
   weight: ["600", "700", "800"],
 });
 
+const TITLE = "RingLoop — Missed-call text-back & SMS booking for small businesses";
+const DESCRIPTION =
+  "RingLoop texts back every missed call within seconds, books the customer in a two-way AI text conversation, and sends reminders that cut no-shows. For salons, barbershops, nail studios, restaurants, clinics and more — keep your number, no contract.";
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.ringloop.net"),
   title: {
-    default: "RingLoop — AI voice receptionist for medical clinics",
+    default: TITLE,
     template: "%s — RingLoop",
   },
-  description:
-    "RingLoop answers your clinic's missed calls with a natural AI voice, books the appointment on the spot, and confirms it to the patient by SMS. Pricing tailored to your clinic, no contract.",
-  keywords: ["AI receptionist", "AI voice agent", "medical clinic", "missed call recovery", "appointment booking", "dental clinic AI", "clinic phone answering"],
+  description: DESCRIPTION,
+  keywords: [
+    "missed call text back",
+    "SMS automation for small business",
+    "AI SMS booking",
+    "salon booking by text",
+    "barbershop booking SMS",
+    "nail salon appointments",
+    "restaurant reservations by text",
+    "appointment reminders SMS",
+    "reduce no-shows",
+    "clinic SMS reminders",
+  ],
   openGraph: {
-    title: "RingLoop — AI voice receptionist for medical clinics",
-    description: "Your clinic misses calls. RingLoop answers them. An AI receptionist that picks up every forwarded call, books appointments by voice, and reminds patients on WhatsApp — 24/7.",
+    title: TITLE,
+    description:
+      "Your business misses calls. RingLoop texts them back in seconds and books them in by SMS — 24/7, under your business name.",
     url: "https://www.ringloop.net",
     siteName: "RingLoop",
     type: "website",
@@ -35,8 +50,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "RingLoop — AI voice receptionist for medical clinics",
-    description: "Your clinic misses calls. RingLoop answers them. An AI receptionist that books appointments by voice, 24/7.",
+    title: TITLE,
+    description: "Missed call? RingLoop texts the caller back in seconds and books them in by SMS — 24/7.",
   },
   alternates: { canonical: "./" },
   robots: { index: true, follow: true },
@@ -54,19 +69,20 @@ const jsonLd = {
       name: "RingLoop",
       url: "https://www.ringloop.net",
       email: "hello@ringloop.net",
-      description: "AI voice receptionist for medical clinics. Answers missed calls, books appointments by voice, and sends WhatsApp reminders.",
+      description:
+        "SMS automation for small businesses: missed-call text-back, AI booking by text, confirmations and reminders.",
       areaServed: "Europe",
     },
     {
       "@type": "Service",
-      name: "RingLoop AI Voice Receptionist",
+      name: "RingLoop SMS automation",
       provider: { "@id": "https://www.ringloop.net/#organization" },
-      serviceType: "AI phone answering and appointment booking for medical clinics",
+      serviceType: "Missed-call text-back and SMS booking for salons, restaurants, clinics and other appointment-based businesses",
       areaServed: "Europe",
-      offers: {
-        "@type": "Offer",
-        description: "Pricing tailored to each clinic — on request. No setup fee, no contract.",
-      },
+      offers: [
+        { "@type": "Offer", name: "Start", price: "59", priceCurrency: "EUR", url: "https://www.ringloop.net/pricing" },
+        { "@type": "Offer", name: "Pro", price: "149", priceCurrency: "EUR", url: "https://www.ringloop.net/pricing" },
+      ],
     },
   ],
 };
@@ -74,7 +90,11 @@ const jsonLd = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${jakarta.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-paper text-ink">
+      <body className="flex min-h-full flex-col bg-paper text-ink">
+        {/* Without JavaScript, scroll-reveal content must still be visible */}
+        <noscript>
+          <style>{`[data-reveal]{opacity:1!important}`}</style>
+        </noscript>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -84,7 +104,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Reveal />
         {children}
         <Footer />
-        <WhatsAppButton />
+        <FloatingDemoButton />
         <BackToTop />
         <CookieBanner />
       </body>
