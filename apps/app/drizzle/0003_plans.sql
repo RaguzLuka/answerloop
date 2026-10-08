@@ -1,0 +1,1 @@
+ALTER TABLE `businesses` ADD `plan` text DEFAULT 'start' NOT NULL;

@@ -1,0 +1,1 @@
+ALTER TABLE `businesses` ADD `custom_booking_url` text;
