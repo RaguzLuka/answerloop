@@ -45,6 +45,31 @@ push notifications for new bookings and missed calls.
 5. The customer gets a confirmation text. The owner gets a push notification
    and an email, and a reminder text goes out the day before.
 
+## Self-service: owners set everything up alone
+
+Someone finds ringloop.net, signs up and goes through the wizard on their own:
+business → hours → services → text-back → **Connect** (WhatsApp + calendar,
+optional) → go live (a RingLoop number from the pool + call-forwarding code).
+New sign-ups get a **30-day free trial of Pro**. "We'll come over and help"
+is offered on every step (visit requests land in `/admin`).
+
+- **Connect WhatsApp** opens Meta's Embedded Signup window: the owner logs in with
+  Facebook and picks their WhatsApp Business number (their existing app number, or
+  a new one). The app swaps the code for a token (stored encrypted), subscribes the
+  webhook, registers new numbers, and submits the message templates. Needs
+  `NEXT_PUBLIC_META_APP_ID`, `NEXT_PUBLIC_META_CONFIG_ID` and Meta approving
+  RingLoop as a **Tech Provider** (app review for `whatsapp_business_management`
+  and `whatsapp_business_messaging`). Until then the button says "we'll connect it
+  with you", and the team uses `/admin` → WhatsApp numbers.
+- **Connect Google Calendar** (both ways): bookings appear in the owner's
+  calendar; their own timed events block those times. Needs a Google Cloud OAuth
+  client (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, redirect URI
+  `https://app.ringloop.net/api/google/callback`, scope `calendar.events`). Until
+  Google verifies the app, up to 100 test users can connect (they see an
+  "unverified app" notice).
+- **Calendar subscription link** (any calendar app, one way) works with no setup:
+  Settings → WhatsApp & calendar.
+
 ## WhatsApp setup (Pro: "the barbershop messages you on WhatsApp")
 
 Missed call → the caller gets a WhatsApp **from the shop's own number, under the

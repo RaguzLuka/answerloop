@@ -11,6 +11,11 @@ export function today(biz: Business) {
   return zonedParts(Date.now(), biz.timezone).date;
 }
 
+/** Whole days left in a free trial (0 when it's over) */
+export function trialDaysLeft(endsAt: number) {
+  return Math.max(0, Math.ceil((endsAt - Date.now()) / (24 * 60 * 60 * 1000)));
+}
+
 /** The business's local clock right now */
 export function localNow(biz: Business) {
   return zonedParts(Date.now(), biz.timezone);

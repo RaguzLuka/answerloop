@@ -14,6 +14,9 @@ import MessageForm from "@/components/business-forms/MessageForm";
 import ForwardingGuide from "@/components/ForwardingGuide";
 import VisitRequestForm from "@/components/VisitRequestForm";
 import FinishStep from "./FinishStep";
+import ConnectionsPanel from "@/components/ConnectionsPanel";
+import { continueFromConnect } from "@/lib/actions/connections";
+import { SubmitButton } from "@/components/form";
 
 export const metadata: Metadata = { title: "Set up RingLoop" };
 
@@ -22,10 +25,11 @@ const STEPS: { title: string; halo: HaloPose; say: React.ReactNode }[] = [
   { title: "Opening hours", halo: "talk", say: <>When are you open? I&apos;ll only offer times inside these hours.</> },
   { title: "Services", halo: "booking", say: <>What can customers book? I&apos;ve filled in a few to start, so change anything you like.</> },
   { title: "Your text-back", halo: "listen", say: <>This is the text I send when you miss a call. Make it sound like you.</> },
+  { title: "Connect", halo: "talk", say: <>Connect your WhatsApp and calendar, or skip this and do it later.</> },
   { title: "Go live", halo: "happy", say: <>Almost done! Here&apos;s how your missed calls will reach me.</> },
 ];
 
-export default async function SetupPage({ searchParams }: { searchParams: Promise<{ step?: string; visit?: string }> }) {
+export default async function SetupPage({ searchParams }: { searchParams: Promise<{ step?: string; visit?: string; google?: string }> }) {
   const user = await requireUser();
   const row = await getBusinessFor(user.id);
   const business = row?.business ?? null;
@@ -123,6 +127,17 @@ export default async function SetupPage({ searchParams }: { searchParams: Promis
         {step === 3 && business && <ServicesForm business={business} services={services} mode="setup" />}
         {step === 4 && business && <MessageForm business={business} bookingLink={bookingLink} mode="setup" />}
         {step === 5 && business && (
+          <div className="space-y-6">
+            <ConnectionsPanel business={business} back="/setup?step=5" notice={query.google} />
+            <form action={continueFromConnect} className="flex flex-wrap items-center gap-3 border-t border-line pt-6">
+              <SubmitButton pendingText="…">
+                Continue <Icon name="arrowRight" className="h-4 w-4" />
+              </SubmitButton>
+              <span className="text-sm text-muted">You can connect these later in Settings.</span>
+            </form>
+          </div>
+        )}
+        {step === 6 && business && (
           <FinishStep
             bookingLink={bookingLink}
             visitDefaults={{
@@ -139,7 +154,7 @@ export default async function SetupPage({ searchParams }: { searchParams: Promis
             <Link href={`/setup?step=${step - 1}`} className="btn btn-quiet btn-sm">
               <Icon name="arrowLeft" className="h-4 w-4" /> Back
             </Link>
-            {step < 5 && (
+            {step < 6 && (
               <Link href="/setup?visit=1" className="text-sm font-medium text-blue">
                 Rather have us come over and do it?
               </Link>

@@ -57,6 +57,13 @@
       "when": 1791556242633,
       "tag": "0007_whatsapp_per_shop",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1791557403618,
+      "tag": "0008_self_service",
+      "breakpoints": true
     }
   ]
 }

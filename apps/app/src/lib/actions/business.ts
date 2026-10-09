@@ -1,5 +1,6 @@
 "use server";
 
+import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { and, eq, inArray, like, notInArray } from "drizzle-orm";
@@ -19,7 +20,8 @@ import { textbackBody, textbackLink } from "@/lib/missed-call";
    (hidden input `_setup`), they move on to the next step; from Settings they
    just save and report back. */
 
-const SETUP_STEPS = 5;
+const SETUP_STEPS = 6;
+const TRIAL_DAYS = 30;
 
 async function afterSave(fd: FormData, biz: Pick<Business, "id" | "setupStep">, step: number): Promise<FormState> {
   revalidatePath("/", "layout");
@@ -99,6 +101,10 @@ export async function saveBasics(_: FormState, fd: FormData): Promise<FormState>
       capacity: preset.capacity,
       senderName: suggestSender(data.name),
       textbackMessage: defaultTextback("hr", data.type),
+      // Self-service sign-ups try everything (Pro) free for a month
+      plan: "pro",
+      trialEndsAt: Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000,
+      calendarToken: randomBytes(18).toString("base64url"),
     })
     .returning();
   await db.insert(memberships).values({ userId: user.id, businessId: biz.id, role: "owner" });

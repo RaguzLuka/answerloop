@@ -2,6 +2,7 @@ import "server-only";
 import { and, eq, gt, lt } from "drizzle-orm";
 import { db, bookings, type Business } from "@/lib/db";
 import { addDays, fromMinutes, toMinutes, weekdayOf, zonedParts, zonedToUtc } from "@/lib/time";
+import { googleBusy, googleLinked } from "@/lib/google-calendar";
 
 /* Free start times for one service on one day: inside opening hours, after the
    lead time, inside the booking horizon, and with fewer overlapping bookings
@@ -50,6 +51,9 @@ export async function freeSlots(biz: Business, durationMin: number, date: string
       ),
     );
 
+  // Their own appointments in Google Calendar block the whole shop for that time
+  const busy = googleLinked(biz) ? await googleBusy(biz, dayStart, dayEnd) : [];
+
   const slots: { time: string; startsAt: number }[] = [];
   for (let m = open; m + durationMin <= close; m += step) {
     const time = fromMinutes(m);
@@ -57,7 +61,8 @@ export async function freeSlots(biz: Business, durationMin: number, date: string
     if (startsAt < earliest) continue;
     const endsAt = startsAt + durationMin * 60_000;
     const overlapping = taken.filter((b) => b.startsAt < endsAt && b.endsAt > startsAt).length;
-    if (overlapping < Math.max(1, biz.capacity)) slots.push({ time, startsAt });
+    const blocked = busy.some((b) => b.start < endsAt && b.end > startsAt);
+    if (!blocked && overlapping < Math.max(1, biz.capacity)) slots.push({ time, startsAt });
   }
   return slots;
 }

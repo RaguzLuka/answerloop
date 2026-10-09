@@ -53,6 +53,7 @@ export default async function Welcome() {
               </Link>
               <Link href="/login" className="btn btn-secondary">I already have an account</Link>
             </div>
+            <p className="mt-3 text-sm text-muted">Free for 30 days, no card needed.</p>
           </div>
           <div className="relative mx-auto flex aspect-square w-full max-w-[300px] items-center justify-center">
             <div className="absolute inset-6 rounded-full bg-gradient-to-b from-sky to-white" />

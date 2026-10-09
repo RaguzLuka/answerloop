@@ -11,6 +11,7 @@ import ForwardingGuide from "@/components/ForwardingGuide";
 import InstallApp from "@/components/InstallApp";
 import Icon from "@/components/Icon";
 import PushToggle from "@/components/PushToggle";
+import ConnectionsPanel from "@/components/ConnectionsPanel";
 import { aiEnabled } from "@/lib/ai";
 import { senderFor, whatsappReady } from "@/lib/whatsapp";
 import { BookingSettingsForm, ProfileForm, PasswordForm, TestSmsForm } from "./forms";
@@ -23,6 +24,7 @@ const SECTIONS = [
   { id: "services", label: "Services", icon: "calendar" },
   { id: "message", label: "Text-back", icon: "message" },
   { id: "booking", label: "Booking & texts", icon: "link" },
+  { id: "connections", label: "WhatsApp & calendar", icon: "link" },
   { id: "phone", label: "Phone", icon: "phoneForwarded" },
   { id: "app", label: "App", icon: "smartphone" },
   { id: "account", label: "Account", icon: "user" },
@@ -30,9 +32,10 @@ const SECTIONS = [
 
 type SectionId = (typeof SECTIONS)[number]["id"];
 
-export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ s?: string }> }) {
+export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ s?: string; google?: string }> }) {
   const { user, business } = await requireBusiness();
-  const s = (await searchParams).s;
+  const query = await searchParams;
+  const s = query.s;
   const section: SectionId = SECTIONS.some((x) => x.id === s) ? (s as SectionId) : "business";
   const words = businessType(business.type).words;
   const bookingLink = `${appUrl()}/b/${business.slug}`;
@@ -74,6 +77,9 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         )}
         {section === "booking" && (
           <BookingSettingsForm business={business} bookingLink={bookingLink} aiOn={aiEnabled()} waOn={whatsappReady() && !!senderFor(business)} />
+        )}
+        {section === "connections" && (
+          <ConnectionsPanel business={business} back="/settings?s=connections" notice={query.google} />
         )}
         {section === "phone" && (
           <div className="space-y-4">

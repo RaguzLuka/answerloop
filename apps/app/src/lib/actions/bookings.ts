@@ -13,6 +13,7 @@ import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { formatDay, formatTime, zonedToUtc } from "@/lib/time";
 import { sendConfirmation } from "@/lib/sms";
 import { afterCustomerBooking } from "@/lib/booking-effects";
+import { syncBookingById } from "@/lib/google-calendar";
 import { bookingCopy, type Lang } from "@/lib/booking-i18n";
 
 const phone = z
@@ -61,6 +62,7 @@ export async function createManualBooking(_: FormState, fd: FormData): Promise<F
     endsAt: startsAt + service.durationMin * 60_000,
     source: "manual",
   }).returning();
+  after(() => syncBookingById(booking.id));
   const texted = fd.get("textCustomer") === "on" && business.confirmationsEnabled;
   if (texted) after(() => sendConfirmation(business, booking).catch((err) => console.error("[sms] confirmation:", err)));
   revalidatePath("/", "layout");
@@ -77,6 +79,7 @@ export async function setBookingStatus(id: string, status: BookingStatus) {
     .update(bookings)
     .set({ status })
     .where(and(eq(bookings.id, id), eq(bookings.businessId, business.id)));
+  after(() => syncBookingById(id));
   revalidatePath("/", "layout");
 }
 

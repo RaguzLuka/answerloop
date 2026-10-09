@@ -6,10 +6,12 @@ import { formatDay, formatTime } from "@/lib/time";
 import { formatPhone } from "@/lib/phone";
 import { notifyBusiness } from "@/lib/push";
 import { sendConfirmation } from "@/lib/sms";
+import { syncBookingById } from "@/lib/google-calendar";
 
 /** Everything that happens after a customer books themselves (booking page or chat):
  *  confirmation text (booking page only), push + email to the owner. Never throws. */
 export async function afterCustomerBooking(biz: Business, booking: Booking, via: "link" | "chat") {
+  await syncBookingById(booking.id);
   const day = formatDay(booking.startsAt, biz.timezone);
   const time = formatTime(booking.startsAt, biz.timezone);
   const how = via === "chat" ? " (chat with Halo)" : "";

@@ -211,6 +211,7 @@ export default async function AdminPage() {
                     </td>
                     <td className="px-4 py-3">
                       <PlanSelect id={biz.id} plan={biz.plan} />
+                      {biz.trialEndsAt && <p className="mt-1 text-xs text-muted">Trial until {when(biz.trialEndsAt)}</p>}
                     </td>
                     <td className="px-4 py-3">
                       <span className={`chip ${st.cls}`}>{st.label}</span>

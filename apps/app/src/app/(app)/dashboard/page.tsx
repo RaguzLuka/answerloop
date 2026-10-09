@@ -3,7 +3,7 @@ import Link from "next/link";
 import { requireBusiness } from "@/lib/dal";
 import { appUrl } from "@/lib/email";
 import { businessType } from "@/lib/business-types";
-import { localNow, today, upcomingBookings, visitsFor } from "@/lib/queries";
+import { localNow, today, trialDaysLeft, upcomingBookings, visitsFor } from "@/lib/queries";
 import { recentCalls } from "@/lib/sms";
 import type { Call } from "@/lib/db/schema";
 import PushToggle from "@/components/PushToggle";
@@ -67,6 +67,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
       )}
 
       <InstallApp variant="banner" />
+      {business.trialEndsAt && <TrialBanner endsAt={business.trialEndsAt} />}
       <PushToggle variant="card" publicKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? null} />
 
       <StatusCard business={business} />
@@ -296,5 +297,20 @@ function MissedCall({ row, tz }: { row: MissedRow; tz: string }) {
         </a>
       )}
     </li>
+  );
+}
+
+function TrialBanner({ endsAt }: { endsAt: number }) {
+  const days = trialDaysLeft(endsAt);
+  return (
+    <div className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm ${days > 0 ? "bg-sky text-blue-deep" : "bg-warn-soft text-warn"}`}>
+      <Icon name="sparkle" className="h-4 w-4 shrink-0" />
+      <p className="flex-1">
+        {days > 0
+          ? `Free trial: ${days} ${days === 1 ? "day" : "days"} left of everything, including Halo's WhatsApp chat.`
+          : "Your free trial has ended. We'll be in touch about your plan."}
+      </p>
+      <Link href="/help" className="font-semibold underline-offset-2 hover:underline">Questions?</Link>
+    </div>
   );
 }

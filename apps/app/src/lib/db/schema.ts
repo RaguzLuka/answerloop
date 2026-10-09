@@ -81,6 +81,15 @@ export const businesses = sqliteTable("businesses", {
    *  answers missed-call conversations and steps back when the owner writes. */
   waOwnApp: integer("wa_own_app", { mode: "boolean" }).notNull().default(false),
   waTemplatesAt: integer("wa_templates_at", { mode: "number" }),
+  /** Two-step verification PIN set when a new number was registered (encrypted) */
+  waPinEnc: text("wa_pin_enc"),
+  /** Free trial of Pro for self-service sign-ups */
+  trialEndsAt: integer("trial_ends_at", { mode: "number" }),
+  /** Secret for the calendar subscription feed (/api/cal/<token>) */
+  calendarToken: text("calendar_token").unique(),
+  /** Google Calendar link: encrypted { refreshToken, calendarId } */
+  googleCalEnc: text("google_cal_enc"),
+  googleCalEmail: text("google_cal_email"),
   bookingEnabled: integer("booking_enabled", { mode: "boolean" }).notNull().default(true),
   slotIntervalMin: integer("slot_interval_min").notNull().default(15),
   leadTimeMin: integer("lead_time_min").notNull().default(60),
@@ -137,6 +146,8 @@ export const bookings = sqliteTable(
     source: text("source").$type<BookingSource>().notNull(),
     /** Set when the booking came from a missed call's text-back (chat or link) */
     callId: text("call_id"),
+    /** The event this booking created in the owner's Google Calendar */
+    googleEventId: text("google_event_id"),
     confirmationSentAt: integer("confirmation_sent_at", { mode: "number" }),
     reminderSentAt: integer("reminder_sent_at", { mode: "number" }),
     createdAt: createdAt(),
