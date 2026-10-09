@@ -107,8 +107,8 @@ export function BookingSettingsForm({
             <span className="block font-semibold">Message callers on WhatsApp first</span>
             <span className="text-sm text-muted">
               {waOn
-                ? "Halo writes to them on WhatsApp and books them there. If they don't have WhatsApp, they get the SMS."
-                : "Available once WhatsApp is connected for your account. Until then, callers get the SMS."}
+                ? `Halo writes to them from your WhatsApp${business.waDisplayPhone ? ` (${business.waDisplayPhone})` : ""}, under your name, and books them there. If they don't have WhatsApp, they get the SMS.`
+                : "Your WhatsApp number isn't connected yet. We connect it with you during the setup visit (Help → Request a visit). Until then, callers get the SMS."}
             </span>
           </span>
           <input type="checkbox" role="switch" name="whatsappEnabled" className="switch" defaultChecked={business.whatsappEnabled} disabled={!waOn} />

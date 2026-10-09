@@ -47,42 +47,55 @@ push notifications for new bookings and missed calls.
 
 ## WhatsApp setup (Pro: "the barbershop messages you on WhatsApp")
 
-Missed call → the caller gets a WhatsApp from the shop → they chat with Halo
-there and get booked. If they don't have WhatsApp, the SMS with the same
-conversation as a web chat goes out instead. The owner can reply from
-`/chats/[id]`; Halo then stays quiet in that conversation.
+Missed call → the caller gets a WhatsApp **from the shop's own number, under the
+shop's own name** → they chat with Halo there and get booked. If they don't
+have WhatsApp, the SMS with the same conversation as a web chat goes out instead.
 
-1. **Meta business:** at business.facebook.com create a business portfolio for
-   your obrt and start **business verification** (obrt documents). Until it's
-   verified WhatsApp shows the number instead of the name, and you can start at
-   most 250 new conversations a day.
-2. **Number:** a phone number that is not on the WhatsApp app (a new prepaid SIM
-   works). Add it in WhatsApp Manager and request the display name "RingLoop".
-3. **Meta app:** at developers.facebook.com create an app (type Business), add
-   the **WhatsApp** product, and note the **Phone number ID**.
-4. **Token:** in the business settings create a System User, give it the app and
-   the WhatsApp account, and generate a permanent token with
-   `whatsapp_business_messaging` and `whatsapp_business_management`.
-5. **Webhook:** in the app's WhatsApp → Configuration set the callback URL to
-   `https://app.ringloop.net/api/whatsapp`, the verify token to
-   `WHATSAPP_VERIFY_TOKEN`, and subscribe to **messages**.
-6. **Templates:** in WhatsApp Manager → Message templates create two, category
-   **Utility**, each with one variable (the shop's name). The text must be exactly:
-   - `ringloop_missed_call_hr`, Croatian:
-     > Pozdrav, ovdje {{1}}. Oprostite što se nismo stigli javiti na Vaš poziv. Ovdje Vam piše Halo, naš asistent s umjetnom inteligencijom. Za koju uslugu želite termin i kada biste mogli doći?
-   - `ringloop_missed_call_en`, English:
-     > Hello, this is {{1}}. Sorry we couldn't take your call. This is Halo, our AI assistant. What would you like to book, and when could you come in?
-7. **Vercel:** add `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`,
-   `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN` (and keep `AI_ENABLED=true`,
-   `OPENAI_API_KEY`). Pro shops then message callers on WhatsApp automatically
-   (Settings → Booking & texts → "Message callers on WhatsApp first").
+**Once, for RingLoop** (your obrt):
+1. At business.facebook.com create RingLoop's business portfolio and complete
+   **business verification** with the obrt's documents.
+2. At developers.facebook.com create an app (type Business) and add the
+   **WhatsApp** product.
+3. Webhook (WhatsApp → Configuration): callback URL
+   `https://app.ringloop.net/api/whatsapp`, verify token = `WHATSAPP_VERIFY_TOKEN`,
+   subscribe to **messages** and **smb_message_echoes**.
+4. Create a System User with a permanent token (`whatsapp_business_messaging`,
+   `whatsapp_business_management`) → `WHATSAPP_TOKEN`.
+5. Vercel: `WHATSAPP_APP_SECRET` (app → Settings → Basic), `WHATSAPP_VERIFY_TOKEN`,
+   `WHATSAPP_TOKEN`, `APP_ENCRYPTION_KEY` (`openssl rand -base64 32`), plus
+   `AI_ENABLED=true` and `OPENAI_API_KEY`.
 
-Notes: replies inside the customer's 24-hour window are free; Meta charges for
-the opening template. WhatsApp's rules expect people to agree before a business
-messages them first: one polite message that clearly answers their own call is
-the lowest-risk form, but if many people block or report it, Meta can lower the
-number's limits. Later, each shop can send from its own WhatsApp number
-(Embedded Signup, needs Meta Tech Provider status).
+**For each shop** (during the setup visit):
+1. The shop needs a WhatsApp number showing its name:
+   - **Best: its existing WhatsApp Business app number** ("coexistence") — the
+     number customers already call. The owner keeps using the app; Halo only
+     answers conversations that started with a missed call, never the owner's
+     other chats, and steps back as soon as the owner writes from the app.
+   - Or a new number used only for RingLoop (then Halo also answers people who
+     write to it first).
+2. The shop's own Meta business portfolio owns that number, with the display
+   name = the shop's name, and shares the WhatsApp account with RingLoop's
+   business (Business settings → Partners). For coexistence, connect the number
+   through Meta's onboarding flow (Embedded Signup). Meta charges the opening
+   template to the WhatsApp account's payment method, so the shop adds a card there.
+3. In `/admin` → WhatsApp numbers: paste the **Phone number ID** and **WhatsApp
+   Business Account ID**, tick "also the shop's own WhatsApp Business app" if so,
+   add an access token if the account isn't reachable with `WHATSAPP_TOKEN`
+   (stored encrypted), then **Submit message templates**. Meta usually approves
+   them within minutes to hours.
+4. Set the shop to Pro. Settings → Booking & texts → "Message callers on WhatsApp
+   first" is on by default.
+
+The opening template (category Utility, `{{1}}` = shop name), submitted by the button:
+- `missed_call_hr`: Pozdrav, ovdje {{1}}. Oprostite što se nismo stigli javiti na Vaš poziv. Ovdje Vam piše Halo, naš asistent s umjetnom inteligencijom. Za koju uslugu želite termin i kada biste mogli doći?
+- `missed_call_en`: Hello, this is {{1}}. Sorry we couldn't take your call. This is Halo, our AI assistant. What would you like to book, and when could you come in?
+
+Notes: replies within the customer's 24-hour window are free; the opening
+template is charged by Meta. WhatsApp's rules expect people to agree before a
+business messages them first — one polite message answering their own call is
+the lowest-risk form, but many blocks or reports lower the number's limits.
+Next step for scale: an in-app "Connect WhatsApp" button (Embedded Signup), which
+needs RingLoop approved as a Meta Tech Provider.
 
 ## Plans
 

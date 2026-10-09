@@ -70,6 +70,17 @@ export const businesses = sqliteTable("businesses", {
   customBookingUrl: text("custom_booking_url"),
   /** Pro: reach missed callers on WhatsApp first (SMS if they don't have it) */
   whatsappEnabled: integer("whatsapp_enabled", { mode: "boolean" }).notNull().default(true),
+  /* The shop's own WhatsApp Business number (Cloud API), so messages show the shop's name.
+     Connected by the RingLoop team (admin) or, later, by Embedded Signup. */
+  waPhoneNumberId: text("wa_phone_number_id").unique(),
+  waBusinessAccountId: text("wa_business_account_id"),
+  waDisplayPhone: text("wa_display_phone"),
+  /** Access token for the shop's WhatsApp account, encrypted (lib/secret-box). Empty = the team's token. */
+  waTokenEnc: text("wa_token_enc"),
+  /** The number is also the shop's WhatsApp Business app ("coexistence"): Halo only
+   *  answers missed-call conversations and steps back when the owner writes. */
+  waOwnApp: integer("wa_own_app", { mode: "boolean" }).notNull().default(false),
+  waTemplatesAt: integer("wa_templates_at", { mode: "number" }),
   bookingEnabled: integer("booking_enabled", { mode: "boolean" }).notNull().default(true),
   slotIntervalMin: integer("slot_interval_min").notNull().default(15),
   leadTimeMin: integer("lead_time_min").notNull().default(60),

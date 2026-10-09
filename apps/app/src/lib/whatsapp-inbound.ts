@@ -1,16 +1,21 @@
 import "server-only";
 import { and, asc, desc, eq } from "drizzle-orm";
-import { db, businesses, chatMessages, chats } from "@/lib/db";
-import { chatIsOver, chatLink, loadChatById, respond, startChat } from "@/lib/chat";
-import { waSendText } from "@/lib/whatsapp";
+import { db, businesses, chatMessages, chats, type Business } from "@/lib/db";
+import { chatAvailable, chatIsOver, chatLink, loadChatById, respond, startChat } from "@/lib/chat";
+import { senderFor, waSendText } from "@/lib/whatsapp";
 import { sendBusinessSms } from "@/lib/sms";
 import { textbackBody } from "@/lib/missed-call";
 import { notifyBusiness } from "@/lib/push";
 import { formatPhone } from "@/lib/phone";
 
-/* What arrives from Meta's webhook: customers' messages and delivery receipts. */
+/* What arrives from Meta's webhook, per shop number (metadata.phone_number_id):
+   - customers' messages     → Halo answers (only in missed-call conversations if
+                               the number is also the shop's own WhatsApp app)
+   - the owner's own replies → "echoes" from the WhatsApp Business app: Halo steps back
+   - delivery receipts       → opening message undeliverable: SMS fallback */
 
-export type InboundMessage = { from: string; id: string; type: string; text?: string };
+export type InboundMessage = { phoneNumberId: string; from: string; id: string; type: string; text?: string };
+export type EchoMessage = { phoneNumberId: string; to: string; id: string; text?: string };
 export type StatusUpdate = { id: string; status: string; errorCode?: number };
 
 const NOT_TEXT = {
@@ -18,13 +23,20 @@ const NOT_TEXT = {
   en: "For now I can only read written messages. Please type what you'd like to book and when suits you.",
 };
 
-const UNKNOWN_SENDER =
-  "Pozdrav! Ovo je RingLoop, sustav za rezervacije salona i obrta. Nismo pronašli Vaš razgovor. Za termin, molimo, nazovite salon izravno.";
+async function shopByNumber(phoneNumberId: string) {
+  const [biz] = await db.select().from(businesses).where(eq(businesses.waPhoneNumberId, phoneNumberId)).limit(1);
+  return biz ?? null;
+}
 
-async function sendAndSave(chatId: string, to: string, role: "assistant", content: string) {
-  const res = await waSendText(to, content);
-  await db.insert(chatMessages).values({ chatId, role, content, waId: res.ok ? res.id : null });
-  if (!res.ok) console.error("[whatsapp] reply failed:", res.error);
+/** The customer's open WhatsApp conversation with Halo at this shop, if any. */
+async function openConversation(biz: Business, phone: string) {
+  const [chat] = await db
+    .select()
+    .from(chats)
+    .where(and(eq(chats.businessId, biz.id), eq(chats.customerPhone, phone), eq(chats.channel, "whatsapp")))
+    .orderBy(desc(chats.lastMessageAt))
+    .limit(1);
+  return chat && !chatIsOver(chat) ? chat : null;
 }
 
 export async function handleInboundMessage(msg: InboundMessage) {
@@ -32,34 +44,29 @@ export async function handleInboundMessage(msg: InboundMessage) {
   const [seen] = await db.select({ id: chatMessages.id }).from(chatMessages).where(eq(chatMessages.waId, msg.id)).limit(1);
   if (seen) return;
 
+  const biz = await shopByNumber(msg.phoneNumberId);
+  const sender = biz ? senderFor(biz) : null;
+  if (!biz || !sender) return; // not one of our connected numbers
+
   const phone = `+${msg.from.replace(/\D/g, "")}`;
-  // Their latest conversation tells us which business they're talking to
-  const [latest] = await db
-    .select({ chat: chats, biz: businesses })
-    .from(chats)
-    .innerJoin(businesses, eq(businesses.id, chats.businessId))
-    .where(eq(chats.customerPhone, phone))
-    .orderBy(desc(chats.lastMessageAt))
-    .limit(1);
-
-  if (!latest) {
-    await waSendText(phone, UNKNOWN_SENDER);
-    return;
+  let chat = await openConversation(biz, phone);
+  if (!chat) {
+    // The shop's own WhatsApp app number: everything outside Halo's missed-call
+    // conversations belongs to the owner — don't read or store it.
+    if (biz.waOwnApp || !chatAvailable(biz)) return;
+    // A number used only for RingLoop: Halo welcomes new conversations too
+    chat = await startChat(biz, { phone, channel: "whatsapp", withOpening: false });
   }
-
-  // Expired or web-only conversation: continue with a fresh WhatsApp one at the same business
-  let chatId = latest.chat.id;
-  if (chatIsOver(latest.chat) || latest.chat.channel !== "whatsapp") {
-    const fresh = await startChat(latest.biz, { phone, channel: "whatsapp", withOpening: false });
-    chatId = fresh.id;
-  }
-  const loaded = await loadChatById(chatId);
+  const loaded = await loadChatById(chat.id);
   if (!loaded) return;
-  const lang = loaded.biz.smsLanguage === "en" ? "en" : "hr";
+  const lang = biz.smsLanguage === "en" ? "en" : "hr";
 
   if (msg.type !== "text" || !msg.text?.trim()) {
-    await db.insert(chatMessages).values({ chatId, role: "user", content: `[${msg.type}]`, waId: msg.id });
-    if (!loaded.chat.ownerTookOverAt) await sendAndSave(chatId, phone, "assistant", NOT_TEXT[lang]);
+    await db.insert(chatMessages).values({ chatId: chat.id, role: "user", content: `[${msg.type}]`, waId: msg.id });
+    if (!loaded.chat.ownerTookOverAt) {
+      const res = await waSendText(sender, phone, NOT_TEXT[lang]);
+      await db.insert(chatMessages).values({ chatId: chat.id, role: "assistant", content: NOT_TEXT[lang], waId: res.ok ? res.id : null });
+    }
     return;
   }
 
@@ -67,39 +74,53 @@ export async function handleInboundMessage(msg: InboundMessage) {
   if ("error" in reply) return;
 
   if (loaded.chat.ownerTookOverAt) {
-    // The owner is answering personally — ping them instead of Halo replying
-    await notifyBusiness(loaded.biz.id, {
-      title: `WhatsApp: ${loaded.chat.customerName ?? formatPhone(phone)}`,
-      body: msg.text.slice(0, 120),
-      url: `/chats/${chatId}`,
-    });
+    if (!biz.waOwnApp) {
+      // The owner answers from RingLoop — ping them (with their own app they see it there already)
+      await notifyBusiness(biz.id, {
+        title: `WhatsApp: ${loaded.chat.customerName ?? formatPhone(phone)}`,
+        body: msg.text.slice(0, 120),
+        url: `/chats/${chat.id}`,
+      });
+    }
     return;
   }
   // Halo's answer was saved by respond(); send it and attach the WhatsApp id
   for (const m of reply.messages.filter((x) => x.role === "assistant")) {
-    const res = await waSendText(phone, m.content);
-    if (!res.ok) console.error("[whatsapp] reply failed:", res.error);
-    else {
-      const [last] = await db
-        .select({ id: chatMessages.id })
-        .from(chatMessages)
-        .where(and(eq(chatMessages.chatId, chatId), eq(chatMessages.role, "assistant")))
-        .orderBy(desc(chatMessages.createdAt))
-        .limit(1);
-      if (last) await db.update(chatMessages).set({ waId: res.id }).where(eq(chatMessages.id, last.id));
+    const res = await waSendText(sender, phone, m.content);
+    if (!res.ok) {
+      console.error("[whatsapp] reply failed:", res.error);
+      continue;
     }
+    const [last] = await db
+      .select({ id: chatMessages.id })
+      .from(chatMessages)
+      .where(and(eq(chatMessages.chatId, chat.id), eq(chatMessages.role, "assistant")))
+      .orderBy(desc(chatMessages.createdAt))
+      .limit(1);
+    if (last) await db.update(chatMessages).set({ waId: res.id }).where(eq(chatMessages.id, last.id));
   }
+}
+
+/** The owner wrote from the shop's WhatsApp Business app: record it and let Halo step back. */
+export async function handleEcho(echo: EchoMessage) {
+  const [seen] = await db.select({ id: chatMessages.id }).from(chatMessages).where(eq(chatMessages.waId, echo.id)).limit(1);
+  if (seen) return; // Halo's own message coming back, or already recorded
+  const biz = await shopByNumber(echo.phoneNumberId);
+  if (!biz) return;
+  const chat = await openConversation(biz, `+${echo.to.replace(/\D/g, "")}`);
+  if (!chat) return; // not a Halo conversation — not ours to read
+  await db.insert(chatMessages).values({ chatId: chat.id, role: "owner", content: echo.text ?? "[message]", waId: echo.id });
+  await db
+    .update(chats)
+    .set({ ownerTookOverAt: chat.ownerTookOverAt ?? Date.now(), lastMessageAt: Date.now() })
+    .where(eq(chats.id, chat.id));
 }
 
 /** If the opening WhatsApp couldn't be delivered (e.g. no WhatsApp on that number),
  *  send the SMS with the same conversation as a web chat instead. */
 export async function handleStatus(st: StatusUpdate) {
   if (st.status !== "failed") return;
-  const [m] = await db
-    .select({ chatId: chatMessages.chatId })
-    .from(chatMessages)
-    .where(eq(chatMessages.waId, st.id))
-    .limit(1);
+  const [m] = await db.select({ chatId: chatMessages.chatId }).from(chatMessages).where(eq(chatMessages.waId, st.id)).limit(1);
   if (!m) return;
   const loaded = await loadChatById(m.chatId);
   if (!loaded || loaded.chat.smsFallbackAt) return;

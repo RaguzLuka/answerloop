@@ -5,7 +5,7 @@ import { db, calls, chatMessages, chats, textbackLinks, type Business, type Call
 import { fillTemplate } from "@/lib/business-types";
 import { bookingLink, canReceiveSms, sendBusinessSms } from "@/lib/sms";
 import { chatAvailable, chatLink, openingMessage, startChat } from "@/lib/chat";
-import { waSendTemplate, whatsappConfigured } from "@/lib/whatsapp";
+import { senderFor, waSendTemplate, whatsappReady } from "@/lib/whatsapp";
 import { formatPhone } from "@/lib/phone";
 import { notifyBusiness } from "@/lib/push";
 import { appUrl } from "@/lib/email";
@@ -30,14 +30,15 @@ export async function textbackLink(biz: Business, phone: string, opts: { callId?
 
 export const textbackBody = (biz: Business, link: string) => fillTemplate(biz.textbackMessage, biz.name, link);
 
-/** Pro shops with WhatsApp switched on (and AI on) reach callers on WhatsApp first. */
-export const whatsappAvailable = (biz: Business) => whatsappConfigured() && chatAvailable(biz) && biz.whatsappEnabled;
+/** Pro shops whose own WhatsApp number is connected (and AI on) reach callers on WhatsApp first. */
+export const whatsappAvailable = (biz: Business) =>
+  whatsappReady() && chatAvailable(biz) && biz.whatsappEnabled && !!senderFor(biz);
 
 /** Opens the WhatsApp conversation with the approved template. If WhatsApp refuses
  *  straight away, the caller gets the SMS with the same conversation as a web chat. */
 async function reachOnWhatsApp(biz: Business, phone: string, callId: string) {
   const chat = await startChat(biz, { phone, callId, channel: "whatsapp" });
-  const res = await waSendTemplate(phone, biz.smsLanguage, [biz.name], openingMessage(biz, "whatsapp"));
+  const res = await waSendTemplate(senderFor(biz)!, phone, biz.smsLanguage, [biz.name], openingMessage(biz, "whatsapp"));
   if (res.ok) {
     await db.update(chatMessages).set({ waId: res.id }).where(eq(chatMessages.chatId, chat.id));
     await db.update(calls).set({ channel: "whatsapp" }).where(eq(calls.id, callId));

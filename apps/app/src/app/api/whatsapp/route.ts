@@ -1,10 +1,14 @@
 import { after } from "next/server";
 import { verifyMetaSignature } from "@/lib/whatsapp";
-import { handleInboundMessage, handleStatus, type InboundMessage, type StatusUpdate } from "@/lib/whatsapp-inbound";
+import {
+  handleEcho, handleInboundMessage, handleStatus,
+  type EchoMessage, type InboundMessage, type StatusUpdate,
+} from "@/lib/whatsapp-inbound";
 
-/* Meta's WhatsApp webhook.
+/* Meta's WhatsApp webhook (one URL for every shop's number).
    GET  — one-time verification when the webhook URL is saved in the Meta app.
-   POST — customers' messages and delivery receipts (signed with the app secret). */
+   POST — messages, the owner's own replies (echoes) and delivery receipts,
+          signed with the app secret. Subscribe to "messages" and "smb_message_echoes". */
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -15,11 +19,15 @@ export async function GET(req: Request) {
   return ok ? new Response(url.searchParams.get("hub.challenge") ?? "") : new Response("Forbidden", { status: 403 });
 }
 
+type WaText = { text?: { body?: string } };
 type Payload = {
   entry?: {
     changes?: {
+      field?: string;
       value?: {
-        messages?: { from: string; id: string; type: string; text?: { body?: string } }[];
+        metadata?: { phone_number_id?: string };
+        messages?: ({ from: string; id: string; type: string } & WaText)[];
+        message_echoes?: ({ from?: string; to: string; id: string; type?: string } & WaText)[];
         statuses?: { id: string; status: string; errors?: { code?: number }[] }[];
       };
     }[];
@@ -39,13 +47,19 @@ export async function POST(req: Request) {
   }
 
   const messages: InboundMessage[] = [];
+  const echoes: EchoMessage[] = [];
   const statuses: StatusUpdate[] = [];
   for (const entry of payload.entry ?? []) {
     for (const change of entry.changes ?? []) {
-      for (const m of change.value?.messages ?? []) {
-        messages.push({ from: m.from, id: m.id, type: m.type, text: m.text?.body });
+      const v = change.value;
+      const phoneNumberId = v?.metadata?.phone_number_id ?? "";
+      for (const m of v?.messages ?? []) {
+        messages.push({ phoneNumberId, from: m.from, id: m.id, type: m.type, text: m.text?.body });
       }
-      for (const s of change.value?.statuses ?? []) {
+      for (const e of v?.message_echoes ?? []) {
+        echoes.push({ phoneNumberId, to: e.to, id: e.id, text: e.text?.body });
+      }
+      for (const s of v?.statuses ?? []) {
         statuses.push({ id: s.id, status: s.status, errorCode: s.errors?.[0]?.code });
       }
     }
@@ -54,6 +68,7 @@ export async function POST(req: Request) {
   // Answer Meta at once; Halo's reply can take a few seconds
   after(async () => {
     for (const m of messages) await handleInboundMessage(m).catch((err) => console.error("[whatsapp] inbound failed:", err));
+    for (const e of echoes) await handleEcho(e).catch((err) => console.error("[whatsapp] echo failed:", err));
     for (const s of statuses) await handleStatus(s).catch((err) => console.error("[whatsapp] status failed:", err));
   });
   return new Response("OK");

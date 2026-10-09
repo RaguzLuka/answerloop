@@ -12,7 +12,7 @@ import InstallApp from "@/components/InstallApp";
 import Icon from "@/components/Icon";
 import PushToggle from "@/components/PushToggle";
 import { aiEnabled } from "@/lib/ai";
-import { whatsappConfigured } from "@/lib/whatsapp";
+import { senderFor, whatsappReady } from "@/lib/whatsapp";
 import { BookingSettingsForm, ProfileForm, PasswordForm, TestSmsForm } from "./forms";
 
 export const metadata: Metadata = { title: "Settings" };
@@ -73,7 +73,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           </div>
         )}
         {section === "booking" && (
-          <BookingSettingsForm business={business} bookingLink={bookingLink} aiOn={aiEnabled()} waOn={whatsappConfigured()} />
+          <BookingSettingsForm business={business} bookingLink={bookingLink} aiOn={aiEnabled()} waOn={whatsappReady() && !!senderFor(business)} />
         )}
         {section === "phone" && (
           <div className="space-y-4">

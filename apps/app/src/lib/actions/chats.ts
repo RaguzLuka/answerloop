@@ -2,9 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { and, desc, eq } from "drizzle-orm";
-import { db, chatMessages, chats } from "@/lib/db";
+import { db, businesses, chatMessages, chats } from "@/lib/db";
 import { requireBusiness } from "@/lib/dal";
-import { waSendText } from "@/lib/whatsapp";
+import { senderFor, waSendText } from "@/lib/whatsapp";
 import type { FormState } from "@/lib/form";
 
 const WINDOW_MS = 24 * 60 * 60 * 1000; // WhatsApp allows free-form replies for 24 h after the customer's last message
@@ -33,7 +33,10 @@ export async function ownerReply(chatId: string, _: FormState, fd: FormData): Pr
     return { error: "WhatsApp only allows replies within 24 hours of the customer's last message. Call them instead." };
   }
 
-  const res = await waSendText(chat.customerPhone, text);
+  const [biz] = await db.select().from(businesses).where(eq(businesses.id, chat.businessId)).limit(1);
+  const sender = biz ? senderFor(biz) : null;
+  if (!sender) return { error: "Your WhatsApp number isn't connected." };
+  const res = await waSendText(sender, chat.customerPhone, text);
   if (!res.ok) return { error: `WhatsApp didn't accept the message (${res.error}).` };
   await db.insert(chatMessages).values({ chatId: chat.id, role: "owner", content: text, waId: res.id });
   await db.update(chats).set({ ownerTookOverAt: chat.ownerTookOverAt ?? Date.now(), lastMessageAt: Date.now() }).where(eq(chats.id, chat.id));

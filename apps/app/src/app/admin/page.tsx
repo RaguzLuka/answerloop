@@ -11,8 +11,8 @@ import { twilioConfigured } from "@/lib/twilio";
 import { missedCallFunnel } from "@/lib/stats";
 import FunnelCard from "@/components/FunnelCard";
 import { aiEnabled } from "@/lib/ai";
-import { whatsappConfigured } from "@/lib/whatsapp";
-import { AddNumbersForm, AssignNumberForm, PlanSelect, RemoveNumberButton, StatusSelect, VisitForm } from "./forms";
+import { whatsappReady } from "@/lib/whatsapp";
+import { AddNumbersForm, AssignNumberForm, PlanSelect, RemoveNumberButton, StatusSelect, VisitForm, WhatsAppConnectForm } from "./forms";
 
 export const metadata: Metadata = { title: "Admin" };
 
@@ -73,10 +73,10 @@ export default async function AdminPage() {
           shops&apos; callers get the booking page instead of the chat with Halo.
         </p>
       )}
-      {!whatsappConfigured() && (
+      {!whatsappReady() && (
         <p className="mt-3 rounded-xl bg-sky px-4 py-3 text-sm text-blue-deep">
-          WhatsApp isn&apos;t connected on this server (<code>WHATSAPP_TOKEN</code>, <code>WHATSAPP_PHONE_NUMBER_ID</code>,{" "}
-          <code>WHATSAPP_APP_SECRET</code>), so Pro shops reach callers by SMS with a chat link.
+          WhatsApp isn&apos;t set up on this server (<code>WHATSAPP_APP_SECRET</code>, <code>WHATSAPP_VERIFY_TOKEN</code>), so
+          Pro shops reach callers by SMS with a chat link.
         </p>
       )}
       {!twilioConfigured() && (
@@ -114,6 +114,41 @@ export default async function AdminPage() {
             </ul>
           )}
         </div>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="font-display mb-1 text-xl">WhatsApp numbers</h2>
+        <p className="mb-3 text-sm text-ink-soft">
+          Each Pro shop sends from its own WhatsApp number, so customers see the shop&apos;s name. Connect it during the
+          setup visit (README → WhatsApp setup), then submit the message templates.
+        </p>
+        <ul className="card divide-y divide-line">
+          {bizRows.filter((r) => r.biz.plan === "pro").length === 0 && (
+            <li className="p-4 text-sm text-muted">No Pro shops yet. Set a shop&apos;s plan to Pro below.</li>
+          )}
+          {bizRows
+            .filter((r) => r.biz.plan === "pro")
+            .map(({ biz }) => (
+              <li key={biz.id} className="grid gap-3 p-4 lg:grid-cols-[220px_1fr]">
+                <div className="text-sm">
+                  <p className="font-semibold">{biz.name}</p>
+                  <p className={biz.waPhoneNumberId ? "text-ok" : "text-muted"}>
+                    {biz.waPhoneNumberId ? `Connected${biz.waDisplayPhone ? ` · ${formatPhone(biz.waDisplayPhone)}` : ""}` : "Not connected"}
+                  </p>
+                  {biz.waTemplatesAt && <p className="text-xs text-muted">Templates submitted {when(biz.waTemplatesAt)}</p>}
+                </div>
+                <WhatsAppConnectForm
+                  id={biz.id}
+                  phoneNumberId={biz.waPhoneNumberId ?? ""}
+                  wabaId={biz.waBusinessAccountId ?? ""}
+                  displayPhone={biz.waDisplayPhone ?? ""}
+                  ownApp={biz.waOwnApp}
+                  hasToken={!!biz.waTokenEnc}
+                  templatesAt={biz.waTemplatesAt}
+                />
+              </li>
+            ))}
+        </ul>
       </section>
 
       <section className="mt-8">
