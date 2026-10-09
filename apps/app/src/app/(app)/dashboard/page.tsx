@@ -270,8 +270,10 @@ function MissedCall({ row, tz }: { row: MissedRow; tz: string }) {
     row.chatStatus === "booked"
       ? { label: "Booked by chat", cls: "bg-ok-soft text-ok", callBack: false }
       : row.chatId && row.chatUserMessages
-        ? { label: "Chatting with Halo", cls: "bg-sky text-blue-deep", callBack: false }
-        : OUTCOME[call.outcome];
+        ? { label: call.channel === "whatsapp" ? "Chatting on WhatsApp" : "Chatting with Halo", cls: "bg-sky text-blue-deep", callBack: false }
+        : call.channel === "whatsapp" && call.outcome === "texted"
+          ? { label: "Messaged on WhatsApp", cls: "bg-ok-soft text-ok", callBack: false }
+          : OUTCOME[call.outcome];
   return (
     <li className="flex items-center gap-3 px-4 py-3">
       <Icon name="phoneMissed" className="h-5 w-5 shrink-0 text-muted" />

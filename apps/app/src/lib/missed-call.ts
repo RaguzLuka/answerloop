@@ -1,10 +1,11 @@
 import "server-only";
 import { randomBytes, randomUUID } from "node:crypto";
 import { and, eq, gte } from "drizzle-orm";
-import { db, calls, textbackLinks, type Business, type CallOutcome } from "@/lib/db";
+import { db, calls, chatMessages, chats, textbackLinks, type Business, type CallOutcome } from "@/lib/db";
 import { fillTemplate } from "@/lib/business-types";
 import { bookingLink, canReceiveSms, sendBusinessSms } from "@/lib/sms";
-import { chatAvailable, chatLink, startChat } from "@/lib/chat";
+import { chatAvailable, chatLink, openingMessage, startChat } from "@/lib/chat";
+import { waSendTemplate, whatsappConfigured } from "@/lib/whatsapp";
 import { formatPhone } from "@/lib/phone";
 import { notifyBusiness } from "@/lib/push";
 import { appUrl } from "@/lib/email";
@@ -28,6 +29,24 @@ export async function textbackLink(biz: Business, phone: string, opts: { callId?
 }
 
 export const textbackBody = (biz: Business, link: string) => fillTemplate(biz.textbackMessage, biz.name, link);
+
+/** Pro shops with WhatsApp switched on (and AI on) reach callers on WhatsApp first. */
+export const whatsappAvailable = (biz: Business) => whatsappConfigured() && chatAvailable(biz) && biz.whatsappEnabled;
+
+/** Opens the WhatsApp conversation with the approved template. If WhatsApp refuses
+ *  straight away, the caller gets the SMS with the same conversation as a web chat. */
+async function reachOnWhatsApp(biz: Business, phone: string, callId: string) {
+  const chat = await startChat(biz, { phone, callId, channel: "whatsapp" });
+  const res = await waSendTemplate(phone, biz.smsLanguage, [biz.name], openingMessage(biz, "whatsapp"));
+  if (res.ok) {
+    await db.update(chatMessages).set({ waId: res.id }).where(eq(chatMessages.chatId, chat.id));
+    await db.update(calls).set({ channel: "whatsapp" }).where(eq(calls.id, callId));
+    return { ok: true as const };
+  }
+  console.error("[whatsapp] template refused, falling back to SMS:", res.error);
+  await db.update(chats).set({ smsFallbackAt: Date.now() }).where(eq(chats.id, chat.id));
+  return sendBusinessSms(biz, "textback", phone, textbackBody(biz, chatLink(chat.token)));
+}
 
 export async function handleMissedCall(biz: Business, { callSid, from }: { callSid: string; from: string | null }) {
   // Twilio retries webhooks — handle each call once
@@ -59,10 +78,18 @@ export async function handleMissedCall(biz: Business, { callSid, from }: { callS
     .returning({ id: calls.id });
   if (!inserted.length) return; // a parallel retry got here first
 
+  let whatsapp = false;
   if (outcome === "texted" && from) {
-    const target = await textbackLink(biz, from, { callId: id });
-    chat = target.chat;
-    const res = await sendBusinessSms(biz, "textback", from, textbackBody(biz, target.link));
+    let res: { ok: true } | { ok: false; error: string };
+    if (whatsappAvailable(biz)) {
+      res = await reachOnWhatsApp(biz, from, id);
+      whatsapp = true;
+      chat = true;
+    } else {
+      const target = await textbackLink(biz, from, { callId: id });
+      chat = target.chat;
+      res = await sendBusinessSms(biz, "textback", from, textbackBody(biz, target.link));
+    }
     if (!res.ok) {
       outcome = res.error === "Daily SMS limit reached" ? "limit" : "failed";
       await db.update(calls).set({ outcome, error: res.error }).where(eq(calls.id, id));
@@ -72,7 +99,9 @@ export async function handleMissedCall(biz: Business, { callSid, from }: { callS
   const who = from ? formatPhone(from) : "a hidden number";
   const body =
     outcome === "texted"
-      ? chat
+      ? whatsapp
+        ? `${who} called. Halo messaged them on WhatsApp to book them in.`
+        : chat
         ? `${who} called. Halo texted them and can book them by chat.`
         : `${who} called. They got your text with the booking link.`
       : outcome === "repeat"

@@ -68,6 +68,8 @@ export const businesses = sqliteTable("businesses", {
   chatEnabled: integer("chat_enabled", { mode: "boolean" }).notNull().default(true),
   /** Owner's own booking page (e.g. their Buker profile) to send callers to instead of ours */
   customBookingUrl: text("custom_booking_url"),
+  /** Pro: reach missed callers on WhatsApp first (SMS if they don't have it) */
+  whatsappEnabled: integer("whatsapp_enabled", { mode: "boolean" }).notNull().default(true),
   bookingEnabled: integer("booking_enabled", { mode: "boolean" }).notNull().default(true),
   slotIntervalMin: integer("slot_interval_min").notNull().default(15),
   leadTimeMin: integer("lead_time_min").notNull().default(60),
@@ -171,6 +173,7 @@ export const calls = sqliteTable(
     callSid: text("call_sid").notNull().unique(),
     callerPhone: text("caller_phone"),
     outcome: text("outcome").$type<CallOutcome>().notNull(),
+    channel: text("channel").$type<"sms" | "whatsapp">().notNull().default("sms"),
     error: text("error"),
     createdAt: createdAt(),
   },
@@ -194,6 +197,11 @@ export const chats = sqliteTable(
     isTest: integer("is_test", { mode: "boolean" }).notNull().default(false),
     userMessages: integer("user_messages").notNull().default(0),
     openedAt: integer("opened_at", { mode: "number" }),
+    channel: text("channel").$type<"web" | "whatsapp">().notNull().default("web"),
+    /** The owner answered personally — Halo stays quiet in this conversation */
+    ownerTookOverAt: integer("owner_took_over_at", { mode: "number" }),
+    /** WhatsApp didn't reach them, so the SMS with the web link went out instead */
+    smsFallbackAt: integer("sms_fallback_at", { mode: "number" }),
     expiresAt: integer("expires_at", { mode: "number" }).notNull(),
     lastMessageAt: integer("last_message_at", { mode: "number" }).notNull().$defaultFn(() => Date.now()),
     createdAt: createdAt(),
@@ -222,8 +230,10 @@ export const chatMessages = sqliteTable(
   {
     id: id(),
     chatId: text("chat_id").notNull().references(() => chats.id, { onDelete: "cascade" }),
-    role: text("role").$type<"assistant" | "user">().notNull(),
+    role: text("role").$type<"assistant" | "user" | "owner">().notNull(),
     content: text("content").notNull(),
+    /** WhatsApp message id: de-duplicates incoming webhooks, matches delivery receipts */
+    waId: text("wa_id").unique(),
     createdAt: createdAt(),
   },
   (t) => [index("chat_messages_chat_idx").on(t.chatId, t.createdAt)],

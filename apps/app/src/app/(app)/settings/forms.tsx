@@ -15,8 +15,8 @@ const LEAD = [
 ] as const;
 
 export function BookingSettingsForm({
-  business, bookingLink, aiOn,
-}: { business: Business; bookingLink: string; aiOn: boolean }) {
+  business, bookingLink, aiOn, waOn,
+}: { business: Business; bookingLink: string; aiOn: boolean; waOn: boolean }) {
   const [state, action, pending] = useActionState(saveBookingSettings, initialState);
   const [enabled, setEnabled] = useState(business.bookingEnabled);
   const v = state.values ?? {};
@@ -100,6 +100,22 @@ export function BookingSettingsForm({
           />
         )}
       </fieldset>
+
+      {pro && mode === "chat" && (
+        <label className="flex items-center justify-between gap-4 rounded-2xl border border-line bg-white p-4">
+          <span>
+            <span className="block font-semibold">Message callers on WhatsApp first</span>
+            <span className="text-sm text-muted">
+              {waOn
+                ? "Halo writes to them on WhatsApp and books them there. If they don't have WhatsApp, they get the SMS."
+                : "Available once WhatsApp is connected for your account. Until then, callers get the SMS."}
+            </span>
+          </span>
+          <input type="checkbox" role="switch" name="whatsappEnabled" className="switch" defaultChecked={business.whatsappEnabled} disabled={!waOn} />
+        </label>
+      )}
+      {/* Keep the saved choice when the switch is hidden or disabled (disabled inputs aren't submitted) */}
+      {(!(pro && mode === "chat") || !waOn) && business.whatsappEnabled && <input type="hidden" name="whatsappEnabled" value="on" />}
 
       <div className="divide-y divide-line rounded-2xl border border-line bg-white">
         <label className="flex items-center justify-between gap-4 p-4">

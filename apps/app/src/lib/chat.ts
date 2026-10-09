@@ -14,9 +14,10 @@ import { bookableDates, freeSlots, isSlotFree } from "@/lib/slots";
 import { formatPhone } from "@/lib/phone";
 import { afterCustomerBooking } from "@/lib/booking-effects";
 
-/* Halo's booking chat. A missed call's text-back links to a private chat
-   (/c/<token>); the caller tells Halo what they want and Halo books it into
-   the business's real calendar through two tools: free_times and book.
+/* Halo's booking conversation. After a missed call the caller talks to Halo
+   on WhatsApp, or in a private web chat (/c/<token>) reached from an SMS;
+   Halo books into the business's real calendar through two tools, free_times
+   and book. The owner can step in at any time, and Halo then stays quiet.
    Only Pro businesses, only while AI_ENABLED is on, and with hard limits. */
 
 const CHAT_DAYS = 7;
@@ -30,18 +31,24 @@ export const chatIsOver = (chat: Chat) => chat.status === "closed" || chat.expir
 
 const isHr = (biz: Business) => biz.smsLanguage !== "en";
 
-export function openingMessage(biz: Business) {
-  const restaurant = biz.type === "restaurant";
+/** First message after a missed call. On WhatsApp it is sent as an approved
+ *  template, so that variant must match the template text word for word (README). */
+export function openingMessage(biz: Business, channel: "web" | "whatsapp" = "web") {
+  const restaurant = biz.type === "restaurant" && channel === "web";
   return isHr(biz)
-    ? `Pozdrav! Ja sam Halo, AI asistent (${biz.name}). Žao nam je što smo propustili vaš poziv. ${
-        restaurant ? "Za koliko osoba i kada biste željeli stol?" : "Što biste željeli rezervirati?"
+    ? `Pozdrav, ovdje ${biz.name}. Oprostite što se nismo stigli javiti na Vaš poziv. Ovdje Vam piše Halo, naš asistent s umjetnom inteligencijom. ${
+        restaurant ? "Za koliko osoba i kada želite rezervirati stol?" : "Za koju uslugu želite termin i kada biste mogli doći?"
       }`
-    : `Hi! I'm Halo, the AI assistant for ${biz.name}. Sorry we missed your call. ${
-        restaurant ? "For how many people, and when would you like a table?" : "What would you like to book?"
+    : `Hello, this is ${biz.name}. Sorry we couldn't take your call. This is Halo, our AI assistant. ${
+        restaurant ? "For how many people, and when would you like a table?" : "What would you like to book, and when could you come in?"
       }`;
 }
 
-export async function startChat(biz: Business, opts: { phone: string; callId?: string | null; isTest?: boolean }) {
+export async function startChat(
+  biz: Business,
+  opts: { phone: string; callId?: string | null; isTest?: boolean; channel?: "web" | "whatsapp"; withOpening?: boolean },
+) {
+  const channel = opts.channel ?? "web";
   const [chat] = await db
     .insert(chats)
     .values({
@@ -50,19 +57,30 @@ export async function startChat(biz: Business, opts: { phone: string; callId?: s
       callId: opts.callId ?? null,
       customerPhone: opts.phone,
       isTest: !!opts.isTest,
+      channel,
       expiresAt: Date.now() + CHAT_DAYS * 24 * 60 * 60 * 1000,
     })
     .returning();
-  await db.insert(chatMessages).values({ chatId: chat.id, role: "assistant", content: openingMessage(biz) });
+  if (opts.withOpening !== false) {
+    await db.insert(chatMessages).values({ chatId: chat.id, role: "assistant", content: openingMessage(biz, channel) });
+  }
   return chat;
 }
 
 export async function loadChat(token: string) {
+  return loadChatWhere(eq(chats.token, token));
+}
+
+export async function loadChatById(id: string) {
+  return loadChatWhere(eq(chats.id, id));
+}
+
+async function loadChatWhere(where: ReturnType<typeof eq>) {
   const [row] = await db
     .select({ chat: chats, biz: businesses })
     .from(chats)
     .innerJoin(businesses, eq(businesses.id, chats.businessId))
-    .where(eq(chats.token, token))
+    .where(where)
     .limit(1);
   if (!row) return null;
   const messages = await db.select().from(chatMessages).where(eq(chatMessages.chatId, row.chat.id)).orderBy(asc(chatMessages.createdAt));
@@ -96,6 +114,8 @@ You are chatting with a customer who just called the business and wasn't answere
 Your only job: book them in.
 - Write like a friendly receptionist texting: 1–3 short sentences, plain text, no markdown, at most one emoji.
 - Reply in the customer's language. Default: ${isHr(biz) ? "Croatian (use the polite \"Vi\" form)" : "English"}.
+- In Croatian, write clean standard Croatian: no slang, dialect or colloquialisms such as "bok", "ok" or "super"; prefer Croatian words to anglicisms (e.g. "poveznica", not "link").
+- Messages from the business's own team may appear in the conversation; never contradict what they promised.
 - Bookable ${type.words.services} (nothing else can be booked):
 ${svc}
 - Opening hours:
@@ -104,7 +124,7 @@ ${hours}
 ${days}
 - ALWAYS call free_times before suggesting times, and only offer times it returned. Suggest 2–3 options, not a long list.
 - To book you need: the ${type.words.service}, a day, a time and the customer's first name. Before calling book, confirm it all in one short question (e.g. "Da potvrdim: muško šišanje, utorak 6. 10. u 14:00, na ime Marko?") and call book only after they agree.
-- After book succeeds, confirm briefly${biz.remindersEnabled ? " and say they'll get a reminder text the day before" : ""}.
+- After book succeeds, confirm briefly${biz.remindersEnabled ? " and, if the booking is for tomorrow or later, say they'll get a reminder text the day before" : ""}.
 - If they ask something you don't know (parking, a specific person, prices not listed), say the team will call them back. Never invent facts.
 - To change or cancel an existing booking, ask them to call ${biz.phone ? formatPhone(biz.phone) : "the business"}.
 - Address: ${[biz.address, biz.city].filter(Boolean).join(", ") || "not given"}.
@@ -214,25 +234,44 @@ function unavailableText(biz: Business) {
   const phone = biz.phone ? formatPhone(biz.phone) : "";
   const link = `${appUrl()}/b/${biz.slug}`;
   return isHr(biz)
-    ? `Chat trenutno nije dostupan. Termin možete rezervirati ovdje: ${link}${phone ? ` ili nas nazovite na ${phone}` : ""}.`
+    ? `Razgovor trenutno nije dostupan. Termin možete rezervirati ovdje: ${link}${phone ? ` ili nas nazovite na ${phone}` : ""}.`
     : `Chat isn't available right now. You can book here: ${link}${phone ? ` or call us on ${phone}` : ""}.`;
 }
 
+/** Web chat: one customer message in, Halo's reply out. */
 export async function replyToChat(token: string, rawText: string): Promise<ChatReply | { error: string }> {
   const loaded = await loadChat(token);
   if (!loaded) return { error: "not_found" };
+  return respond(loaded, rawText);
+}
+
+type Loaded = NonNullable<Awaited<ReturnType<typeof loadChat>>>;
+
+/** Saves the customer's message and Halo's answer (if Halo is answering).
+ *  `waId` de-duplicates WhatsApp webhooks. Used by the web chat and WhatsApp. */
+export async function respond(loaded: Loaded, rawText: string, opts: { waId?: string } = {}): Promise<ChatReply | { error: string }> {
   const { chat, biz } = loaded;
   const text = rawText.replace(/\s+/g, " ").trim().slice(0, MAX_MESSAGE_CHARS);
   if (!text) return { error: "empty" };
 
+  let pendingWaId = opts.waId;
   const save = async (role: "assistant" | "user", content: string) => {
-    await db.insert(chatMessages).values({ chatId: chat.id, role, content });
+    const waId = role === "user" ? pendingWaId : undefined;
+    if (role === "user") pendingWaId = undefined;
+    await db.insert(chatMessages).values({ chatId: chat.id, role, content, waId });
     return { role, content };
   };
   const done = (msgs: { role: "assistant" | "user"; content: string }[], booking?: Booking | null): ChatReply => ({
     messages: msgs,
     booking: booking ? { service: booking.serviceName, startsAt: booking.startsAt } : null,
   });
+
+  // The owner is answering this one personally: just record the message
+  if (chat.ownerTookOverAt) {
+    const userMsg = await save("user", text);
+    await db.update(chats).set({ lastMessageAt: Date.now() }).where(eq(chats.id, chat.id));
+    return done([userMsg], loaded.booking);
+  }
 
   // Closed, expired, over the limits, or AI off: answer without calling the model
   if (chatIsOver(chat) || !chatAvailable(biz) || biz.status === "paused") {
@@ -265,7 +304,11 @@ export async function replyToChat(token: string, rawText: string): Promise<ChatR
     (s) => s.active,
   );
   const ctx: Ctx = { biz, chat, list };
-  const history: AiMessage[] = [...loaded.messages.slice(-30), userMsg].map((m) => ({ role: m.role, content: m.content }));
+  // The team's own messages read to the model as the business speaking
+  const history: AiMessage[] = [...loaded.messages.slice(-30), userMsg].map((m) => ({
+    role: m.role === "user" ? "user" : "assistant",
+    content: m.content,
+  }));
   const convo: AiMessage[] = [{ role: "system", content: systemPrompt(biz, list, chat) }, ...history];
 
   let reply = "";

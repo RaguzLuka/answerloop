@@ -4,17 +4,17 @@ import { useEffect, useRef, useState } from "react";
 import Halo from "@/components/Halo";
 import Icon from "@/components/Icon";
 
-type Msg = { id: string; role: "assistant" | "user"; content: string };
+type Msg = { id: string; role: "assistant" | "user" | "owner"; content: string };
 type Booked = { service: string; startsAt: number } | null;
 
 const COPY = {
   hr: {
-    status: "AI asistent · odgovara odmah",
+    status: "virtualni asistent · odgovara odmah",
     placeholder: "Napišite poruku…",
     send: "Pošalji",
     typing: "Halo piše",
     booked: "Rezervirano",
-    footer: (b: string) => `Razgovarate s AI asistentom. ${b} vidi ovaj razgovor.`,
+    footer: (b: string) => `Odgovara Vam asistent s umjetnom inteligencijom. ${b} vidi ovaj razgovor.`,
     privacy: "Privatnost",
     expired: "Ovaj razgovor je istekao. Nazovite nas ili otvorite novu poruku.",
     slow: "Polako 🙂 Pokušajte za trenutak.",
@@ -147,9 +147,15 @@ export default function ChatView({
       <main className="flex-1 overflow-y-auto">
         <div className="mx-auto flex max-w-xl flex-col gap-2 px-4 py-4" aria-live="polite">
           {messages.map((m) =>
-            m.role === "assistant" ? (
+            m.role !== "user" ? (
               <div key={m.id} className="flex items-end gap-2">
-                <Halo pose="avatar" size={26} className="mb-0.5 shrink-0 rounded-full" />
+                {m.role === "owner" ? (
+                  <span className="mb-0.5 flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-blue text-[11px] font-semibold text-white">
+                    {businessName.slice(0, 1)}
+                  </span>
+                ) : (
+                  <Halo pose="avatar" size={26} className="mb-0.5 shrink-0 rounded-full" />
+                )}
                 <p className="max-w-[80%] whitespace-pre-wrap break-words rounded-2xl rounded-bl-md bg-[#eef1f6] px-3.5 py-2.5 text-[0.9375rem] leading-snug text-ink">
                   <Linkified text={m.content} />
                 </p>

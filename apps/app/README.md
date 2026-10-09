@@ -45,6 +45,45 @@ push notifications for new bookings and missed calls.
 5. The customer gets a confirmation text. The owner gets a push notification
    and an email, and a reminder text goes out the day before.
 
+## WhatsApp setup (Pro: "the barbershop messages you on WhatsApp")
+
+Missed call → the caller gets a WhatsApp from the shop → they chat with Halo
+there and get booked. If they don't have WhatsApp, the SMS with the same
+conversation as a web chat goes out instead. The owner can reply from
+`/chats/[id]`; Halo then stays quiet in that conversation.
+
+1. **Meta business:** at business.facebook.com create a business portfolio for
+   your obrt and start **business verification** (obrt documents). Until it's
+   verified WhatsApp shows the number instead of the name, and you can start at
+   most 250 new conversations a day.
+2. **Number:** a phone number that is not on the WhatsApp app (a new prepaid SIM
+   works). Add it in WhatsApp Manager and request the display name "RingLoop".
+3. **Meta app:** at developers.facebook.com create an app (type Business), add
+   the **WhatsApp** product, and note the **Phone number ID**.
+4. **Token:** in the business settings create a System User, give it the app and
+   the WhatsApp account, and generate a permanent token with
+   `whatsapp_business_messaging` and `whatsapp_business_management`.
+5. **Webhook:** in the app's WhatsApp → Configuration set the callback URL to
+   `https://app.ringloop.net/api/whatsapp`, the verify token to
+   `WHATSAPP_VERIFY_TOKEN`, and subscribe to **messages**.
+6. **Templates:** in WhatsApp Manager → Message templates create two, category
+   **Utility**, each with one variable (the shop's name). The text must be exactly:
+   - `ringloop_missed_call_hr`, Croatian:
+     > Pozdrav, ovdje {{1}}. Oprostite što se nismo stigli javiti na Vaš poziv. Ovdje Vam piše Halo, naš asistent s umjetnom inteligencijom. Za koju uslugu želite termin i kada biste mogli doći?
+   - `ringloop_missed_call_en`, English:
+     > Hello, this is {{1}}. Sorry we couldn't take your call. This is Halo, our AI assistant. What would you like to book, and when could you come in?
+7. **Vercel:** add `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`,
+   `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN` (and keep `AI_ENABLED=true`,
+   `OPENAI_API_KEY`). Pro shops then message callers on WhatsApp automatically
+   (Settings → Booking & texts → "Message callers on WhatsApp first").
+
+Notes: replies inside the customer's 24-hour window are free; Meta charges for
+the opening template. WhatsApp's rules expect people to agree before a business
+messages them first: one polite message that clearly answers their own call is
+the lowest-risk form, but if many people block or report it, Meta can lower the
+number's limits. Later, each shop can send from its own WhatsApp number
+(Embedded Signup, needs Meta Tech Provider status).
+
 ## Plans
 
 `plan` is set per business in `/admin`: **Start** (text-back + booking link,

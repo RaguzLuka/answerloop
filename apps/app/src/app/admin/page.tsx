@@ -11,6 +11,7 @@ import { twilioConfigured } from "@/lib/twilio";
 import { missedCallFunnel } from "@/lib/stats";
 import FunnelCard from "@/components/FunnelCard";
 import { aiEnabled } from "@/lib/ai";
+import { whatsappConfigured } from "@/lib/whatsapp";
 import { AddNumbersForm, AssignNumberForm, PlanSelect, RemoveNumberButton, StatusSelect, VisitForm } from "./forms";
 
 export const metadata: Metadata = { title: "Admin" };
@@ -70,6 +71,12 @@ export default async function AdminPage() {
         <p className="mt-3 rounded-xl bg-sky px-4 py-3 text-sm text-blue-deep">
           AI is off on this server (<code>AI_ENABLED</code> isn&apos;t &quot;true&quot; or there&apos;s no <code>OPENAI_API_KEY</code>), so Pro
           shops&apos; callers get the booking page instead of the chat with Halo.
+        </p>
+      )}
+      {!whatsappConfigured() && (
+        <p className="mt-3 rounded-xl bg-sky px-4 py-3 text-sm text-blue-deep">
+          WhatsApp isn&apos;t connected on this server (<code>WHATSAPP_TOKEN</code>, <code>WHATSAPP_PHONE_NUMBER_ID</code>,{" "}
+          <code>WHATSAPP_APP_SECRET</code>), so Pro shops reach callers by SMS with a chat link.
         </p>
       )}
       {!twilioConfigured() && (

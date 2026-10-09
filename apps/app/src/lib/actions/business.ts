@@ -248,6 +248,7 @@ const BookingSettingsSchema = z.object({
   remindersEnabled: z.literal("on").optional(),
   smsLanguage: z.enum(["hr", "en"]),
   linkMode: z.enum(["chat", "page", "custom"]),
+  whatsappEnabled: z.literal("on").optional(),
   customBookingUrl: z
     .string()
     .trim()
@@ -265,7 +266,7 @@ export async function saveBookingSettings(_: FormState, fd: FormData): Promise<F
   const values = formValues(fd);
   const parsed = BookingSettingsSchema.safeParse(Object.fromEntries(fd));
   if (!parsed.success) return { errors: fieldErrors(parsed.error), values };
-  const { bookingEnabled, confirmationsEnabled, remindersEnabled, linkMode, customBookingUrl, ...rest } = parsed.data;
+  const { bookingEnabled, confirmationsEnabled, remindersEnabled, linkMode, customBookingUrl, whatsappEnabled, ...rest } = parsed.data;
   if (linkMode === "custom" && !customBookingUrl) {
     return { errors: { customBookingUrl: "Paste the link to your booking page" }, values };
   }
@@ -277,6 +278,7 @@ export async function saveBookingSettings(_: FormState, fd: FormData): Promise<F
       confirmationsEnabled: confirmationsEnabled === "on",
       remindersEnabled: remindersEnabled === "on",
       chatEnabled: linkMode === "chat",
+      whatsappEnabled: whatsappEnabled === "on",
       customBookingUrl: linkMode === "custom" ? customBookingUrl : null,
       ...touch(),
     })
