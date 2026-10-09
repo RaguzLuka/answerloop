@@ -3,7 +3,8 @@ import { randomBytes, randomUUID } from "node:crypto";
 import { and, eq, gte } from "drizzle-orm";
 import { db, calls, chatMessages, chats, textbackLinks, type Business, type CallOutcome } from "@/lib/db";
 import { fillTemplate } from "@/lib/business-types";
-import { bookingLink, canReceiveSms, sendBusinessSms } from "@/lib/sms";
+import { MONTHLY_LIMIT, bookingLink, canReceiveSms, isLimitError, sendBusinessSms } from "@/lib/sms";
+import { mayReach, recordMessage } from "@/lib/usage";
 import { chatAvailable, chatLink, openingMessage, startChat } from "@/lib/chat";
 import { senderFor, waSendTemplate, whatsappReady } from "@/lib/whatsapp";
 import { formatPhone } from "@/lib/phone";
@@ -37,8 +38,14 @@ export const whatsappAvailable = (biz: Business) =>
 /** Opens the WhatsApp conversation with the approved template. If WhatsApp refuses
  *  straight away, the caller gets the SMS with the same conversation as a web chat. */
 async function reachOnWhatsApp(biz: Business, phone: string, callId: string) {
+  const gate = await mayReach(biz);
+  if (!gate.ok) return { ok: false as const, error: MONTHLY_LIMIT };
   const chat = await startChat(biz, { phone, callId, channel: "whatsapp" });
-  const res = await waSendTemplate(senderFor(biz)!, phone, biz.smsLanguage, [biz.name], openingMessage(biz, "whatsapp"));
+  const res = await waSendTemplate(senderFor(biz)!, phone, "missed_call", biz.smsLanguage, [biz.name], openingMessage(biz, "whatsapp"));
+  await recordMessage(biz, {
+    kind: "textback", channel: "whatsapp", to: phone, extra: gate.extra, ref: chat.id,
+    sid: res.ok ? res.id : null, error: res.ok ? null : res.error,
+  });
   if (res.ok) {
     await db.update(chatMessages).set({ waId: res.id }).where(eq(chatMessages.chatId, chat.id));
     await db.update(calls).set({ channel: "whatsapp" }).where(eq(calls.id, callId));
@@ -92,7 +99,7 @@ export async function handleMissedCall(biz: Business, { callSid, from }: { callS
       res = await sendBusinessSms(biz, "textback", from, textbackBody(biz, target.link));
     }
     if (!res.ok) {
-      outcome = res.error === "Daily SMS limit reached" ? "limit" : "failed";
+      outcome = isLimitError(res.error) ? "limit" : "failed";
       await db.update(calls).set({ outcome, error: res.error }).where(eq(calls.id, id));
     }
   }

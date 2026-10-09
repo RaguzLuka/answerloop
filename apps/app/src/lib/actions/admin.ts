@@ -132,3 +132,12 @@ export async function submitWaTemplates(businessId: string): Promise<FormState> 
   revalidatePath("/admin");
   return { ok: true, message: results.join(" · ") };
 }
+
+/** Custom monthly allowance for one shop (empty = the plan's allowance). */
+export async function setMessageLimit(businessId: string, raw: string) {
+  await requireAdmin();
+  const n = raw.trim() === "" ? null : Number(raw);
+  if (n !== null && (!Number.isInteger(n) || n < 0 || n > 100000)) return;
+  await db.update(businesses).set({ messageLimit: n, updatedAt: Date.now() }).where(eq(businesses.id, businessId));
+  revalidatePath("/admin");
+}

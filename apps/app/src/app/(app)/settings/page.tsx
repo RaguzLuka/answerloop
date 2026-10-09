@@ -12,6 +12,8 @@ import InstallApp from "@/components/InstallApp";
 import Icon from "@/components/Icon";
 import PushToggle from "@/components/PushToggle";
 import ConnectionsPanel from "@/components/ConnectionsPanel";
+import { usageThisMonth } from "@/lib/usage";
+import PlanSection from "./PlanSection";
 import { aiEnabled } from "@/lib/ai";
 import { senderFor, whatsappReady } from "@/lib/whatsapp";
 import { BookingSettingsForm, ProfileForm, PasswordForm, TestSmsForm } from "./forms";
@@ -27,6 +29,7 @@ const SECTIONS = [
   { id: "connections", label: "WhatsApp & calendar", icon: "link" },
   { id: "phone", label: "Phone", icon: "phoneForwarded" },
   { id: "app", label: "App", icon: "smartphone" },
+  { id: "plan", label: "Plan & messages", icon: "sparkle" },
   { id: "account", label: "Account", icon: "user" },
 ] as const;
 
@@ -95,6 +98,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             <PushToggle publicKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? null} />
           </div>
         )}
+        {section === "plan" && <PlanSection business={business} usage={await usageThisMonth(business)} />}
         {section === "account" && (
           <div className="space-y-10">
             <ProfileForm name={user.name} email={user.email} />

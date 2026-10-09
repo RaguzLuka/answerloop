@@ -83,6 +83,12 @@ export const businesses = sqliteTable("businesses", {
   waTemplatesAt: integer("wa_templates_at", { mode: "number" }),
   /** Two-step verification PIN set when a new number was registered (encrypted) */
   waPinEnc: text("wa_pin_enc"),
+  /** Monthly message allowance override (null = the plan's allowance, lib/plans.ts) */
+  messageLimit: integer("message_limit"),
+  /** At the allowance: false = stop sending until next month, true = keep going, extra billed */
+  allowExtraMessages: integer("allow_extra_messages", { mode: "boolean" }).notNull().default(false),
+  /** Which usage heads-up was last sent, e.g. "2026-10:80" — one per level per month */
+  usageAlert: text("usage_alert"),
   /** Free trial of Pro for self-service sign-ups */
   trialEndsAt: integer("trial_ends_at", { mode: "number" }),
   /** Secret for the calendar subscription feed (/api/cal/<token>) */
@@ -262,6 +268,7 @@ export const chatMessages = sqliteTable(
 );
 
 export type SmsKind = "textback" | "confirmation" | "reminder" | "test";
+export type MessageChannel = "sms" | "whatsapp";
 
 /** Every SMS we send (no message bodies — just enough for limits and support) */
 export const smsLog = sqliteTable(
@@ -270,7 +277,13 @@ export const smsLog = sqliteTable(
     id: id(),
     businessId: text("business_id").notNull().references(() => businesses.id, { onDelete: "cascade" }),
     kind: text("kind").$type<SmsKind>().notNull(),
+    /** sms_log holds every message RingLoop pays for, SMS and WhatsApp templates */
+    channel: text("channel").$type<MessageChannel>().notNull().default("sms"),
+    /** Over the month's allowance (billed as extra) */
+    extra: integer("extra", { mode: "boolean" }).notNull().default(false),
     toPhone: text("to_phone").notNull(),
+    /** What it was about (the booking id for reminders/confirmations) */
+    ref: text("ref"),
     sid: text("sid"),
     error: text("error"),
     createdAt: createdAt(),

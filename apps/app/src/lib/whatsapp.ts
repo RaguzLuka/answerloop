@@ -25,16 +25,26 @@ export function senderFor(biz: Pick<Business, "waPhoneNumberId" | "waTokenEnc">)
   return { phoneNumberId: biz.waPhoneNumberId, token };
 }
 
-/** Approved template names, per language. The text must match what Meta approved (TEMPLATE_TEXT). */
-export const templateFor = (lang: "hr" | "en") =>
-  lang === "en"
-    ? { name: process.env.WHATSAPP_TEMPLATE_EN ?? "missed_call_en", language: "en" }
-    : { name: process.env.WHATSAPP_TEMPLATE_HR ?? "missed_call_hr", language: "hr" };
+export type TemplateKind = "missed_call" | "reminder";
 
-/** {{1}} = the shop's name. Must stay identical to chat.ts openingMessage(…, "whatsapp"). */
-export const TEMPLATE_TEXT = {
-  hr: "Pozdrav, ovdje {{1}}. Oprostite što se nismo stigli javiti na Vaš poziv. Ovdje Vam piše Halo, naš asistent s umjetnom inteligencijom. Za koju uslugu želite termin i kada biste mogli doći?",
-  en: "Hello, this is {{1}}. Sorry we couldn't take your call. This is Halo, our AI assistant. What would you like to book, and when could you come in?",
+/** Approved template names (submitted per shop by waCreateTemplates). */
+export const templateFor = (kind: TemplateKind, lang: "hr" | "en") => ({ name: `${kind}_${lang}`, language: lang });
+
+/* Template texts. missed_call: {{1}} = shop name — must stay identical to
+   chat.ts openingMessage(…, "whatsapp"). reminder: {{1}} shop, {{2}} time, {{3}} phone. */
+export const TEMPLATE_TEXT: Record<TemplateKind, Record<"hr" | "en", string>> = {
+  missed_call: {
+    hr: "Pozdrav, ovdje {{1}}. Oprostite što se nismo stigli javiti na Vaš poziv. Ovdje Vam piše Halo, naš asistent s umjetnom inteligencijom. Za koju uslugu želite termin i kada biste mogli doći?",
+    en: "Hello, this is {{1}}. Sorry we couldn't take your call. This is Halo, our AI assistant. What would you like to book, and when could you come in?",
+  },
+  reminder: {
+    hr: "Podsjetnik ({{1}}): sutra u {{2}} imate termin. Za promjenu ili otkazivanje nazovite {{3}}.",
+    en: "Reminder ({{1}}): your appointment is tomorrow at {{2}}. To change or cancel, call {{3}}.",
+  },
+};
+const EXAMPLES: Record<TemplateKind, (name: string) => string[]> = {
+  missed_call: (name) => [name],
+  reminder: (name) => [name, "10:00", "+385 91 234 5678"],
 };
 
 export type WaResult = { ok: true; id: string } | { ok: false; error: string };
@@ -63,8 +73,8 @@ async function send(from: WaSender, to: string, payload: Record<string, unknown>
   }
 }
 
-export function waSendTemplate(from: WaSender, to: string, lang: "hr" | "en", params: string[], preview: string) {
-  const t = templateFor(lang);
+export function waSendTemplate(from: WaSender, to: string, kind: TemplateKind, lang: "hr" | "en", params: string[], preview: string) {
+  const t = templateFor(kind, lang);
   return send(
     from,
     to,
@@ -87,13 +97,13 @@ export function waSendText(from: WaSender, to: string, body: string) {
 /** Submits both opening templates to the shop's WhatsApp account for Meta's approval. */
 export async function waCreateTemplates(wabaId: string, token: string, exampleName: string) {
   const results: string[] = [];
-  for (const lang of ["hr", "en"] as const) {
-    const t = templateFor(lang);
+  for (const [kind, lang] of [["missed_call", "hr"], ["missed_call", "en"], ["reminder", "hr"], ["reminder", "en"]] as const) {
+    const t = templateFor(kind, lang);
     const body = {
       name: t.name,
       language: t.language,
       category: "UTILITY",
-      components: [{ type: "BODY", text: TEMPLATE_TEXT[lang], example: { body_text: [[exampleName]] } }],
+      components: [{ type: "BODY", text: TEMPLATE_TEXT[kind][lang], example: { body_text: [EXAMPLES[kind](exampleName)] } }],
     };
     if (dryRun()) {
       results.push(`${t.name}: submitted (dry run)`);

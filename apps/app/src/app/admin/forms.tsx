@@ -2,7 +2,7 @@
 
 import { useActionState, useState, useTransition } from "react";
 import type { FormState } from "@/lib/form";
-import { addPoolNumbers, assignNumber, connectWhatsApp, removePoolNumber, setPlan, setStatus, submitWaTemplates, updateVisit } from "@/lib/actions/admin";
+import { addPoolNumbers, assignNumber, connectWhatsApp, removePoolNumber, setMessageLimit, setPlan, setStatus, submitWaTemplates, updateVisit } from "@/lib/actions/admin";
 import { initialState } from "@/lib/form";
 import type { BusinessStatus, VisitStatus } from "@/lib/db/schema";
 import { SubmitButton } from "@/components/form";
@@ -156,5 +156,20 @@ export function WhatsAppConnectForm({
       {tpl.error && <p className="text-xs text-danger">{tpl.error}</p>}
       {tpl.ok && <p className="text-xs text-ok">{tpl.message}</p>}
     </div>
+  );
+}
+
+export function LimitInput({ id, value }: { id: string; value: number | null }) {
+  const [pending, start] = useTransition();
+  return (
+    <input
+      aria-label="Custom monthly allowance"
+      defaultValue={value ?? ""}
+      placeholder="plan default"
+      inputMode="numeric"
+      disabled={pending}
+      onBlur={(e) => start(() => setMessageLimit(id, e.target.value))}
+      className="input !min-h-8 w-28 !py-0.5 text-xs"
+    />
   );
 }

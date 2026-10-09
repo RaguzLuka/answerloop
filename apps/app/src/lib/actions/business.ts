@@ -388,3 +388,10 @@ export async function sendTestSms(_: FormState, fd: FormData): Promise<FormState
     values,
   };
 }
+
+/** At the monthly allowance: stop sending (false) or keep going and pay per extra message (true). */
+export async function setAllowExtra(allow: boolean) {
+  const { business } = await requireBusiness();
+  await db.update(businesses).set({ allowExtraMessages: !!allow, ...touch() }).where(eq(businesses.id, business.id));
+  revalidatePath("/", "layout");
+}

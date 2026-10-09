@@ -1,9 +1,9 @@
 import "server-only";
 import { and, asc, desc, eq } from "drizzle-orm";
-import { db, businesses, chatMessages, chats, type Business } from "@/lib/db";
+import { db, bookings, businesses, chatMessages, chats, smsLog, type Business } from "@/lib/db";
 import { chatAvailable, chatIsOver, chatLink, loadChatById, respond, startChat } from "@/lib/chat";
 import { senderFor, waSendText } from "@/lib/whatsapp";
-import { sendBusinessSms } from "@/lib/sms";
+import { reminderText, sendBusinessSms } from "@/lib/sms";
 import { textbackBody } from "@/lib/missed-call";
 import { notifyBusiness } from "@/lib/push";
 import { formatPhone } from "@/lib/phone";
@@ -120,6 +120,25 @@ export async function handleEcho(echo: EchoMessage) {
  *  send the SMS with the same conversation as a web chat instead. */
 export async function handleStatus(st: StatusUpdate) {
   if (st.status !== "failed") return;
+
+  // Meta doesn't charge for undelivered messages, so they don't use up the allowance
+  const [logged] = await db.select().from(smsLog).where(eq(smsLog.sid, st.id)).limit(1);
+  if (logged) await db.update(smsLog).set({ error: `undelivered (${st.errorCode ?? "?"})` }).where(eq(smsLog.id, logged.id));
+
+  // A reminder that didn't arrive on WhatsApp goes by SMS instead
+  if (logged?.kind === "reminder" && logged.ref) {
+    const [row] = await db
+      .select({ booking: bookings, biz: businesses })
+      .from(bookings)
+      .innerJoin(businesses, eq(businesses.id, bookings.businessId))
+      .where(eq(bookings.id, logged.ref))
+      .limit(1);
+    if (row && row.booking.status === "confirmed") {
+      await sendBusinessSms(row.biz, "reminder", row.booking.customerPhone, reminderText(row.biz, row.booking), row.booking.id);
+    }
+    return;
+  }
+
   const [m] = await db.select({ chatId: chatMessages.chatId }).from(chatMessages).where(eq(chatMessages.waId, st.id)).limit(1);
   if (!m) return;
   const loaded = await loadChatById(m.chatId);

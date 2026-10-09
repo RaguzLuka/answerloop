@@ -9,6 +9,8 @@ import type { Call } from "@/lib/db/schema";
 import PushToggle from "@/components/PushToggle";
 import FunnelCard from "@/components/FunnelCard";
 import { missedCallFunnel } from "@/lib/stats";
+import { usageThisMonth } from "@/lib/usage";
+import UsageMeter from "@/components/UsageMeter";
 import { formatDateLabel, formatDateTime, zonedParts } from "@/lib/time";
 import { confirmForwarding, setPaused } from "@/lib/actions/business";
 import Halo, { HaloSays } from "@/components/Halo";
@@ -34,11 +36,12 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const now = localNow(business);
   const todayDate = today(business);
 
-  const [upcoming, funnel, visits, missed] = await Promise.all([
+  const [upcoming, funnel, visits, missed, usage] = await Promise.all([
     upcomingBookings(business),
     missedCallFunnel(business.id),
     visitsFor(business.id),
     recentCalls(business.id, 6),
+    usageThisMonth(business),
   ]);
   const todays = upcoming.filter((b) => zonedParts(b.startsAt, business.timezone).date === todayDate);
   const later = upcoming.filter((b) => zonedParts(b.startsAt, business.timezone).date !== todayDate);
@@ -90,6 +93,9 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
       )}
 
       <FunnelCard funnel={funnel} />
+      <section className="card p-4">
+        <UsageMeter usage={usage} allowExtra={business.allowExtraMessages} />
+      </section>
 
       <section className="card overflow-hidden">
         <div className="flex items-center justify-between border-b border-line px-4 py-3">
@@ -259,7 +265,7 @@ const OUTCOME: Record<Call["outcome"], { label: string; cls: string; callBack?: 
   landline: { label: "Landline, call back", cls: "bg-warn-soft text-warn", callBack: true },
   no_caller_id: { label: "Hidden number", cls: "bg-paper text-muted" },
   paused: { label: "While paused", cls: "bg-paper text-muted", callBack: true },
-  limit: { label: "Daily text limit, call back", cls: "bg-warn-soft text-warn", callBack: true },
+  limit: { label: "Message limit reached, call back", cls: "bg-warn-soft text-warn", callBack: true },
   failed: { label: "Text failed, call back", cls: "bg-danger-soft text-danger", callBack: true },
 };
 

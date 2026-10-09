@@ -34,8 +34,8 @@ export function bookingCopy(lang: Lang, typeId: string, business: string) {
     notes: hr ? "Napomena" : "Anything we should know?",
     optional: hr ? "(nije obavezno)" : "(optional)",
     consent: hr
-      ? `Slažem se da ${business} pohrani moje ime i broj radi ove rezervacije`
-      : `${business} may store my name and number to manage this booking`,
+      ? `Slažem se da ${business} pohrani moje ime i broj radi ove rezervacije i podsjetnika (SMS ili WhatsApp)`
+      : `${business} may store my name and number for this booking and its reminder (SMS or WhatsApp)`,
     privacy: hr ? "privatnost" : "privacy",
     confirm: hr ? (restaurant ? "Potvrdi rezervaciju" : "Potvrdi termin") : restaurant ? "Confirm reservation" : "Confirm appointment",
     booking: hr ? "Rezerviram…" : "Booking…",

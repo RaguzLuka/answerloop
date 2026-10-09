@@ -1,0 +1,1 @@
+ALTER TABLE `sms_log` ADD `ref` text;

@@ -3,9 +3,30 @@ import { and, eq, gte, inArray, isNull, lt } from "drizzle-orm";
 import { db, bookings, businesses } from "@/lib/db";
 import { addDays, zonedParts, zonedToUtc } from "@/lib/time";
 import { canReceiveSms, reminderText, sendBusinessSms } from "@/lib/sms";
+import { senderFor, waSendTemplate, whatsappReady } from "@/lib/whatsapp";
+import { mayReach, recordMessage } from "@/lib/usage";
+import { formatPhone } from "@/lib/phone";
+import type { Booking, Business } from "@/lib/db";
 
-/* Daily (Vercel cron, see vercel.json): text every customer booked for
-   tomorrow. Vercel Hobby allows one run per day, so it runs mid-afternoon. */
+/* Daily (Vercel cron, see vercel.json): remind every customer booked for
+   tomorrow — on WhatsApp from the shop's own number when it's connected
+   (cheaper; SMS if it doesn't arrive), otherwise by SMS. Both count against
+   the shop's monthly allowance. Vercel Hobby allows one run per day. */
+
+async function remindOnWhatsApp(biz: Business, b: Booking) {
+  const sender = senderFor(biz);
+  if (!sender || !whatsappReady() || !biz.whatsappEnabled) return null; // not available: use SMS
+  const gate = await mayReach(biz);
+  if (!gate.ok) return { ok: false };
+  const time = new Intl.DateTimeFormat("hr-HR", { timeZone: biz.timezone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(b.startsAt);
+  const lang = biz.smsLanguage === "en" ? "en" : "hr";
+  const res = await waSendTemplate(sender, b.customerPhone, "reminder", lang, [biz.name, time, biz.phone ? formatPhone(biz.phone) : "-"], reminderText(biz, b));
+  await recordMessage(biz, {
+    kind: "reminder", channel: "whatsapp", to: b.customerPhone, extra: gate.extra, ref: b.id,
+    sid: res.ok ? res.id : null, error: res.ok ? null : res.error,
+  });
+  return { ok: res.ok };
+}
 
 function authorized(req: Request) {
   const secret = process.env.CRON_SECRET;
@@ -44,7 +65,7 @@ export async function GET(req: Request) {
       );
     for (const b of due) {
       if (!canReceiveSms(b.customerPhone)) continue;
-      const res = await sendBusinessSms(biz, "reminder", b.customerPhone, reminderText(biz, b));
+      const res = (await remindOnWhatsApp(biz, b)) ?? (await sendBusinessSms(biz, "reminder", b.customerPhone, reminderText(biz, b), b.id));
       if (res.ok) {
         sent++;
         await db.update(bookings).set({ reminderSentAt: Date.now() }).where(eq(bookings.id, b.id));

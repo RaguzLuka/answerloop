@@ -122,12 +122,29 @@ the lowest-risk form, but many blocks or reports lower the number's limits.
 Next step for scale: an in-app "Connect WhatsApp" button (Embedded Signup), which
 needs RingLoop approved as a Meta Tech Provider.
 
-## Plans
+## Plans and the monthly message allowance
 
-`plan` is set per business in `/admin`: **Start** (text-back + booking link,
-confirmations, reminders) or **Pro** (adds the chat with Halo). The chat also
-needs `AI_ENABLED=true` and `OPENAI_API_KEY` on the server. Without them, Pro
-shops fall back to their booking link, so it's safe to launch with AI off.
+Prices and allowances live in `src/lib/plans.ts` (Start €29 / 100 messages,
+Pro €49 / 200 messages, extra messages €0.20). New sign-ups start on Pro with a
+30-day free trial; the plan is switched in `/admin` (billing is handled by hand
+for now).
+
+- A **message** is anything RingLoop pays for: the first WhatsApp after a missed
+  call, reminders, confirmations and every SMS. Halo's replies inside a WhatsApp
+  conversation are free (Meta doesn't charge) and unlimited. Undelivered WhatsApp
+  messages and the owner's test texts don't count.
+- Counted per calendar month in the shop's time zone (`sms_log`).
+- At the allowance the owner chooses (Settings → Plan & messages): **stop** until
+  next month (missed calls still show in the app), or **keep sending** at €0.20
+  per extra message. The owner gets a push + email at 80% and 100%.
+- `/admin` shows each shop's usage, extra messages and the amount to bill, and
+  can set a custom allowance per shop.
+- Reminders go on WhatsApp from the shop's number when it's connected (cheaper),
+  with SMS if WhatsApp doesn't arrive.
+
+Pro's chat also needs `AI_ENABLED=true` and `OPENAI_API_KEY` on the server.
+Without them, Pro shops fall back to their booking link, so it's safe to launch
+with AI off.
 
 ## Run it locally
 

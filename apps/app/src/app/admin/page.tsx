@@ -9,10 +9,12 @@ import { formatPhone } from "@/lib/phone";
 import { Wordmark } from "@/components/Logo";
 import { twilioConfigured } from "@/lib/twilio";
 import { missedCallFunnel } from "@/lib/stats";
+import { usageThisMonth } from "@/lib/usage";
+import { euros } from "@/lib/plans";
 import FunnelCard from "@/components/FunnelCard";
 import { aiEnabled } from "@/lib/ai";
 import { whatsappReady } from "@/lib/whatsapp";
-import { AddNumbersForm, AssignNumberForm, PlanSelect, RemoveNumberButton, StatusSelect, VisitForm, WhatsAppConnectForm } from "./forms";
+import { AddNumbersForm, AssignNumberForm, LimitInput, PlanSelect, RemoveNumberButton, StatusSelect, VisitForm, WhatsAppConnectForm } from "./forms";
 
 export const metadata: Metadata = { title: "Admin" };
 
@@ -50,6 +52,7 @@ export default async function AdminPage() {
   ]);
   const freeNumbers = pool.filter((p) => !p.bizName).length;
   const funnels = new Map(await Promise.all(bizRows.map(async (r) => [r.biz.id, await missedCallFunnel(r.biz.id)] as const)));
+  const usages = new Map(await Promise.all(bizRows.map(async (r) => [r.biz.id, await usageThisMonth(r.biz)] as const)));
   const nBookings = new Map(bookingCounts.map((r) => [r.businessId, r.n]));
   const tz = "Europe/Zagreb";
   const when = (ms: number) => formatDateTime(ms, tz, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
@@ -180,7 +183,7 @@ export default async function AdminPage() {
       <section className="mt-10">
         <h2 className="font-display mb-3 text-xl">Businesses</h2>
         <div className="card overflow-x-auto">
-          <table className="w-full min-w-[1000px] text-left text-sm">
+          <table className="w-full min-w-[1150px] text-left text-sm">
             <thead className="border-b border-line bg-paper/60 text-xs uppercase tracking-wide text-muted">
               <tr>
                 <th className="px-4 py-3 font-semibold">Business</th>
@@ -189,6 +192,7 @@ export default async function AdminPage() {
                 <th className="px-4 py-3 font-semibold">Status</th>
                 <th className="px-4 py-3 font-semibold">RingLoop number</th>
                 <th className="px-4 py-3 font-semibold">Bookings</th>
+                <th className="px-4 py-3 font-semibold">Messages this month</th>
                 <th className="px-4 py-3 font-semibold" title="Missed calls → texted → opened → booked, last 30 days">Missed → texted → opened → booked</th>
               </tr>
             </thead>
@@ -223,6 +227,21 @@ export default async function AdminPage() {
                       <AssignNumberForm id={biz.id} number={biz.ringloopNumber ?? ""} />
                     </td>
                     <td className="px-4 py-3 tabular-nums">{nBookings.get(biz.id) ?? 0}</td>
+                    <td className="px-4 py-3">
+                      {(() => {
+                        const u = usages.get(biz.id)!;
+                        return (
+                          <div className="space-y-1">
+                            <p className={`tabular-nums ${u.stopped ? "text-danger" : ""}`}>
+                              {u.used} / {u.limit}
+                              {u.extra > 0 && <span className="text-warn"> · +{u.extra} = {euros(u.extraCents)}</span>}
+                            </p>
+                            <p className="text-xs text-muted">{biz.allowExtraMessages ? "keeps going" : "stops at limit"}</p>
+                            <LimitInput id={biz.id} value={biz.messageLimit} />
+                          </div>
+                        );
+                      })()}
+                    </td>
                     <td className="px-4 py-3">{funnels.get(biz.id) && <FunnelCard funnel={funnels.get(biz.id)!} compact />}</td>
                   </tr>
                 );

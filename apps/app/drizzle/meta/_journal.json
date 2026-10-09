@@ -64,6 +64,20 @@
       "when": 1791557403618,
       "tag": "0008_self_service",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1791583160781,
+      "tag": "0009_message_allowance",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1791583203977,
+      "tag": "0010_message_ref",
+      "breakpoints": true
     }
   ]
 }
