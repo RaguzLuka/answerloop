@@ -20,20 +20,17 @@ export function BookingSettingsForm({
   const [state, action, pending] = useActionState(saveBookingSettings, initialState);
   const [enabled, setEnabled] = useState(business.bookingEnabled);
   const v = state.values ?? {};
-  const pro = business.plan === "pro";
   const [mode, setMode] = useState<string>(
-    v.linkMode ?? (pro && business.chatEnabled ? "chat" : business.customBookingUrl ? "custom" : "page"),
+    v.linkMode ?? (business.chatEnabled ? "chat" : business.customBookingUrl ? "custom" : "page"),
   );
   const modes = [
     {
       id: "chat",
       title: "Chat with Halo",
-      body: pro
-        ? aiOn
-          ? "Halo, your AI assistant, chats with the caller and books them in."
-          : "Halo will chat and book as soon as AI is switched on for your account. Until then, callers get your booking page."
-        : "Halo chats with callers and books them in. Included in the Pro plan.",
-      disabled: !pro,
+      body: aiOn
+        ? "Halo, your AI assistant, chats with the caller and books them in."
+        : "Halo will chat and book as soon as AI is switched on for your account. Until then, callers get your booking page.",
+      disabled: false,
     },
     { id: "page", title: "Your RingLoop booking page", body: bookingLink, disabled: false },
     { id: "custom", title: "Your own booking page", body: "For example your Buker profile or website.", disabled: false },
@@ -83,7 +80,6 @@ export function BookingSettingsForm({
             <span className="min-w-0">
               <span className="flex items-center gap-2 font-semibold">
                 {m.title}
-                {m.id === "chat" && <span className="chip bg-blue text-white">Pro</span>}
               </span>
               <span className="block break-words text-sm text-muted">{m.body}</span>
             </span>
@@ -101,7 +97,7 @@ export function BookingSettingsForm({
         )}
       </fieldset>
 
-      {pro && mode === "chat" && (
+      {mode === "chat" && (
         <label className="flex items-center justify-between gap-4 rounded-2xl border border-line bg-white p-4">
           <span>
             <span className="block font-semibold">Message callers on WhatsApp first</span>
@@ -115,7 +111,7 @@ export function BookingSettingsForm({
         </label>
       )}
       {/* Keep the saved choice when the switch is hidden or disabled (disabled inputs aren't submitted) */}
-      {(!(pro && mode === "chat") || !waOn) && business.whatsappEnabled && <input type="hidden" name="whatsappEnabled" value="on" />}
+      {(mode !== "chat" || !waOn) && business.whatsappEnabled && <input type="hidden" name="whatsappEnabled" value="on" />}
 
       <div className="divide-y divide-line rounded-2xl border border-line bg-white">
         <label className="flex items-center justify-between gap-4 p-4">

@@ -3,23 +3,23 @@
 import { useState, useTransition } from "react";
 import { setAllowExtra } from "@/lib/actions/business";
 
-export default function ExtraChoice({ allow, price }: { allow: boolean; price: string }) {
+export default function ExtraChoice({ allow, limit, price }: { allow: boolean; limit: number; price: string }) {
   const [value, setValue] = useState(allow);
   const [pending, start] = useTransition();
   const options = [
     {
       v: false,
-      title: "Stop sending until next month",
-      body: "Missed callers don't get messages; you still see every missed call in the app and can call back.",
+      title: "Pause until the 1st",
+      body: "Missed callers don't get a message until next month. You still see every missed call in the app and can call back.",
     },
     {
       v: true,
-      title: "Keep sending",
-      body: `Every message over your allowance is ${price}, added to your next bill.`,
+      title: "Keep going",
+      body: `Each missed call over ${limit} is ${price}, added to your next bill.`,
     },
   ];
   return (
-    <div className="space-y-2" role="radiogroup" aria-label="When this month's messages run out">
+    <div className="space-y-2" role="radiogroup" aria-label={`If you reach ${limit} missed calls in a month`}>
       {options.map((o) => (
         <label
           key={String(o.v)}

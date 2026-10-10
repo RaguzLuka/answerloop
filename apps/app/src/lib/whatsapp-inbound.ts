@@ -1,6 +1,6 @@
 import "server-only";
 import { and, asc, desc, eq } from "drizzle-orm";
-import { db, bookings, businesses, chatMessages, chats, smsLog, type Business } from "@/lib/db";
+import { db, bookings, businesses, calls, chatMessages, chats, smsLog, type Business } from "@/lib/db";
 import { chatAvailable, chatIsOver, chatLink, loadChatById, respond, startChat } from "@/lib/chat";
 import { senderFor, waSendText } from "@/lib/whatsapp";
 import { reminderText, sendBusinessSms } from "@/lib/sms";
@@ -121,7 +121,7 @@ export async function handleEcho(echo: EchoMessage) {
 export async function handleStatus(st: StatusUpdate) {
   if (st.status !== "failed") return;
 
-  // Meta doesn't charge for undelivered messages, so they don't use up the allowance
+  // Meta doesn't charge for undelivered messages, so they leave the cost view
   const [logged] = await db.select().from(smsLog).where(eq(smsLog.sid, st.id)).limit(1);
   if (logged) await db.update(smsLog).set({ error: `undelivered (${st.errorCode ?? "?"})` }).where(eq(smsLog.id, logged.id));
 
@@ -155,5 +155,13 @@ export async function handleStatus(st: StatusUpdate) {
 
   await db.update(chats).set({ smsFallbackAt: Date.now() }).where(eq(chats.id, loaded.chat.id));
   const res = await sendBusinessSms(loaded.biz, "textback", loaded.chat.customerPhone, textbackBody(loaded.biz, chatLink(loaded.chat.token)));
-  if (!res.ok) console.error("[whatsapp] SMS fallback failed:", res.error);
+  if (res.ok || !loaded.chat.callId) return;
+  // Nobody got a message: the call doesn't count, and the owner should call back
+  console.error("[whatsapp] SMS fallback failed:", res.error);
+  await db.update(calls).set({ outcome: "failed", error: res.error }).where(eq(calls.id, loaded.chat.callId));
+  await notifyBusiness(loaded.biz.id, {
+    title: "Missed call",
+    body: `${formatPhone(loaded.chat.customerPhone)} called, but the message didn't arrive. Call them back.`,
+    url: "/dashboard",
+  }).catch((err) => console.error("[push] missed call:", err));
 }

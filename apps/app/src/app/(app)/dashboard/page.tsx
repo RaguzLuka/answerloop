@@ -11,6 +11,7 @@ import FunnelCard from "@/components/FunnelCard";
 import { missedCallFunnel } from "@/lib/stats";
 import { usageThisMonth } from "@/lib/usage";
 import UsageMeter from "@/components/UsageMeter";
+import { PLAN, euros } from "@/lib/plans";
 import { formatDateLabel, formatDateTime, zonedParts } from "@/lib/time";
 import { confirmForwarding, setPaused } from "@/lib/actions/business";
 import Halo, { HaloSays } from "@/components/Halo";
@@ -94,7 +95,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
 
       <FunnelCard funnel={funnel} />
       <section className="card p-4">
-        <UsageMeter usage={usage} allowExtra={business.allowExtraMessages} />
+        <UsageMeter usage={usage} allowExtra={business.allowExtraCalls} />
       </section>
 
       <section className="card overflow-hidden">
@@ -265,7 +266,7 @@ const OUTCOME: Record<Call["outcome"], { label: string; cls: string; callBack?: 
   landline: { label: "Landline, call back", cls: "bg-warn-soft text-warn", callBack: true },
   no_caller_id: { label: "Hidden number", cls: "bg-paper text-muted" },
   paused: { label: "While paused", cls: "bg-paper text-muted", callBack: true },
-  limit: { label: "Message limit reached, call back", cls: "bg-warn-soft text-warn", callBack: true },
+  limit: { label: "Month's calls used up, call back", cls: "bg-warn-soft text-warn", callBack: true },
   failed: { label: "Text failed, call back", cls: "bg-danger-soft text-danger", callBack: true },
 };
 
@@ -313,8 +314,8 @@ function TrialBanner({ endsAt }: { endsAt: number }) {
       <Icon name="sparkle" className="h-4 w-4 shrink-0" />
       <p className="flex-1">
         {days > 0
-          ? `Free trial: ${days} ${days === 1 ? "day" : "days"} left of everything, including Halo's WhatsApp chat.`
-          : "Your free trial has ended. We'll be in touch about your plan."}
+          ? `Free trial: ${days} ${days === 1 ? "day" : "days"} left. Then ${euros(PLAN.priceEur * 100)} a month.`
+          : `Your free trial has ended. RingLoop is ${euros(PLAN.priceEur * 100)} a month; we'll be in touch to set up payment.`}
       </p>
       <Link href="/help" className="font-semibold underline-offset-2 hover:underline">Questions?</Link>
     </div>

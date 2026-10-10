@@ -3,8 +3,8 @@ import { randomBytes, randomUUID } from "node:crypto";
 import { and, eq, gte } from "drizzle-orm";
 import { db, calls, chatMessages, chats, textbackLinks, type Business, type CallOutcome } from "@/lib/db";
 import { fillTemplate } from "@/lib/business-types";
-import { MONTHLY_LIMIT, bookingLink, canReceiveSms, isLimitError, sendBusinessSms } from "@/lib/sms";
-import { mayReach, recordMessage } from "@/lib/usage";
+import { bookingLink, canReceiveSms, sendBusinessSms } from "@/lib/sms";
+import { afterAnswered, allowanceOf, mayAnswer, recordMessage } from "@/lib/usage";
 import { chatAvailable, chatLink, openingMessage, startChat } from "@/lib/chat";
 import { senderFor, waSendTemplate, whatsappReady } from "@/lib/whatsapp";
 import { formatPhone } from "@/lib/phone";
@@ -13,7 +13,7 @@ import { appUrl } from "@/lib/email";
 
 const REPEAT_WINDOW_MS = 12 * 60 * 60 * 1000; // don't text the same caller twice in 12 h
 
-/** Where the text-back sends this caller: a private chat with Halo (Pro, AI on),
+/** Where the text-back sends this caller: a private chat with Halo (AI on),
  *  the business's own booking page (e.g. Buker), or our booking page. */
 export async function textbackLink(biz: Business, phone: string, opts: { callId?: string; isTest?: boolean } = {}) {
   if (chatAvailable(biz)) {
@@ -31,19 +31,17 @@ export async function textbackLink(biz: Business, phone: string, opts: { callId?
 
 export const textbackBody = (biz: Business, link: string) => fillTemplate(biz.textbackMessage, biz.name, link);
 
-/** Pro shops whose own WhatsApp number is connected (and AI on) reach callers on WhatsApp first. */
+/** Shops whose own WhatsApp number is connected (and AI on) reach callers on WhatsApp first. */
 export const whatsappAvailable = (biz: Business) =>
   whatsappReady() && chatAvailable(biz) && biz.whatsappEnabled && !!senderFor(biz);
 
 /** Opens the WhatsApp conversation with the approved template. If WhatsApp refuses
  *  straight away, the caller gets the SMS with the same conversation as a web chat. */
 async function reachOnWhatsApp(biz: Business, phone: string, callId: string) {
-  const gate = await mayReach(biz);
-  if (!gate.ok) return { ok: false as const, error: MONTHLY_LIMIT };
   const chat = await startChat(biz, { phone, callId, channel: "whatsapp" });
   const res = await waSendTemplate(senderFor(biz)!, phone, "missed_call", biz.smsLanguage, [biz.name], openingMessage(biz, "whatsapp"));
   await recordMessage(biz, {
-    kind: "textback", channel: "whatsapp", to: phone, extra: gate.extra, ref: chat.id,
+    kind: "textback", channel: "whatsapp", to: phone, ref: chat.id,
     sid: res.ok ? res.id : null, error: res.ok ? null : res.error,
   });
   if (res.ok) {
@@ -63,6 +61,7 @@ export async function handleMissedCall(biz: Business, { callSid, from }: { callS
 
   let outcome: CallOutcome;
   let chat = false;
+  let extra = false;
 
   if (!from || from === biz.phone) outcome = "no_caller_id";
   else if (biz.status === "paused" || biz.status === "setup") outcome = "paused";
@@ -76,12 +75,17 @@ export async function handleMissedCall(biz: Business, { callSid, from }: { callS
       )
       .limit(1);
     outcome = recent ? "repeat" : "texted";
+    if (outcome === "texted") {
+      const gate = await mayAnswer(biz);
+      if (gate.ok) extra = gate.extra;
+      else outcome = "limit"; // the month's missed calls are used up and the shop chose to pause
+    }
   }
 
   const id = randomUUID();
   const inserted = await db
     .insert(calls)
-    .values({ id, businessId: biz.id, callSid, callerPhone: from, outcome })
+    .values({ id, businessId: biz.id, callSid, callerPhone: from, outcome, extra })
     .onConflictDoNothing()
     .returning({ id: calls.id });
   if (!inserted.length) return; // a parallel retry got here first
@@ -99,9 +103,9 @@ export async function handleMissedCall(biz: Business, { callSid, from }: { callS
       res = await sendBusinessSms(biz, "textback", from, textbackBody(biz, target.link));
     }
     if (!res.ok) {
-      outcome = isLimitError(res.error) ? "limit" : "failed";
+      outcome = "failed";
       await db.update(calls).set({ outcome, error: res.error }).where(eq(calls.id, id));
-    }
+    } else await afterAnswered(biz);
   }
 
   const who = from ? formatPhone(from) : "a hidden number";
@@ -120,6 +124,8 @@ export async function handleMissedCall(biz: Business, { callSid, from }: { callS
             ? "Someone called from a hidden number. They couldn't be texted."
             : outcome === "paused"
               ? `${who} called while RingLoop is paused.`
-              : `${who} called, but the text didn't go out. Call them back.`;
+              : outcome === "limit"
+                ? `${who} called. This month's ${allowanceOf(biz)} missed calls are used up, so they didn't get a message. Call them back.`
+                : `${who} called, but the text didn't go out. Call them back.`;
   await notifyBusiness(biz.id, { title: "Missed call", body, url: "/dashboard" });
 }

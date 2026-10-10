@@ -101,8 +101,7 @@ export async function saveBasics(_: FormState, fd: FormData): Promise<FormState>
       capacity: preset.capacity,
       senderName: suggestSender(data.name),
       textbackMessage: defaultTextback("hr", data.type),
-      // Self-service sign-ups try everything (Pro) free for a month
-      plan: "pro",
+      // Self-service sign-ups try RingLoop free for a month
       trialEndsAt: Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000,
       calendarToken: randomBytes(18).toString("base64url"),
     })
@@ -389,9 +388,9 @@ export async function sendTestSms(_: FormState, fd: FormData): Promise<FormState
   };
 }
 
-/** At the monthly allowance: stop sending (false) or keep going and pay per extra message (true). */
+/** At the month's missed calls: pause until next month (false) or keep going and pay per extra call (true). */
 export async function setAllowExtra(allow: boolean) {
   const { business } = await requireBusiness();
-  await db.update(businesses).set({ allowExtraMessages: !!allow, ...touch() }).where(eq(businesses.id, business.id));
+  await db.update(businesses).set({ allowExtraCalls: !!allow, ...touch() }).where(eq(businesses.id, business.id));
   revalidatePath("/", "layout");
 }

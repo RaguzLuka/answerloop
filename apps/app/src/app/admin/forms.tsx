@@ -2,7 +2,7 @@
 
 import { useActionState, useState, useTransition } from "react";
 import type { FormState } from "@/lib/form";
-import { addPoolNumbers, assignNumber, connectWhatsApp, removePoolNumber, setMessageLimit, setPlan, setStatus, submitWaTemplates, updateVisit } from "@/lib/actions/admin";
+import { addPoolNumbers, assignNumber, connectWhatsApp, removePoolNumber, setCallLimit, setStatus, submitWaTemplates, updateVisit } from "@/lib/actions/admin";
 import { initialState } from "@/lib/form";
 import type { BusinessStatus, VisitStatus } from "@/lib/db/schema";
 import { SubmitButton } from "@/components/form";
@@ -92,22 +92,6 @@ export function RemoveNumberButton({ number }: { number: string }) {
   );
 }
 
-export function PlanSelect({ id, plan }: { id: string; plan: "start" | "pro" }) {
-  const [pending, start] = useTransition();
-  return (
-    <select
-      aria-label="Plan"
-      defaultValue={plan}
-      disabled={pending}
-      onChange={(e) => start(() => setPlan(id, e.target.value as "start" | "pro"))}
-      className="input !min-h-9 w-32 !py-1 text-sm"
-    >
-      <option value="start">Start</option>
-      <option value="pro">Pro (AI chat)</option>
-    </select>
-  );
-}
-
 export function WhatsAppConnectForm({
   id, phoneNumberId, wabaId, displayPhone, ownApp, hasToken, templatesAt,
 }: {
@@ -163,12 +147,12 @@ export function LimitInput({ id, value }: { id: string; value: number | null }) 
   const [pending, start] = useTransition();
   return (
     <input
-      aria-label="Custom monthly allowance"
+      aria-label="Custom missed calls per month"
       defaultValue={value ?? ""}
       placeholder="plan default"
       inputMode="numeric"
       disabled={pending}
-      onBlur={(e) => start(() => setMessageLimit(id, e.target.value))}
+      onBlur={(e) => start(() => setCallLimit(id, e.target.value))}
       className="input !min-h-8 w-28 !py-0.5 text-xs"
     />
   );

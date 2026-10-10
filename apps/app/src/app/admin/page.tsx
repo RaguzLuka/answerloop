@@ -9,12 +9,13 @@ import { formatPhone } from "@/lib/phone";
 import { Wordmark } from "@/components/Logo";
 import { twilioConfigured } from "@/lib/twilio";
 import { missedCallFunnel } from "@/lib/stats";
-import { usageThisMonth } from "@/lib/usage";
+import { messagesThisMonth, usageThisMonth } from "@/lib/usage";
 import { euros } from "@/lib/plans";
+import { trialDaysLeft } from "@/lib/queries";
 import FunnelCard from "@/components/FunnelCard";
 import { aiEnabled } from "@/lib/ai";
 import { whatsappReady } from "@/lib/whatsapp";
-import { AddNumbersForm, AssignNumberForm, LimitInput, PlanSelect, RemoveNumberButton, StatusSelect, VisitForm, WhatsAppConnectForm } from "./forms";
+import { AddNumbersForm, AssignNumberForm, LimitInput, RemoveNumberButton, StatusSelect, VisitForm, WhatsAppConnectForm } from "./forms";
 
 export const metadata: Metadata = { title: "Admin" };
 
@@ -53,6 +54,7 @@ export default async function AdminPage() {
   const freeNumbers = pool.filter((p) => !p.bizName).length;
   const funnels = new Map(await Promise.all(bizRows.map(async (r) => [r.biz.id, await missedCallFunnel(r.biz.id)] as const)));
   const usages = new Map(await Promise.all(bizRows.map(async (r) => [r.biz.id, await usageThisMonth(r.biz)] as const)));
+  const sent = new Map(await Promise.all(bizRows.map(async (r) => [r.biz.id, await messagesThisMonth(r.biz)] as const)));
   const nBookings = new Map(bookingCounts.map((r) => [r.businessId, r.n]));
   const tz = "Europe/Zagreb";
   const when = (ms: number) => formatDateTime(ms, tz, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
@@ -72,14 +74,14 @@ export default async function AdminPage() {
       </p>
       {!aiEnabled() && (
         <p className="mt-3 rounded-xl bg-sky px-4 py-3 text-sm text-blue-deep">
-          AI is off on this server (<code>AI_ENABLED</code> isn&apos;t &quot;true&quot; or there&apos;s no <code>OPENAI_API_KEY</code>), so Pro
-          shops&apos; callers get the booking page instead of the chat with Halo.
+          AI is off on this server (<code>AI_ENABLED</code> isn&apos;t &quot;true&quot; or there&apos;s no <code>OPENAI_API_KEY</code>), so
+          callers get the booking page instead of the chat with Halo.
         </p>
       )}
       {!whatsappReady() && (
         <p className="mt-3 rounded-xl bg-sky px-4 py-3 text-sm text-blue-deep">
           WhatsApp isn&apos;t set up on this server (<code>WHATSAPP_APP_SECRET</code>, <code>WHATSAPP_VERIFY_TOKEN</code>), so
-          Pro shops reach callers by SMS with a chat link.
+          shops reach callers by SMS with a chat link.
         </p>
       )}
       {!twilioConfigured() && (
@@ -122,35 +124,31 @@ export default async function AdminPage() {
       <section className="mt-8">
         <h2 className="font-display mb-1 text-xl">WhatsApp numbers</h2>
         <p className="mb-3 text-sm text-ink-soft">
-          Each Pro shop sends from its own WhatsApp number, so customers see the shop&apos;s name. Connect it during the
+          Each shop sends from its own WhatsApp number, so customers see the shop&apos;s name. Connect it during the
           setup visit (README → WhatsApp setup), then submit the message templates.
         </p>
         <ul className="card divide-y divide-line">
-          {bizRows.filter((r) => r.biz.plan === "pro").length === 0 && (
-            <li className="p-4 text-sm text-muted">No Pro shops yet. Set a shop&apos;s plan to Pro below.</li>
-          )}
-          {bizRows
-            .filter((r) => r.biz.plan === "pro")
-            .map(({ biz }) => (
-              <li key={biz.id} className="grid gap-3 p-4 lg:grid-cols-[220px_1fr]">
-                <div className="text-sm">
-                  <p className="font-semibold">{biz.name}</p>
-                  <p className={biz.waPhoneNumberId ? "text-ok" : "text-muted"}>
-                    {biz.waPhoneNumberId ? `Connected${biz.waDisplayPhone ? ` · ${formatPhone(biz.waDisplayPhone)}` : ""}` : "Not connected"}
-                  </p>
-                  {biz.waTemplatesAt && <p className="text-xs text-muted">Templates submitted {when(biz.waTemplatesAt)}</p>}
-                </div>
-                <WhatsAppConnectForm
-                  id={biz.id}
-                  phoneNumberId={biz.waPhoneNumberId ?? ""}
-                  wabaId={biz.waBusinessAccountId ?? ""}
-                  displayPhone={biz.waDisplayPhone ?? ""}
-                  ownApp={biz.waOwnApp}
-                  hasToken={!!biz.waTokenEnc}
-                  templatesAt={biz.waTemplatesAt}
-                />
-              </li>
-            ))}
+          {bizRows.length === 0 && <li className="p-4 text-sm text-muted">No shops yet.</li>}
+          {bizRows.map(({ biz }) => (
+            <li key={biz.id} className="grid gap-3 p-4 lg:grid-cols-[220px_1fr]">
+              <div className="text-sm">
+                <p className="font-semibold">{biz.name}</p>
+                <p className={biz.waPhoneNumberId ? "text-ok" : "text-muted"}>
+                  {biz.waPhoneNumberId ? `Connected${biz.waDisplayPhone ? ` · ${formatPhone(biz.waDisplayPhone)}` : ""}` : "Not connected"}
+                </p>
+                {biz.waTemplatesAt && <p className="text-xs text-muted">Templates submitted {when(biz.waTemplatesAt)}</p>}
+              </div>
+              <WhatsAppConnectForm
+                id={biz.id}
+                phoneNumberId={biz.waPhoneNumberId ?? ""}
+                wabaId={biz.waBusinessAccountId ?? ""}
+                displayPhone={biz.waDisplayPhone ?? ""}
+                ownApp={biz.waOwnApp}
+                hasToken={!!biz.waTokenEnc}
+                templatesAt={biz.waTemplatesAt}
+              />
+            </li>
+          ))}
         </ul>
       </section>
 
@@ -188,11 +186,11 @@ export default async function AdminPage() {
               <tr>
                 <th className="px-4 py-3 font-semibold">Business</th>
                 <th className="px-4 py-3 font-semibold">Owner</th>
-                <th className="px-4 py-3 font-semibold">Plan</th>
+                <th className="px-4 py-3 font-semibold">Trial</th>
                 <th className="px-4 py-3 font-semibold">Status</th>
                 <th className="px-4 py-3 font-semibold">RingLoop number</th>
                 <th className="px-4 py-3 font-semibold">Bookings</th>
-                <th className="px-4 py-3 font-semibold">Messages this month</th>
+                <th className="px-4 py-3 font-semibold">Missed calls used this month</th>
                 <th className="px-4 py-3 font-semibold" title="Missed calls → texted → opened → booked, last 30 days">Missed → texted → opened → booked</th>
               </tr>
             </thead>
@@ -214,8 +212,7 @@ export default async function AdminPage() {
                       {ownerEmail && <a href={`mailto:${ownerEmail}`} className="text-blue">{ownerEmail}</a>}
                     </td>
                     <td className="px-4 py-3">
-                      <PlanSelect id={biz.id} plan={biz.plan} />
-                      {biz.trialEndsAt && <p className="mt-1 text-xs text-muted">Trial until {when(biz.trialEndsAt)}</p>}
+                      {biz.trialEndsAt ? `${trialDaysLeft(biz.trialEndsAt) > 0 ? "Until" : "Ended"} ${when(biz.trialEndsAt)}` : "—"}
                     </td>
                     <td className="px-4 py-3">
                       <span className={`chip ${st.cls}`}>{st.label}</span>
@@ -230,14 +227,18 @@ export default async function AdminPage() {
                     <td className="px-4 py-3">
                       {(() => {
                         const u = usages.get(biz.id)!;
+                        const m = sent.get(biz.id)!;
                         return (
                           <div className="space-y-1">
                             <p className={`tabular-nums ${u.stopped ? "text-danger" : ""}`}>
                               {u.used} / {u.limit}
                               {u.extra > 0 && <span className="text-warn"> · +{u.extra} = {euros(u.extraCents)}</span>}
                             </p>
-                            <p className="text-xs text-muted">{biz.allowExtraMessages ? "keeps going" : "stops at limit"}</p>
-                            <LimitInput id={biz.id} value={biz.messageLimit} />
+                            <p className="text-xs text-muted">{biz.allowExtraCalls ? "keeps going" : "pauses at the limit"}</p>
+                            <p className="text-xs text-muted" title="What you paid to send, not billed to the shop">
+                              Sent: {m.whatsapp} WhatsApp · {m.sms} SMS
+                            </p>
+                            <LimitInput id={biz.id} value={biz.callLimit} />
                           </div>
                         );
                       })()}

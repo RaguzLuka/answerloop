@@ -29,7 +29,7 @@ const SECTIONS = [
   { id: "connections", label: "WhatsApp & calendar", icon: "link" },
   { id: "phone", label: "Phone", icon: "phoneForwarded" },
   { id: "app", label: "App", icon: "smartphone" },
-  { id: "plan", label: "Plan & messages", icon: "sparkle" },
+  { id: "plan", label: "Plan", icon: "sparkle" },
   { id: "account", label: "Account", icon: "user" },
 ] as const;
 

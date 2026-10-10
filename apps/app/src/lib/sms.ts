@@ -5,14 +5,13 @@ import { suggestSender } from "@/lib/business-types";
 import { twilioSendSms, type SmsResult } from "@/lib/twilio";
 import { appUrl } from "@/lib/email";
 import { formatPhone } from "@/lib/phone";
-import { mayReach, recordMessage } from "@/lib/usage";
+import { recordMessage } from "@/lib/usage";
 
-/* Every SMS a business sends goes through here: one sender, the monthly
-   allowance (lib/usage), an anti-abuse daily cap, one log. Bodies are never stored. */
+/* Every SMS a business sends goes through here: one sender, an anti-abuse daily
+   cap, one log. Shops aren't billed per SMS (they pay per missed call answered,
+   lib/usage), so the log is only RingLoop's cost view. Bodies are never stored. */
 
 const DAILY_LIMIT = Number(process.env.SMS_DAILY_LIMIT ?? 150);
-export const MONTHLY_LIMIT = "Monthly message limit reached";
-export const isLimitError = (e: string) => e === MONTHLY_LIMIT || e === "Daily SMS limit reached";
 
 export const bookingLink = (biz: Pick<Business, "slug">) => `${appUrl()}/b/${biz.slug}`;
 
@@ -30,15 +29,9 @@ export async function sendBusinessSms(biz: Business, kind: SmsKind, to: string, 
     .where(and(eq(smsLog.businessId, biz.id), gte(smsLog.createdAt, Date.now() - 24 * 60 * 60 * 1000)));
   if (n >= DAILY_LIMIT) return { ok: false, error: "Daily SMS limit reached" };
 
-  let extra = false;
-  if (kind !== "test") {
-    const gate = await mayReach(biz);
-    if (!gate.ok) return { ok: false, error: MONTHLY_LIMIT };
-    extra = gate.extra;
-  }
   const result = await twilioSendSms({ from: senderFor(biz), to, body });
   await recordMessage(biz, {
-    kind, channel: "sms", to, extra, ref,
+    kind, channel: "sms", to, ref,
     sid: result.ok ? result.sid : null,
     error: result.ok ? null : result.error,
   });

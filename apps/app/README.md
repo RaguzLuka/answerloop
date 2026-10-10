@@ -17,7 +17,7 @@ marketing site (`/`), so the two deploy independently.
 | Settings | `/settings` | Everything from setup, confirmation/reminder texts and their language, test text, notifications, account |
 | Public booking page | `/b/[slug]` | Customers pick a service, day and free time, in Croatian or English |
 | Admin | `/admin` | Team only (`ADMIN_EMAILS`): number pool, signups, numbers, visits |
-| Chat with Halo | `/c/[token]` | Pro plan: the caller's private chat; Halo finds free times and books them |
+| Chat with Halo | `/c/[token]` | The caller's private chat; Halo finds free times and books them |
 | Chat transcript | `/chats/[id]` | The owner reads a caller's conversation with Halo |
 | Twilio webhook | `/api/twilio/voice` | Missed call forwarded to a RingLoop number → decline (busy) → text the caller |
 | Reminder job | `/api/cron/reminders` | Daily (vercel.json): texts everyone booked for tomorrow |
@@ -34,7 +34,7 @@ push notifications for new bookings and missed calls.
    business's message with a link: once per caller per 12 h, never to landlines
    or hidden numbers, at most `SMS_DAILY_LIMIT` texts a day.
 4. The link goes to one of three places (Settings → Booking & texts):
-   - **Chat with Halo** (Pro plan, AI on): a private chat for that caller. Halo
+   - **Chat with Halo** (AI on): a private chat for that caller. Halo
      (OpenAI, tools `free_times` + `book`) only offers times the real calendar
      returns and books after the customer confirms. Its first message says it's
      an AI (EU AI Act). Limits: 30 messages per chat, chats expire after 7 days,
@@ -50,7 +50,7 @@ push notifications for new bookings and missed calls.
 Someone finds ringloop.net, signs up and goes through the wizard on their own:
 business → hours → services → text-back → **Connect** (WhatsApp + calendar,
 optional) → go live (a RingLoop number from the pool + call-forwarding code).
-New sign-ups get a **30-day free trial of Pro**. "We'll come over and help"
+New sign-ups get a **30-day free trial**. "We'll come over and help"
 is offered on every step (visit requests land in `/admin`).
 
 - **Connect WhatsApp** opens Meta's Embedded Signup window: the owner logs in with
@@ -70,7 +70,7 @@ is offered on every step (visit requests land in `/admin`).
 - **Calendar subscription link** (any calendar app, one way) works with no setup:
   Settings → WhatsApp & calendar.
 
-## WhatsApp setup (Pro: "the barbershop messages you on WhatsApp")
+## WhatsApp setup ("the barbershop messages you on WhatsApp")
 
 Missed call → the caller gets a WhatsApp **from the shop's own number, under the
 shop's own name** → they chat with Halo there and get booked. If they don't
@@ -108,8 +108,7 @@ have WhatsApp, the SMS with the same conversation as a web chat goes out instead
    add an access token if the account isn't reachable with `WHATSAPP_TOKEN`
    (stored encrypted), then **Submit message templates**. Meta usually approves
    them within minutes to hours.
-4. Set the shop to Pro. Settings → Booking & texts → "Message callers on WhatsApp
-   first" is on by default.
+4. Settings → Booking & texts → "Message callers on WhatsApp first" is on by default.
 
 The opening template (category Utility, `{{1}}` = shop name), submitted by the button:
 - `missed_call_hr`: Pozdrav, ovdje {{1}}. Oprostite što se nismo stigli javiti na Vaš poziv. Ovdje Vam piše Halo, naš asistent s umjetnom inteligencijom. Za koju uslugu želite termin i kada biste mogli doći?
@@ -122,29 +121,31 @@ the lowest-risk form, but many blocks or reports lower the number's limits.
 Next step for scale: an in-app "Connect WhatsApp" button (Embedded Signup), which
 needs RingLoop approved as a Meta Tech Provider.
 
-## Plans and the monthly message allowance
+## The plan: €39 a month, counted in missed calls
 
-Prices and allowances live in `src/lib/plans.ts` (Start €29 / 100 messages,
-Pro €49 / 200 messages, extra messages €0.20). New sign-ups start on Pro with a
-30-day free trial; the plan is switched in `/admin` (billing is handled by hand
-for now).
+One plan for everyone. The price and allowance live in `src/lib/plans.ts`
+(€39 a month, 100 missed calls, €0.30 per extra missed call). New sign-ups get
+30 days free; billing is by hand for now.
 
-- A **message** is anything RingLoop pays for: the first WhatsApp after a missed
-  call, reminders, confirmations and every SMS. Halo's replies inside a WhatsApp
-  conversation are free (Meta doesn't charge) and unlimited. Undelivered WhatsApp
-  messages and the owner's test texts don't count.
-- Counted per calendar month in the shop's time zone (`sms_log`).
-- At the allowance the owner chooses (Settings → Plan & messages): **stop** until
-  next month (missed calls still show in the app), or **keep sending** at €0.20
-  per extra message. The owner gets a push + email at 80% and 100%.
-- `/admin` shows each shop's usage, extra messages and the amount to bill, and
-  can set a custom allowance per shop.
+- A missed call **counts once** when its caller gets a message (WhatsApp or
+  SMS). Everything after it is included: Halo's chat, the booking, the reminder,
+  and an SMS when WhatsApp doesn't arrive. Repeat calls within 12 hours,
+  landlines, hidden numbers and calls whose message never arrived don't count.
+- Counted per calendar month in the shop's time zone (`calls` with outcome `texted`).
+- At the allowance the owner chooses (Settings → Plan): **pause** until the 1st
+  (missed calls still show in the app, marked "call back"), or **keep going** at
+  €0.30 per extra missed call. The owner gets a push + email at 80% and 100%.
+- `/admin` shows each shop's missed calls answered, the extras and the amount to
+  bill, can set a custom allowance per shop, and shows what you paid to send
+  (WhatsApp and SMS, from `sms_log`) so you can watch your costs.
+- Confirmations and reminders aren't counted. The daily SMS cap
+  (`SMS_DAILY_LIMIT`) still guards against abuse.
 - Reminders go on WhatsApp from the shop's number when it's connected (cheaper),
   with SMS if WhatsApp doesn't arrive.
 
-Pro's chat also needs `AI_ENABLED=true` and `OPENAI_API_KEY` on the server.
-Without them, Pro shops fall back to their booking link, so it's safe to launch
-with AI off.
+Halo's chat also needs `AI_ENABLED=true` and `OPENAI_API_KEY` on the server.
+Without them, callers get the booking link instead, so it's safe to launch with
+AI off.
 
 ## Run it locally
 
@@ -188,7 +189,7 @@ migration to `drizzle/`), then restart `npm run dev`.
 
 ## Not built yet
 
-Billing (plans are switched by hand in `/admin`), staff logins, a Croatian
+Billing (charge the plan and extra missed calls by hand from `/admin` for now), staff logins, a Croatian
 interface for the owner app (the booking page, chat and texts are already
 Croatian), real two-way SMS or WhatsApp (Twilio has no two-way SMS in Croatia;
 the chat brain is built so it can move to WhatsApp or Infobip SMS later), and

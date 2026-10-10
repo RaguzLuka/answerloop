@@ -4,25 +4,23 @@ import { db, bookings, businesses } from "@/lib/db";
 import { addDays, zonedParts, zonedToUtc } from "@/lib/time";
 import { canReceiveSms, reminderText, sendBusinessSms } from "@/lib/sms";
 import { senderFor, waSendTemplate, whatsappReady } from "@/lib/whatsapp";
-import { mayReach, recordMessage } from "@/lib/usage";
+import { recordMessage } from "@/lib/usage";
 import { formatPhone } from "@/lib/phone";
 import type { Booking, Business } from "@/lib/db";
 
 /* Daily (Vercel cron, see vercel.json): remind every customer booked for
    tomorrow — on WhatsApp from the shop's own number when it's connected
-   (cheaper; SMS if it doesn't arrive), otherwise by SMS. Both count against
-   the shop's monthly allowance. Vercel Hobby allows one run per day. */
+   (cheaper; SMS if it doesn't arrive), otherwise by SMS. Reminders are included
+   in the plan (shops pay per missed call answered). Vercel Hobby allows one run per day. */
 
 async function remindOnWhatsApp(biz: Business, b: Booking) {
   const sender = senderFor(biz);
   if (!sender || !whatsappReady() || !biz.whatsappEnabled) return null; // not available: use SMS
-  const gate = await mayReach(biz);
-  if (!gate.ok) return { ok: false };
   const time = new Intl.DateTimeFormat("hr-HR", { timeZone: biz.timezone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(b.startsAt);
   const lang = biz.smsLanguage === "en" ? "en" : "hr";
   const res = await waSendTemplate(sender, b.customerPhone, "reminder", lang, [biz.name, time, biz.phone ? formatPhone(biz.phone) : "-"], reminderText(biz, b));
   await recordMessage(biz, {
-    kind: "reminder", channel: "whatsapp", to: b.customerPhone, extra: gate.extra, ref: b.id,
+    kind: "reminder", channel: "whatsapp", to: b.customerPhone, ref: b.id,
     sid: res.ok ? res.id : null, error: res.ok ? null : res.error,
   });
   return { ok: res.ok };

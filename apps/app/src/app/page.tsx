@@ -5,6 +5,7 @@ import { Wordmark } from "@/components/Logo";
 import Halo from "@/components/Halo";
 import Icon from "@/components/Icon";
 import InstallApp from "@/components/InstallApp";
+import { PLAN, euros } from "@/lib/plans";
 
 /* Signed out: what the app is + get it. Signed in: straight into the app. */
 export default async function Welcome() {
@@ -44,8 +45,8 @@ export default async function Welcome() {
               Your missed calls, <em>booked.</em>
             </h1>
             <p className="mt-5 max-w-lg text-lg leading-relaxed text-ink-soft">
-              When you can&apos;t pick up, RingLoop texts the caller your booking link within seconds. They pick a time and you
-              see it in the app. Set it up yourself, or ask us to come over.
+              When you can&apos;t pick up, RingLoop messages the caller from your number within seconds. Halo chats with them
+              and books the appointment, and you see it in the app. Set it up yourself, or ask us to come over.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link href="/signup" className="btn btn-primary">
@@ -53,7 +54,9 @@ export default async function Welcome() {
               </Link>
               <Link href="/login" className="btn btn-secondary">I already have an account</Link>
             </div>
-            <p className="mt-3 text-sm text-muted">Free for 30 days, no card needed.</p>
+            <p className="mt-3 text-sm text-muted">
+              Free for 30 days, no card needed. Then {euros(PLAN.priceEur * 100)} a month for up to {PLAN.missedCalls} missed calls.
+            </p>
           </div>
           <div className="relative mx-auto flex aspect-square w-full max-w-[300px] items-center justify-center">
             <div className="absolute inset-6 rounded-full bg-gradient-to-b from-sky to-white" />

@@ -54,13 +54,6 @@ export async function removePoolNumber(number: string) {
   revalidatePath("/admin");
 }
 
-export async function setPlan(businessId: string, plan: "start" | "pro") {
-  await requireAdmin();
-  if (plan !== "start" && plan !== "pro") return;
-  await db.update(businesses).set({ plan, updatedAt: Date.now() }).where(eq(businesses.id, businessId));
-  revalidatePath("/admin");
-}
-
 export async function setStatus(businessId: string, status: BusinessStatus) {
   await requireAdmin();
   if (!["setup", "number_pending", "forwarding", "live", "paused"].includes(status)) return;
@@ -133,11 +126,11 @@ export async function submitWaTemplates(businessId: string): Promise<FormState> 
   return { ok: true, message: results.join(" · ") };
 }
 
-/** Custom monthly allowance for one shop (empty = the plan's allowance). */
-export async function setMessageLimit(businessId: string, raw: string) {
+/** Custom monthly allowance of missed calls for one shop (empty = the plan's). */
+export async function setCallLimit(businessId: string, raw: string) {
   await requireAdmin();
   const n = raw.trim() === "" ? null : Number(raw);
   if (n !== null && (!Number.isInteger(n) || n < 0 || n > 100000)) return;
-  await db.update(businesses).set({ messageLimit: n, updatedAt: Date.now() }).where(eq(businesses.id, businessId));
+  await db.update(businesses).set({ callLimit: n, updatedAt: Date.now() }).where(eq(businesses.id, businessId));
   revalidatePath("/admin");
 }

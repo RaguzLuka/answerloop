@@ -1,15 +1,17 @@
 import "server-only";
 import { and, count, eq, gte, isNull, ne } from "drizzle-orm";
-import { db, businesses, smsLog, type Business, type MessageChannel, type SmsKind } from "@/lib/db";
-import { ALERT_AT, EXTRA_MESSAGE_CENTS, PLANS, euros } from "@/lib/plans";
+import { db, businesses, calls, smsLog, type Business, type MessageChannel, type SmsKind } from "@/lib/db";
+import { ALERT_AT, EXTRA_CALL_CENTS, PLAN, euros } from "@/lib/plans";
 import { zonedParts, zonedToUtc } from "@/lib/time";
 import { ownerOf } from "@/lib/dal";
 import { appUrl, esc, sendEmail } from "@/lib/email";
 import { notifyBusiness } from "@/lib/push";
 
-/* Each shop's monthly message allowance (calendar month, shop's time zone).
-   At the allowance the shop has chosen: stop sending until next month, or keep
-   going and pay EXTRA_MESSAGE_CENTS per extra message. Test texts don't count. */
+/* Each shop's monthly allowance of missed calls (calendar month, shop's
+   time zone). A call counts once when its caller got a message (outcome
+   "texted"); the chat, booking, reminder and any SMS fallback are included. At
+   the allowance the shop has chosen: pause until next month, or keep going at
+   EXTRA_CALL_CENTS per extra missed call. */
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -18,34 +20,47 @@ export function monthOf(biz: Pick<Business, "timezone">, now = Date.now()) {
   return { key: `${p.y}-${pad(p.m)}`, start: zonedToUtc(`${p.y}-${pad(p.m)}-01`, "00:00", biz.timezone) };
 }
 
-export const allowanceOf = (biz: Pick<Business, "messageLimit" | "plan">) => biz.messageLimit ?? PLANS[biz.plan].messages;
+export const allowanceOf = (biz: Pick<Business, "callLimit">) => biz.callLimit ?? PLAN.missedCalls;
 
 export type Usage = { used: number; extra: number; limit: number; extraCents: number; month: string; stopped: boolean };
 
 export async function usageThisMonth(biz: Business): Promise<Usage> {
   const { key, start } = monthOf(biz);
-  const counted = and(eq(smsLog.businessId, biz.id), gte(smsLog.createdAt, start), ne(smsLog.kind, "test"), isNull(smsLog.error));
+  const answered = and(eq(calls.businessId, biz.id), eq(calls.outcome, "texted"), gte(calls.createdAt, start));
   const [[all], [over]] = await Promise.all([
-    db.select({ n: count() }).from(smsLog).where(counted),
-    db.select({ n: count() }).from(smsLog).where(and(counted, eq(smsLog.extra, true))),
+    db.select({ n: count() }).from(calls).where(answered),
+    // Flagged when answered, so a later change of limit or choice never bills a shop retroactively
+    db.select({ n: count() }).from(calls).where(and(answered, eq(calls.extra, true))),
   ]);
   const limit = allowanceOf(biz);
   const used = all?.n ?? 0;
   const extra = over?.n ?? 0;
-  return { used, extra, limit, extraCents: extra * EXTRA_MESSAGE_CENTS, month: key, stopped: used >= limit && !biz.allowExtraMessages };
+  return { used, extra, limit, extraCents: extra * EXTRA_CALL_CENTS, month: key, stopped: used >= limit && !biz.allowExtraCalls };
 }
 
-/** May this shop send one more paid message now? `extra` = it will be billed on top. */
-export async function mayReach(biz: Business): Promise<{ ok: true; extra: boolean } | { ok: false }> {
+/** May RingLoop answer one more missed call for this shop this month? `extra` = it's billed on top. */
+export async function mayAnswer(biz: Business): Promise<{ ok: true; extra: boolean } | { ok: false }> {
   const u = await usageThisMonth(biz);
   if (u.used < u.limit) return { ok: true, extra: false };
-  return biz.allowExtraMessages ? { ok: true, extra: true } : { ok: false };
+  return biz.allowExtraCalls ? { ok: true, extra: true } : { ok: false };
 }
 
-/** Logs a sent (or failed) paid message and sends the owner a heads-up when needed. */
+/** What RingLoop paid to send this month (for the team's cost view in /admin, not billed to the shop). */
+export async function messagesThisMonth(biz: Business) {
+  const { start } = monthOf(biz);
+  const rows = await db
+    .select({ channel: smsLog.channel, n: count() })
+    .from(smsLog)
+    .where(and(eq(smsLog.businessId, biz.id), gte(smsLog.createdAt, start), ne(smsLog.kind, "test"), isNull(smsLog.error)))
+    .groupBy(smsLog.channel);
+  const of = (c: MessageChannel) => rows.find((r) => r.channel === c)?.n ?? 0;
+  return { whatsapp: of("whatsapp"), sms: of("sms") };
+}
+
+/** Logs a sent (or failed) message RingLoop pays for. Bodies are never stored. */
 export async function recordMessage(
   biz: Business,
-  m: { kind: SmsKind; channel: MessageChannel; to: string; sid: string | null; error: string | null; extra: boolean; ref?: string },
+  m: { kind: SmsKind; channel: MessageChannel; to: string; sid: string | null; error: string | null; ref?: string },
 ) {
   await db.insert(smsLog).values({
     businessId: biz.id,
@@ -54,10 +69,13 @@ export async function recordMessage(
     toPhone: m.to,
     sid: m.sid,
     error: m.error,
-    extra: m.extra,
     ref: m.ref ?? null,
   });
-  if (!m.error && m.kind !== "test") await maybeAlert(biz).catch((e) => console.error("[usage] alert:", e));
+}
+
+/** After a missed call was answered: heads-up to the owner at 80% and 100%. Never throws. */
+export async function afterAnswered(biz: Business) {
+  await maybeAlert(biz).catch((e) => console.error("[usage] alert:", e));
 }
 
 async function maybeAlert(biz: Business) {
@@ -72,19 +90,19 @@ async function maybeAlert(biz: Business) {
   await db.update(businesses).set({ usageAlert: tag }).where(eq(businesses.id, biz.id));
 
   const full = level >= 1;
-  const title = full ? "You've used this month's messages" : "80% of this month's messages used";
+  const title = full ? `All ${u.limit} missed calls used this month` : `${u.used} of ${u.limit} missed calls used this month`;
   const body = full
-    ? biz.allowExtraMessages
-      ? `${u.used} of ${u.limit} used. RingLoop keeps going at ${euros(EXTRA_MESSAGE_CENTS)} per extra message.`
-      : `${u.used} of ${u.limit} used. Missed callers won't get messages until next month; you'll still see them in the app.`
-    : `${u.used} of ${u.limit} messages used this month.`;
+    ? biz.allowExtraCalls
+      ? `RingLoop keeps messaging your missed callers. Each extra missed call is ${euros(EXTRA_CALL_CENTS)}, added to your next bill.`
+      : "Missed callers won't get a message until the 1st. You'll still see every missed call in the app, so you can call back."
+    : `You've used ${u.used} of the ${u.limit} missed calls in your plan this month.`;
   await notifyBusiness(biz.id, { title, body, url: "/settings?s=plan" });
   const owner = await ownerOf(biz.id);
   if (owner) {
     await sendEmail({
       to: owner.email,
       subject: title,
-      html: `<p>Hi ${esc(owner.name)},</p><p>${esc(body)}</p><p><a href="${appUrl()}/settings?s=plan">See your plan and messages</a></p>`,
+      html: `<p>Hi ${esc(owner.name)},</p><p>${esc(body)}</p><p><a href="${appUrl()}/settings?s=plan">See your plan</a></p>`,
     });
   }
 }

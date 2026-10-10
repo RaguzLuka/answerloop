@@ -18,14 +18,14 @@ import { afterCustomerBooking } from "@/lib/booking-effects";
    on WhatsApp, or in a private web chat (/c/<token>) reached from an SMS;
    Halo books into the business's real calendar through two tools, free_times
    and book. The owner can step in at any time, and Halo then stays quiet.
-   Only Pro businesses, only while AI_ENABLED is on, and with hard limits. */
+   Only while AI_ENABLED is on, and with hard limits. */
 
 const CHAT_DAYS = 7;
 const MAX_USER_MESSAGES = 30;
 const MAX_MESSAGE_CHARS = 500;
 const DAILY_LIMIT = Number(process.env.AI_DAILY_LIMIT ?? 300); // customer messages per business per day
 
-export const chatAvailable = (biz: Business) => aiEnabled() && biz.plan === "pro" && biz.chatEnabled;
+export const chatAvailable = (biz: Business) => aiEnabled() && biz.chatEnabled;
 export const chatLink = (token: string) => `${appUrl()}/c/${token}`;
 export const chatIsOver = (chat: Chat) => chat.status === "closed" || chat.expiresAt < Date.now();
 

@@ -62,13 +62,13 @@ export const businesses = sqliteTable("businesses", {
   smsLanguage: text("sms_language").$type<"hr" | "en">().notNull().default("hr"),
   confirmationsEnabled: integer("confirmations_enabled", { mode: "boolean" }).notNull().default(true),
   remindersEnabled: integer("reminders_enabled", { mode: "boolean" }).notNull().default(true),
-  /** Plan, set by the RingLoop team in /admin. "pro" includes chatting with Halo (AI). */
+  /** Unused since 2026-10-10: RingLoop has one plan (lib/plans.ts). Kept so old rows load. */
   plan: text("plan").$type<"start" | "pro">().notNull().default("start"),
-  /** Owner's switch (Pro only): text-back link opens a chat with Halo instead of the booking page */
+  /** Owner's switch: text-back link opens a chat with Halo instead of the booking page */
   chatEnabled: integer("chat_enabled", { mode: "boolean" }).notNull().default(true),
   /** Owner's own booking page (e.g. their Buker profile) to send callers to instead of ours */
   customBookingUrl: text("custom_booking_url"),
-  /** Pro: reach missed callers on WhatsApp first (SMS if they don't have it) */
+  /** Reach missed callers on WhatsApp first (SMS if they don't have it) */
   whatsappEnabled: integer("whatsapp_enabled", { mode: "boolean" }).notNull().default(true),
   /* The shop's own WhatsApp Business number (Cloud API), so messages show the shop's name.
      Connected by the RingLoop team (admin) or, later, by Embedded Signup. */
@@ -83,13 +83,13 @@ export const businesses = sqliteTable("businesses", {
   waTemplatesAt: integer("wa_templates_at", { mode: "number" }),
   /** Two-step verification PIN set when a new number was registered (encrypted) */
   waPinEnc: text("wa_pin_enc"),
-  /** Monthly message allowance override (null = the plan's allowance, lib/plans.ts) */
-  messageLimit: integer("message_limit"),
-  /** At the allowance: false = stop sending until next month, true = keep going, extra billed */
-  allowExtraMessages: integer("allow_extra_messages", { mode: "boolean" }).notNull().default(false),
+  /** Monthly allowance of missed calls answered, override (null = the plan's, lib/plans.ts) */
+  callLimit: integer("message_limit"),
+  /** At the allowance: false = pause until next month, true = keep going, extra calls billed */
+  allowExtraCalls: integer("allow_extra_messages", { mode: "boolean" }).notNull().default(false),
   /** Which usage heads-up was last sent, e.g. "2026-10:80" — one per level per month */
   usageAlert: text("usage_alert"),
-  /** Free trial of Pro for self-service sign-ups */
+  /** Free trial for self-service sign-ups */
   trialEndsAt: integer("trial_ends_at", { mode: "number" }),
   /** Secret for the calendar subscription feed (/api/cal/<token>) */
   calendarToken: text("calendar_token").unique(),
@@ -189,8 +189,8 @@ export type CallOutcome =
   | "no_caller_id" //   hidden number, or the carrier sent the business's own number
   | "landline" //       caller can't receive SMS
   | "paused" //         business paused RingLoop
-  | "limit" //          daily SMS cap reached
-  | "failed"; //        Twilio refused the SMS
+  | "limit" //          month's allowance used and the shop chose to pause
+  | "failed"; //        the message didn't go out (or didn't arrive on any channel)
 
 /** Missed calls forwarded to a RingLoop number */
 export const calls = sqliteTable(
@@ -202,6 +202,8 @@ export const calls = sqliteTable(
     callerPhone: text("caller_phone"),
     outcome: text("outcome").$type<CallOutcome>().notNull(),
     channel: text("channel").$type<"sms" | "whatsapp">().notNull().default("sms"),
+    /** Answered over the month's allowance because the shop chose to keep going: billed as extra */
+    extra: integer("extra", { mode: "boolean" }).notNull().default(false),
     error: text("error"),
     createdAt: createdAt(),
   },
@@ -277,9 +279,9 @@ export const smsLog = sqliteTable(
     id: id(),
     businessId: text("business_id").notNull().references(() => businesses.id, { onDelete: "cascade" }),
     kind: text("kind").$type<SmsKind>().notNull(),
-    /** sms_log holds every message RingLoop pays for, SMS and WhatsApp templates */
+    /** sms_log holds every message RingLoop pays for, SMS and WhatsApp templates (the team's cost view) */
     channel: text("channel").$type<MessageChannel>().notNull().default("sms"),
-    /** Over the month's allowance (billed as extra) */
+    /** Unused since 2026-10-10 (shops are billed per missed call, lib/usage.ts) */
     extra: integer("extra", { mode: "boolean" }).notNull().default(false),
     toPhone: text("to_phone").notNull(),
     /** What it was about (the booking id for reminders/confirmations) */
