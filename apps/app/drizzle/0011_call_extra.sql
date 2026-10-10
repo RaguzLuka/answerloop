@@ -1,0 +1,1 @@
+ALTER TABLE `calls` ADD `extra` integer DEFAULT false NOT NULL;

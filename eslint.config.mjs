@@ -17,6 +17,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // The business app has its own Next.js project and lint config
+    "apps/**",
   ]),
 ]);
 

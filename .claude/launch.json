@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 3000
+    },
+    {
+      "name": "ringloop-app",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "apps/app", "run", "dev"],
+      "port": 3100
     }
   ]
 }
